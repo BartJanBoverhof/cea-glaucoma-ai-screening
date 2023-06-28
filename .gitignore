@@ -43,3 +43,5 @@ dev_history.R
 #Ignore DS store
 *.DS_Store
 
+.DS_Store
+.DS_Store
