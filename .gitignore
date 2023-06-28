@@ -40,3 +40,6 @@ inst/doc
 # Developer history
 dev_history.R
 
+#Ignore DS store
+*.DS_Store
+
