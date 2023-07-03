@@ -10,7 +10,7 @@ Running To Do List
 
 **Setting up model**
 - [ ] foo
-- [ ] 
+
 Preliminaries
 =============
 
