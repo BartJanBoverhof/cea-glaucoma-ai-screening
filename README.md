@@ -25,16 +25,6 @@ install.packages("devtools")
 # devtools::install_github("r-lib/devtools")
 ```
 
--   Install `pkgdown` to publish `darthpack` or your own `darthpack`-based repository or package as a website (optional)
-
-``` r
-# Install release version from CRAN
-install.packages("pkgdown")
-
-# Or install development version from GitHub
-# devtools::install_github("r-lib/pkgdown")
-```
-
 Template obtained from Darthpack <img src='man/figures/logo.png' align="right" height="139" />
 =======================================================================
 [![DOI](https://zenodo.org/badge/197059951.svg)](https://zenodo.org/badge/latestdoi/197059951)
