@@ -1,12 +1,16 @@
 Running To Do List
 =============
-**Towards two severity distribution**
-- [ ] Population cohort input values (Statline)
+**Setting up data**
+- [x] Population cohort input values (Statline)
 - [ ] Incidence of Glaucoma
-- [ ] AI Screening sensitivity / specificity numbers
-- [ ] No show percentage
-- [ ] Clinician sensitivity / specificity 
+- [ ] Decition tree probabilities (AI performance, ophthalmologist performance, etc)
+- [ ] Utilities
+- [ ] Costs
+- [ ] Utility decrement due to age
 
+**Setting up model**
+- [ ] foo
+- [ ] 
 Preliminaries
 =============
 
