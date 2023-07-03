@@ -1,13 +1,12 @@
-#' Decision Model
-#'
-#' \code{decision_model} implements the decision model used.
-#'
-#' @param l_params_all List with all parameters of decision model
-#' @param err_stop Logical variable to stop model run if set up as TRUE. Default = FALSE.
-#' @param verbose Logical variable to indicate print out of messages. Default = FALSE
-#' @return 
-#' The transition probability array and the cohort trace matrix.
-#' @export
+rm(list = ls()) # to clean the workspace
+
+# Loading packages
+library(tidyverse)
+
+
+#------------------------------------------------------------------------------#
+####                         Decision Model                                 ####
+#------------------------------------------------------------------------------#
 decision_model <- function(l_params_all, err_stop = FALSE, verbose = FALSE){ # User defined
   ### Definition:
   ##   Decision model implementation function
@@ -18,8 +17,9 @@ decision_model <- function(l_params_all, err_stop = FALSE, verbose = FALSE){ # U
   ##   a_P: Transition probability array
   ##   m_M: Matrix cohort trace
   ##
+  '''
   with(as.list(l_params_all), {
-    #### Error checking ####
+    #### Error handling ####
     if ((n_t + n_age_init) > nrow(v_r_mort_by_age)) {
       stop("Not all the age in the age range have a corresponding mortality rate")
     }
@@ -27,7 +27,7 @@ decision_model <- function(l_params_all, err_stop = FALSE, verbose = FALSE){ # U
     if ((sum(v_s_init) != 1) | !all(v_s_init >= 0)) {
       stop("vector of initial states (v_s_init) is not valid")
     }
-
+  '''
     #### Age-specific transition probabilities ####
     # Mortality for healthy individuals
     p_HDage  <- 1 - exp(-v_r_mort_by_age[(n_age_init + 1) + 0:(n_t - 1)])        
@@ -114,10 +114,10 @@ check_transition_probability <- function(a_P,
       stop("Not valid transition probabilities\n",
            paste(capture.output(df_notvalid), collapse = "\n"))
     }
-        
+    
     if(verbose){
       warning("Not valid transition probabilities\n",
-           paste(capture.output(df_notvalid), collapse = "\n"))
+              paste(capture.output(df_notvalid), collapse = "\n"))
     } 
   }
 }

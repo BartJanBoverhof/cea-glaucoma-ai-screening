@@ -1,0 +1,2 @@
+cost_capsule,cost_service,cost_admin,cost_BAS_mean_input,cost_BAS_upper_input,cost_BAS_lower_input,cost_BAS_alt_mean_input,cost_BAS_alt_upper_input,cost_BAS_alt_lower_input,p_choles_alpha,p_choles_beta,p_choles_tot_alpha,p_choles_tot_beta
+195,0,282,0.35,0.56,0.14,2.56,3.84,1.28,7700,7701,48,9
