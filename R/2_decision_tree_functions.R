@@ -22,8 +22,10 @@ get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI S
   p_ppr_ai <- p_prevalence * p_screen_sensitivity + (1-p_prevalence) * (1-p_screen_specificity) #Predicted positive rate screening
   p_npr_ai <- p_prevalence * (1-p_screen_sensitivity) + (1-p_prevalence) * p_screen_specificity #Predicted negative rate screening
   
-  p_ppr_clinician <- p_prevalence * p_referral_sensitivity + (1-p_prevalence) * (1-p_referral_specificity) #Predicted positive rate screening
-  p_npr_clinician <- p_prevalence * (1-p_referral_sensitivity) + (1-p_prevalence) * p_referral_specificity #Predicted negative rate screening
+  p_ppr_clinician <- 1
+  p_npr_clinician <- 0
+  #p_ppr_clinician <- p_prevalence * p_referral_sensitivity + (1-p_prevalence) * (1-p_referral_specificity) #Predicted positive rate screening
+  #p_npr_clinician <- p_prevalence * (1-p_referral_sensitivity) + (1-p_prevalence) * p_referral_specificity #Predicted negative rate screening
   
   
   ### 2. Decision tree weights
@@ -40,45 +42,52 @@ get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI S
   #Plot decision tree
   if (visualize) {
     graph <- grViz("
-      digraph decision_tree {
-  
-      graph [rankdir = \"LR\", ranksep=\"1\", nodesep=\"0.5\"];
-      
-      # General node styles
-      node [fontname=\"Arial\", fontsize=20, shape=\"box\", style=\"rounded,filled\", fillcolor=\"lightgray\", color=\"black\"];
-      # General edge styles
-      edge [fontname=\"Arial\", fontsize=14, color=\"gray\", penwidth=1.5];
+    digraph decision_tree {
+
+    graph [rankdir = \"LR\", ranksep=\"1\", nodesep=\"0.5\"];
+    
+    # General node styles
+    node [fontname=\"Arial\", fontsize=20, shape=\"box\", style=\"rounded,filled\", fillcolor=\"lightgray\", color=\"black\"];
+
+    # Specific node style for 'Population'
+    Z [shape=\"box\", style=\"filled\"];  # Here 'Z' is changed to a square shape
+    
+    # General edge styles
+    edge [fontname=\"Arial\", fontsize=14, color=\"gray\", penwidth=1.5];
       
       # Nodes
       Z [label='Population']
-      A [label='Screening Compliance']
+      A [label='Compliance']
       B [label='AI Result']
-      C [label='Referral Compliance']
-      D [label='Clinical Result']
+      C [label='Compliance']
+      D [label='Clinical Assesment']
       E [label='Mild']
       F [label='Moderate']
       G [label='Severe']
       H [label='Blind']
       I [label='Observation']
       J [label='SoC']
-      K [label='SoC']
-      L [label='SoC']
+      K [label='SoC healthier']
+      L [label='SoC sicker']
       M [label='SoC']
+      N [label='Healthy']
+    
   
       # Edges
       Z -> A [label='AI Screening']
       Z -> M [label='SoC']
       A -> B [label='Compliant']
-      A -> J [label='Non-Compliant']
+      A -> J [label='Non-compliant']
       B -> C [label='Positive']
       B -> K [label='Negative']
       C -> D [label='Compliant']
-      C -> L [label='Non-Compliant']
-      D -> E [label='Positive - Mild']
-      D -> F [label='Positive - Moderate']
-      D -> G [label='Positive - Severe']
-      D -> H [label='Positive - Blind']
-      D -> I [label='Negative']
+      C -> L [label='Non-compliant']
+      D -> E [label='Glaucoma']
+      D -> F [label='Glaucoma']
+      D -> G [label='Glaucoma']
+      D -> H [label='Glaucoma']
+      D -> I [label='Non-definitive decision']
+      D -> N [label='False positives']
 
       }
     ")
@@ -104,5 +113,9 @@ get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI S
   
   return(results)
 }
+
+
+
+
 
 
