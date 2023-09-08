@@ -2,14 +2,17 @@ Running To Do List
 =============
 **Setting up data**
 - [x] Population cohort input values (Statline)
-- [ ] Incidence of Glaucoma
-- [ ] Decition tree probabilities (AI performance, ophthalmologist performance, etc)
+- [X] Incidence of Glaucoma
+- [X] Decition tree probabilities (AI performance, ophthalmologist performance, etc)
+- [ ] Markov model probabilities (transition probabilities)
 - [ ] Utilities
 - [ ] Costs
 - [ ] Utility decrement due to age
 
 **Setting up model**
-- [ ] foo
+- [X] Decision tree
+- [X] Cohort pipelines
+- [] Markov models
 
 Preliminaries
 =============
