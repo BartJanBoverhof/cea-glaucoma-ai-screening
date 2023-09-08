@@ -12,7 +12,7 @@ Running To Do List
 **Setting up model**
 - [X] Decision tree
 - [X] Cohort pipelines
-- [] Markov models
+- [ ] Markov models
 
 Preliminaries
 =============
