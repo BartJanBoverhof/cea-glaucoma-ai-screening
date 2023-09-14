@@ -18,15 +18,13 @@ get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI S
   p_severity_blind <- severity_undiagnosed$undiagnosed_blind
   
   # Calculate required probabilities
-  # PPR formula =    True positives                      + False positives
-  p_ppr_ai <- p_prevalence * p_screen_sensitivity + (1-p_prevalence) * (1-p_screen_specificity) #Predicted positive rate screening
-  p_npr_ai <- p_prevalence * (1-p_screen_sensitivity) + (1-p_prevalence) * p_screen_specificity #Predicted negative rate screening
+  true_positives <- 0.05
+  false_positives <- 
   
-  p_ppr_clinician <- 1
-  p_npr_clinician <- 0
-  #p_ppr_clinician <- p_prevalence * p_referral_sensitivity + (1-p_prevalence) * (1-p_referral_specificity) #Predicted positive rate screening
-  #p_npr_clinician <- p_prevalence * (1-p_referral_sensitivity) + (1-p_prevalence) * p_referral_specificity #Predicted negative rate screening
+  p_ppv_ai <- p_prevalence * p_screen_sensitivity + (1-p_prevalence) * (1-p_screen_specificity) #Predicted positive rate screening
+  p_npv_ai <- p_prevalence * (1-p_screen_sensitivity) + (1-p_prevalence) * p_screen_specificity #Predicted negative rate screening
   
+  fhf
   
   ### 2. Decision tree weights
   p_path_mild <- p_screen_compliance * p_ppr_ai * p_referral_compliance * p_ppr_clinician * p_severity_mild #Path mild
