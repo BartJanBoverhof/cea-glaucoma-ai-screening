@@ -4,36 +4,24 @@ rm(list = ls()) # to clean the workspace
 require(tidyverse)
 require(DiagrammeR)
 
-# Importing Functions
+# importing Functions
 source("R/1_model_pipeline_functions.R", echo = TRUE) #Load cohort model input functions
 source("R/2_decision_tree_functions.R", echo = TRUE) #Load decision model functions
+source("R/3_markov_model_functions.R", echo = TRUE) #Load decision model functions
 
-
-# loading data
+# loading all required data objects
 load("data/1_all_cause_mortality.RData")
 load("data/2_dt_ai.RData")
 load("data/3_severity_undiagnosed.RData")
 
-# get cohort
-total_cohort <- get_cohort(all_cause_mortality)
+# obtain cohorts
+total_cohort <- get_cohort(all_cause_mortality) # step 1: get cohort
+dt <- get_dt_probabilities(dt_ai, severity_undiagnosed, "Ai Screening", visualize = T) # step 2: get dt probabilities
+cohort <- get_cohort_arm(total_cohort, dt) # step 3: obtain cohort per decision-tree-arm
 
-# get dt probabilities
-dt <- get_dt_probabilities(dt_ai, severity_undiagnosed, "Ai Screening", visualize = T) 
+# calculate markov trace
+# preliminaries
+cycle_length <- 1
 
-'''
-# calculate cohorts
-get_severity <- function(arm = c("ai","soc")){
-  
-  
-}
-  
-mild <- dt$path_mild * total_cohort
-moderate <- dt$path_moderate * total_cohort
-severe <- dt$path_severe * total_cohort
-blind <- dt$path_blind * total_cohort
-'''
-
-  
-  
-
+markov_trace <- function(cohort, cycle_length, )
 

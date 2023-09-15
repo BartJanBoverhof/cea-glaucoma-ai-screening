@@ -1,9 +1,7 @@
-#------------------------------------------------------------------------------#
-####                         Decision Tree                                 ####
-#------------------------------------------------------------------------------#
+# decision tree
 get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI Screening", "Standard of care"), visualize = TRUE){
   
-  # Read in fixed probabilities
+  # read in fixed probabilities
   p_prevalence <- dt_ai$prevalence 
   p_screen_compliance <- dt_ai$screen_comp    # screening compliance
   p_screen_sensitivity <- dt_ai$ai_sens       # screening sensitivity 
@@ -17,27 +15,26 @@ get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI S
   p_severity_severe <- severity_undiagnosed$undiagnosed_severe
   p_severity_blind <- severity_undiagnosed$undiagnosed_blind
   
-  # Calculate required probabilities
-  true_positives <- 0.05
-  false_positives <- 
+  # calculate required probabilities
+  ai_positive <- 0.05 # placeholder value
+  ai_negative <- 1- ai_positive # placeholder value
   
-  p_ppv_ai <- p_prevalence * p_screen_sensitivity + (1-p_prevalence) * (1-p_screen_specificity) #Predicted positive rate screening
-  p_npv_ai <- p_prevalence * (1-p_screen_sensitivity) + (1-p_prevalence) * p_screen_specificity #Predicted negative rate screening
-  
-  fhf
+  p_ppv <- p_prevalence * p_screen_sensitivity + (1-p_prevalence) * (1-p_screen_specificity) # predicted positive rate screening
+  p_npv <- p_prevalence * (1-p_screen_sensitivity) + (1-p_prevalence) * p_screen_specificity # predicted negative rate screening
   
   ### 2. Decision tree weights
-  p_path_mild <- p_screen_compliance * p_ppr_ai * p_referral_compliance * p_ppr_clinician * p_severity_mild #Path mild
-  p_path_mod <- p_screen_compliance * p_ppr_ai * p_referral_compliance * p_ppr_clinician * p_severity_mod #Path moderate
-  p_path_severe <- p_screen_compliance * p_ppr_ai * p_referral_compliance * p_ppr_clinician * p_severity_severe #Path severe
-  p_path_blind <- p_screen_compliance * p_ppr_ai * p_referral_compliance * p_ppr_clinician * p_severity_blind #Path blind
+  p_path_mild <- p_screen_compliance * ai_positive * p_referral_compliance * p_ppv * p_severity_mild # path mild
+  p_path_mod <- p_screen_compliance * ai_positive * p_referral_compliance * p_ppv * p_severity_mod # path moderate
+  p_path_severe <- p_screen_compliance * ai_positive * p_referral_compliance * p_ppv * p_severity_severe # path severe
+  p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * p_ppv * p_severity_blind # path blind
+  p_path_obs <- 0  # path observation
+  p_path_fp <- p_screen_compliance * ai_positive * p_referral_compliance * (1-p_ppv) # path healthy (false positives)
   
-  p_path_neg_ref <- p_screen_compliance * p_ppr_ai * p_referral_compliance * p_npr_clinician  #Path where clinician is negative
-  p_path_nocomp_ref <- p_screen_compliance * p_ppr_ai * (1-p_referral_compliance) #Path where patient is not compliant with referral
-  p_path_neg_ai <- p_screen_compliance * p_npr_ai  #Path where screening is negative
-  p_path_nocomp_ai <- (1-p_screen_compliance)  #Path where patients is not compliant with screening
+  p_path_soc <- 1-p_screen_compliance # path non-compliant with screening
+  p_path_soc_healthier <- p_screen_compliance * ai_negative # path negative screening result
+  p_path_soc_sicker <- p_screen_compliance * ai_positive * (1-p_referral_compliance) # path non-compliant with clinical assessment
   
-  #Plot decision tree
+  # plot decision tree
   if (visualize) {
     graph <- grViz("
     digraph decision_tree {
@@ -93,15 +90,16 @@ get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI S
   
   # Create the return list
   results <- list(
-    path_mild = p_path_mild,
-    path_mod = p_path_mod,
-    path_severe = p_path_severe,
-    path_blind = p_path_blind,
-    path_neg_ref = p_path_neg_ref,
-    path_nocomp_ref = p_path_nocomp_ref,
-    path_neg_ai = p_path_neg_ai,
-    path_nocomp_ai = p_path_nocomp_ai,
-    cumulative_prob = sum(p_path_mild, p_path_mod,p_path_severe,p_path_blind,p_path_neg_ref,p_path_nocomp_ref,p_path_neg_ai,p_path_nocomp_ai)
+    p_path_mild = p_path_mild,
+    p_path_mod = p_path_mod,
+    p_path_severe = p_path_severe,
+    p_path_blind = p_path_blind,
+    p_path_obs = p_path_obs,
+    p_path_fp = p_path_fp,
+    p_path_soc = p_path_soc,
+    p_path_soc_healthier = p_path_soc_healthier,
+    p_path_soc_sicker = p_path_soc_sicker,
+    cumulative_prob = sum(p_path_mild, p_path_mod,p_path_severe,p_path_blind,p_path_obs, p_path_fp, p_path_soc, p_path_soc_healthier, p_path_soc_sicker)
   )
   
   # Conditionally append the graph object to the return list
@@ -111,7 +109,6 @@ get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI S
   
   return(results)
 }
-
 
 
 
