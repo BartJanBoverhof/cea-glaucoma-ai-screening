@@ -39,3 +39,9 @@ Template obtained from Darthpack <img src='man/figures/logo.png' align="right" h
 [`darthpack`](https://github.com/DARTH-git/darthpack) is part of the following manuscript:
 
 -   Alarid-Escudero F, Krijkamp E, Pechlivanoglou P, Jalal H, Kao SY, Yang A, Enns EA. ["A need for change! A coding framework for improving transparency in decision modeling"](https://link.springer.com/article/10.1007%2Fs40273-019-00837-x). PharmacoEconomics 2019;37(11):1329–1339. <http://dx.doi.org/10.1007/s40273-019-00837-x>
+
+Relevant Literature
+=============
+- [Burr (2006)](https://researchonline.lshtm.ac.uk/id/eprint/8383/) The clinical effectiveness and cost-effectiveness of screening for open angle glaucoma: a systematic review and economic evaluation
+- [Lemij (2023)](https://www.ophthalmologyscience.org/article/S2666-9145(23)00032-5/fulltext)Characteristics of a Large, Labeled Data Set for the Training of Artificial Intelligence for Glaucoma Screening with Fundus Photographs
+- [de Vente (2023)](https://arxiv.org/pdf/2302.01738.pdf)AIROGS: ARTIFICIAL INTELLIGENCE FOR ROBUST GLAUCOMA SCREENING CHALLENGE
