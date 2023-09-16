@@ -27,3 +27,11 @@ save(dt_ai, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/2_dt_ai.RD
 file.init <- "data-raw/3_severity_undiagnosed.csv" #Init statement
 severity_undiagnosed  <- read_delim(file.init, delim = ';') #loading csv
 save(severity_undiagnosed, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/3_severity_undiagnosed.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
+#------------------------------------------------------------------------------#
+####                    04 transition probabilities                         ####
+#------------------------------------------------------------------------------#
+file.init <- "data-raw/4a_transition_prob_screen.csv" #Init statement
+transition_prob_screen  <- read_delim(file.init, delim = ';') #loading csv
+save(transition_prob_screen, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/4a_transition_prob_screen.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
