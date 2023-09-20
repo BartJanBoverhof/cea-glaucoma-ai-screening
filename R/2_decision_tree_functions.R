@@ -99,7 +99,7 @@ get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI S
     p_path_soc = p_path_soc,
     p_path_soc_healthier = p_path_soc_healthier,
     p_path_soc_sicker = p_path_soc_sicker,
-    cumulative_prob = sum(p_path_mild, p_path_mod,p_path_severe,p_path_blind,p_path_obs, p_path_fp, p_path_soc, p_path_soc_healthier, p_path_soc_sicker)
+    p_cumulative = sum(p_path_mild, p_path_mod,p_path_severe,p_path_blind,p_path_obs, p_path_fp, p_path_soc, p_path_soc_healthier, p_path_soc_sicker)
   )
   
   # Conditionally append the graph object to the return list
