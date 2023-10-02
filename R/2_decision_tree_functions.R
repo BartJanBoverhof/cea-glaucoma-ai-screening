@@ -1,34 +1,39 @@
 # decision tree
-get_dt_probabilities <- function(dt_ai, severity_undiagnosed, strategy = c("AI Screening", "Standard of care"), visualize = TRUE){
+getDtProbabilities <- function(p_dt_ai, p_severity_undiagnosed, cohort_strategy = c("AI Screening", "Standard of care"), visualize = TRUE){
   
   # read in fixed probabilities
-  p_prevalence <- dt_ai$prevalence 
-  p_screen_compliance <- dt_ai$screen_comp    # screening compliance
-  p_screen_sensitivity <- dt_ai$ai_sens       # screening sensitivity 
-  p_screen_specificity <- dt_ai$ai_spec       # screening specificity 
-  p_referral_compliance <- dt_ai$ref_comp     # referral compliance
-  p_referral_sensitivity <- dt_ai$doct_sens   # referral sensitivity
-  p_referral_specificity <- dt_ai$doct_sens   # referral sensitivity
+  p_prevalence <- p_dt$prevalence 
+  p_screen_compliance <- p_dt$screen_comp    # screening compliance
+  p_screen_sensitivity <- p_dt$ai_sens       # screening sensitivity 
+  p_screen_specificity <- p_dt$ai_spec       # screening specificity 
+  p_referral_compliance <- p_dt$ref_comp     # referral compliance
+  p_referral_sensitivity <- p_dt$doct_sens   # referral sensitivity
+  p_referral_specificity <- p_dt$doct_sens   # referral sensitivity
   
-  p_severity_mild <- severity_undiagnosed$undiagnosed_mild
-  p_severity_mod <- severity_undiagnosed$undiagnosed_mod
-  p_severity_severe <- severity_undiagnosed$undiagnosed_severe
-  p_severity_blind <- severity_undiagnosed$undiagnosed_blind
+  p_severity_mild <- p_severity_undiagnosed$undiagnosed_mild
+  p_severity_mod <- p_severity_undiagnosed$undiagnosed_mod
+  p_severity_severe <- p_severity_undiagnosed$undiagnosed_severe
+  p_severity_blind <- p_severity_undiagnosed$undiagnosed_blind
   
   # calculate required probabilities
-  ai_positive <- 0.05 # placeholder value
-  ai_negative <- 1- ai_positive # placeholder value
+  ai_tp <- p_dt$ai_sens * p_dt$prevalence  # true positives
+  ai_fp <- (1-p_dt$ai_spec) * (1-p_dt$prevalence) # false positives
+  ai_tn <- p_dt$ai_spec * (1-p_dt$prevalence) # true negatives
+  ai_fn <- (1-p_dt$ai_sens) * p_dt$prevalence # false negatives
   
-  p_ppv <- p_prevalence * p_screen_sensitivity + (1-p_prevalence) * (1-p_screen_specificity) # predicted positive rate screening
-  p_npv <- p_prevalence * (1-p_screen_sensitivity) + (1-p_prevalence) * p_screen_specificity # predicted negative rate screening
+  ai_positive <- ai_tp + ai_fp # positive test result
+  ai_negative <- ai_tn + ai_fn # negative test result
+  
+  ai_ppv <- ai_tp / ai_positive # positive predictive value
+  ai_npv <- ai_tn / ai_negative # negative predictive value
   
   ### 2. Decision tree weights
-  p_path_mild <- p_screen_compliance * ai_positive * p_referral_compliance * p_ppv * p_severity_mild # path mild
-  p_path_mod <- p_screen_compliance * ai_positive * p_referral_compliance * p_ppv * p_severity_mod # path moderate
-  p_path_severe <- p_screen_compliance * ai_positive * p_referral_compliance * p_ppv * p_severity_severe # path severe
-  p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * p_ppv * p_severity_blind # path blind
+  p_path_mild <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mild # path mild
+  p_path_mod <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mod # path moderate
+  p_path_severe <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_severe # path severe
+  p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind # path blind
   p_path_obs <- 0  # path observation
-  p_path_fp <- p_screen_compliance * ai_positive * p_referral_compliance * (1-p_ppv) # path healthy (false positives)
+  p_path_fp <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv) # path healthy (false positives)
   
   p_path_soc <- 1-p_screen_compliance # path non-compliant with screening
   p_path_soc_healthier <- p_screen_compliance * ai_negative # path negative screening result
