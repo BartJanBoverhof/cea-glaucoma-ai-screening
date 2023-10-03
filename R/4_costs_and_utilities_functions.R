@@ -1,3 +1,5 @@
+getUtilities 
+
 getCosts <- function(){
   
   # split to costs and utilities 

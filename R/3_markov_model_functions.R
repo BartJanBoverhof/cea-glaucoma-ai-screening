@@ -1,25 +1,24 @@
-getMarkovTrace <- function(strat, # strategy
+getMarkovTrace <- function(strategy, # strategy
+                           cohort, # cohort
                            df_mortality, # mortality data
                            p_transition, # transition probabilities
-                           discount_costs, # discount rate costs
-                           discount_qalys # discount rate qalys
+                           age_init = 50, # initial age
+                           age_max = 100 # maximum age
                            ){ 
 
-    #------------------------------------------------------------------------------#
+  #------------------------------------------------------------------------------#
   ####                       01 Prerequisites                           ####
   #------------------------------------------------------------------------------#
   cycle_length <- 1
-  n_age_init <- 50
-  n_age_max <- 100
-  n_cycles <- (n_age_max - n_age_init)/cycle_length # time horizon, number of cycles
+  n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
   
   # labels of age vectors
-  v_age_names  <- paste(rep(n_age_init:(n_age_max-1), each = 1/cycle_length), 
+  v_age_names  <- paste(rep(age_init:(age_max-1), each = 1/cycle_length), 
                         1:(1/cycle_length), 
                         sep = ".")
   
   # markov model states
-  v_names_states <- c("Healthy",       # names health states
+  v_names_states <- c("Healthy",       
                       "Mild", 
                       "Moderate", 
                       "Severe", 
@@ -31,21 +30,22 @@ getMarkovTrace <- function(strat, # strategy
 
   
   # Transition probabilities
-  p_prevalence <- p_transition$prevalence
+  p_incidence <- p_transition$incidence
   p_mild_mod <- p_transition$p_mild_mod
   p_mod_sev <- p_transition$p_mod_sev
   p_sev_blind <- p_transition$p_sev_blind
+  
   
   # hazard ratio's for soc_healthier and soc_sicker strategies
   hr_soc_healthier <- 0.8 # hazard ratio of glaucoma-related progression healthier population
   hr_soc_sicker <- 1.2 # hazard ratio of glaucoma-related progression sicker population
   
   # if strategy is SoC_healthier or SoC_sicker use the hazard ratio's to alter the transition probabilities defined above
-  if (strat == "SoC_healthier"){
+  if (strategy == "SoC_healthier"){
     p_mild_mod <- p_mild_mod * hr_soc_healthier
     p_mod_sev <- p_mod_sev * hr_soc_healthier
     p_sev_blind <- p_sev_blind * hr_soc_healthier
-  } else if (strat == "SoC_sicker"){
+  } else if (strategy == "SoC_sicker"){
     p_mild_mod <- p_mild_mod * hr_soc_sicker
     p_mod_sev <- p_mod_sev * hr_soc_sicker
     p_sev_blind <- p_sev_blind * hr_soc_sicker
@@ -55,14 +55,39 @@ getMarkovTrace <- function(strat, # strategy
   ####                       02 Create matrices       ####
   #------------------------------------------------------------------------------#
 
-  # initial distribution per health state (path probability DT)
-  v_m_init <- c(Healthy = p_dt_ai$p_path_fp, 
-                Mild = p_dt_ai$p_path_mild, 
-                Moderate = p_dt_ai$p_path_mod, 
-                Severe = p_dt_ai$p_path_severe, 
-                Blind = p_dt_ai$p_path_blind,
-                #Observation = p_dt_ai$p_path_obs,
-                Death = 0) 
+  if (strategy == "AI"){
+    # initial distribution per health state (path probability DT)
+    v_m_init <- c(healthy = cohort$false_pos, 
+                  mild = cohort$mild, 
+                  moderate = cohort$moderate, 
+                  severe = cohort$severe, 
+                  blind = cohort$blind,
+                  #observation = cohort$observation,
+                  death = 0
+                  )
+    # total number of people in sub-cohort
+    n_cohort <- sum(v_m_init)
+    
+    # still incorrect, think about how to do this
+    } else if (strategy == "SoC_healthier"){
+    # initial distribution per health state (path probability DT)
+    v_m_init <- c(healthy = cohort$false_pos, 
+                  mild = cohort$mild, 
+                  moderate = cohort$moderate, 
+                  severe = cohort$severe, 
+                  blind = cohort$blind 
+                  #observation = cohort$observation,
+                  )
+  } else if (strategy == "SoC_sicker"){
+    # initial distribution per health state (path probability DT)
+    v_m_init <- c(healthy = cohort$false_pos, 
+                  mild = cohort$mild, 
+                  moderate = cohort$moderate, 
+                  severe = cohort$severe, 
+                  blind = cohort$blind 
+                  #observation = cohort$observation,
+                  )
+  }
   
   # initialize cohort trace 
   m_trace <- matrix(NA, 
@@ -81,8 +106,8 @@ getMarkovTrace <- function(strat, # strategy
                                   0:(n_cycles - 1)))
   # fill array
   # from healthy
-  a_matrices["Healthy", "Healthy", ]   <- (1 - df_mortality_clean) * (1 - p_prevalence)
-  a_matrices["Healthy", "Mild", ]  <- (1 - df_mortality_clean) * p_prevalence
+  a_matrices["Healthy", "Healthy", ]   <- (1 - df_mortality_clean) * (1 - p_incidence)
+  a_matrices["Healthy", "Mild", ]  <- (1 - df_mortality_clean) * p_incidence
   a_matrices["Healthy", "Death", ]   <-      df_mortality_clean
   
   # from mild
@@ -106,13 +131,6 @@ getMarkovTrace <- function(strat, # strategy
   
   # from death
   a_matrices["Death", "Death", ]   <- 1
-  # from death
-  
-  # check that transition probabilities are [0, 1] 
-  check_transition_probability(a_matrices,   verbose = TRUE)
-
-  # check that all rows for each slice of the array sum to 1 
-  check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
 
   #------------------------------------------------------------------------------#
   ####                       03 Run Markov Model          ####
@@ -124,13 +142,21 @@ getMarkovTrace <- function(strat, # strategy
     m_trace[t + 1, ]   <- m_trace[t, ]   %*% a_matrices[, , t]
   }
   
-  # check if cohort trace sums to 1
-  m_trace <- cbind(m_trace, rowSums(m_trace, na.rm = TRUE))
-  colnames(m_trace)[ncol(m_trace)] <- "Sum"
+  #------------------------------------------------------------------------------#
+  ####                       04 Error handling             ####
+  #------------------------------------------------------------------------------#
+  # check that transition probabilities are [0, 1] 
+  check_transition_probability(a_matrices,   verbose = TRUE)
   
-  return(list(cohort_trace = trace))
+  # check that all rows for each slice of the array sum to 1 
+  check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
+  
+  # append column to m_trace that checks if all rows in the cohort trace sum up to 100% of the cohort
+  m_trace <- cbind(m_trace, rowSums(m_trace))
+  colnames(m_trace)[ncol(m_trace)] <- "Total"
+  
+  return(cohort_trace = m_trace)
 }
-
 
 
 

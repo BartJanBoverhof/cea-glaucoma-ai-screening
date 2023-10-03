@@ -1,4 +1,5 @@
 rm(list = ls()) # to clean the workspace
+set.seed(3791) # set seed for reproducibility
 
 # loading packages
 p_load_gh("DARTH-git/darthtools")
@@ -10,6 +11,9 @@ p_load_gh("DARTH-git/darthtools") # load (install if required) packages from Git
 source("R/1_model_pipeline_functions.R", echo = TRUE) #Load cohort model input functions
 source("R/2_decision_tree_functions.R", echo = TRUE) #Load decision model functions
 source("R/3_markov_model_functions.R", echo = TRUE) #Load decision model functions
+#source("R/4_costs_and_utilities_functions.R", echo = TRUE) #Load utility functions
+source("R/5_visualisation_functions.R", echo = TRUE) #Load visualization functions
+
 
 # loading all required data objects
 load("data/1_df_mortality.RData")
@@ -28,30 +32,16 @@ v_cohort_ai <- getCohortArm(t_total_cohort, p_dt_ai) # step 3: obtain cohort per
 df_mortality_clean <- CalculateMortality(df_mortality, start_age = 50) # step 4: calculate mortality
 
 #markov trace
-a_ai_trace <- getMarkovTrace(strat = "AI", 
+a_trace_ai <- getMarkovTrace(strategy = "AI",  # run markov model for AI
+                             cohort = v_cohort_ai,
                              df_mortality = df_mortality_clean, 
                              p_transition =  p_transition_ai, 
-                             discount_costs = 0.04,
-                             discount_qalys = 0.015) # run markov model for AI
+                             age_init = 50,
+                             age_max = 100
+                             ) 
 
-a_soc_trace <- getMarkovTrace(strat = "SoC", 
-                              df_mortality = df_mortality_clean, 
-                              p_transition =  p_transition_soc, 
-                              discount_costs = 0.04,
-                              discount_qalys = 0.015) # run markov model for SoC
-
-
-# obtain costs
-
-# obtain utlities
-
-
-# 06 Plot Outputs
-
-## 06.1 Plot the cohort trace for strategies SoC and AB
-
-plot_trace(m_trace_ai)
-plot_trace(m_trace_soc)
+# plot outputs
+VisualiseTrace(a_trace_ai)
 
 # 07 State Rewards 
 
