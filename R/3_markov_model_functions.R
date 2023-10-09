@@ -2,39 +2,32 @@ getMarkovTrace <- function(strategy, # strategy
                            cohort, # cohort
                            df_mortality, # mortality data
                            p_transition, # transition probabilities
-                           age_init = 50, # initial age
-                           age_max = 100 # maximum age
+                           age_init, # initial age
+                           age_max, # maximum age
+                           names_states # names of states
                            ){ 
 
   #------------------------------------------------------------------------------#
   ####                       01 Prerequisites                           ####
   #------------------------------------------------------------------------------#
-  cycle_length <- 1
+  cycle_length <- 1 #cycle length
+  
   n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
   
-  # labels of age vectors
-  v_age_names  <- paste(rep(age_init:(age_max-1), each = 1/cycle_length), 
+  v_age_names  <- paste(rep(age_init:(age_max-1), each = 1/cycle_length),   # labels of age vectors
                         1:(1/cycle_length), 
-                        sep = ".")
+                        sep = ".")  # labels of age vectors
   
-  # markov model states
-  v_names_states <- c("Healthy",       
-                      "Mild", 
-                      "Moderate", 
-                      "Severe", 
-                      "Blind", 
-                      #"Observation",
-                      "Death")
-  
-  n_states <- length(v_names_states)   # number of health states 
+  n_states <- length(names_states)   # number of health states 
 
-  
-  # Transition probabilities
+  # drop age categories before initial age
+  df_mortality <- df_mortality[-c(1:(age_init-50))]
+
+  # transition probabilities
   p_incidence <- p_transition$incidence
   p_mild_mod <- p_transition$p_mild_mod
   p_mod_sev <- p_transition$p_mod_sev
   p_sev_blind <- p_transition$p_sev_blind
-  
   
   # hazard ratio's for soc_healthier and soc_sicker strategies
   hr_soc_healthier <- 0.8 # hazard ratio of glaucoma-related progression healthier population
@@ -57,11 +50,11 @@ getMarkovTrace <- function(strategy, # strategy
 
   if (strategy == "AI"){
     # initial distribution per health state (path probability DT)
-    v_m_init <- c(healthy = cohort$false_pos, 
-                  mild = cohort$mild, 
-                  moderate = cohort$moderate, 
-                  severe = cohort$severe, 
-                  blind = cohort$blind,
+    v_m_init <- c(healthy = cohort$p_path_fp, 
+                  mild = cohort$p_path_mild, 
+                  moderate = cohort$p_path_mod, 
+                  severe = cohort$p_path_severe, 
+                  blind = cohort$p_path_blind,
                   #observation = cohort$observation,
                   death = 0
                   )
@@ -92,7 +85,7 @@ getMarkovTrace <- function(strategy, # strategy
   # initialize cohort trace 
   m_trace <- matrix(NA, 
                     nrow = (n_cycles + 1), ncol = n_states, 
-                    dimnames = list(0:n_cycles, v_names_states))
+                    dimnames = list(0:n_cycles, names_states))
   
   # store the initial state vector in the first row of the cohort trace
   m_trace[1, ] <- v_m_init
@@ -101,33 +94,33 @@ getMarkovTrace <- function(strategy, # strategy
   # create transition probability matrices
   a_matrices <- array(0,
               dim  = c(n_states, n_states, n_cycles),
-              dimnames = list(v_names_states, 
-                                  v_names_states, 
+              dimnames = list(names_states, 
+                              names_states, 
                                   0:(n_cycles - 1)))
   # fill array
   # from healthy
-  a_matrices["Healthy", "Healthy", ]   <- (1 - df_mortality_clean) * (1 - p_incidence)
-  a_matrices["Healthy", "Mild", ]  <- (1 - df_mortality_clean) * p_incidence
-  a_matrices["Healthy", "Death", ]   <-      df_mortality_clean
+  a_matrices["Healthy", "Healthy", ]   <- (1 - df_mortality) * (1 - p_incidence)
+  a_matrices["Healthy", "Mild", ]  <- (1 - df_mortality) * p_incidence
+  a_matrices["Healthy", "Death", ]   <-      df_mortality
   
   # from mild
-  a_matrices["Mild", "Mild", ]  <- (1 - df_mortality_clean) * (1 - p_mild_mod)
-  a_matrices["Mild", "Moderate", ]  <- (1 - df_mortality_clean) * p_mild_mod
-  a_matrices["Mild", "Death", ]  <-      df_mortality_clean
+  a_matrices["Mild", "Mild", ]  <- (1 - df_mortality) * (1 - p_mild_mod)
+  a_matrices["Mild", "Moderate", ]  <- (1 - df_mortality) * p_mild_mod
+  a_matrices["Mild", "Death", ]  <-      df_mortality
   
   # from moderate
-  a_matrices["Moderate", "Moderate", ]  <- (1 - df_mortality_clean) * (1 - p_mod_sev)
-  a_matrices["Moderate", "Severe", ]  <- (1 - df_mortality_clean) * p_mod_sev
-  a_matrices["Moderate", "Death", ]  <-      df_mortality_clean
+  a_matrices["Moderate", "Moderate", ]  <- (1 - df_mortality) * (1 - p_mod_sev)
+  a_matrices["Moderate", "Severe", ]  <- (1 - df_mortality) * p_mod_sev
+  a_matrices["Moderate", "Death", ]  <-      df_mortality
   
   # from severe
-  a_matrices["Severe", "Severe", ]  <- (1 - df_mortality_clean) * (1 - p_sev_blind)
-  a_matrices["Severe", "Blind", ]  <- (1 - df_mortality_clean) * p_sev_blind
-  a_matrices["Severe", "Death", ]  <-      df_mortality_clean
+  a_matrices["Severe", "Severe", ]  <- (1 - df_mortality) * (1 - p_sev_blind)
+  a_matrices["Severe", "Blind", ]  <- (1 - df_mortality) * p_sev_blind
+  a_matrices["Severe", "Death", ]  <-      df_mortality
   
   # from blind
-  a_matrices["Blind", "Blind", ]  <- (1 - df_mortality_clean)
-  a_matrices["Blind", "Death", ]  <-      df_mortality_clean
+  a_matrices["Blind", "Blind", ]  <- (1 - df_mortality)
+  a_matrices["Blind", "Death", ]  <-      df_mortality
   
   # from death
   a_matrices["Death", "Death", ]   <- 1
@@ -143,7 +136,7 @@ getMarkovTrace <- function(strategy, # strategy
   }
   
   #------------------------------------------------------------------------------#
-  ####                       04 Error handling             ####
+  ####                       04 Error handling / validation             ####
   #------------------------------------------------------------------------------#
   # check that transition probabilities are [0, 1] 
   check_transition_probability(a_matrices,   verbose = TRUE)
