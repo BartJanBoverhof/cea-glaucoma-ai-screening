@@ -1,3 +1,6 @@
+#------------------------------------------------------------------------------#
+####                       01 Prerequisites                           ####
+#------------------------------------------------------------------------------#
 rm(list = ls()) # to clean the workspace
 set.seed(3791) # set seed for reproducibility
 
@@ -23,25 +26,53 @@ load("data/4a_p_transition_ai.RData")
 load("data/4b_p_transition_soc.RData")
 load("data/5_v_utilities.RData")
 
+#------------------------------------------------------------------------------#
+####                       ## Obtain Cohort                            ####
+#------------------------------------------------------------------------------#
 # obtain cohorts
 t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years")) # step 1: get cohort
+
+
+#------------------------------------------------------------------------------#
+####                       03 Markov Model                            ####
+#------------------------------------------------------------------------------#
+# markov model characteristics
+age_init = 50 # initial age
+age_max = 100 # maximum age
+cycle_length <- 1 # cycle length
+n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
+v_names_states <- c("Healthy", # markov model states
+                    "Mild", 
+                    "Moderate", 
+                    "Severe", 
+                    "Blind", 
+                    #"Observation",
+                    "Death")
+
+df_mortality_clean <- CalculateMortality(df_mortality, start_age = 50) # calculate all cause mortality mortality
+n_mean_age <- getMeanAge(df_mortality, start_age = 50) # get mean age of cohort
+
+# get dt probabilities
 p_dt_ai <- getDtProbabilities(p_dt, p_severity_undiagnosed, "Ai Screening", visualize = T) # step 2: get dt probabilities
-v_cohort_ai <- getCohortArm(t_total_cohort, p_dt_ai) # step 3: obtain cohort per decision-tree-arm
 
-# calculate all cause mortality mortality
-df_mortality_clean <- CalculateMortality(df_mortality, start_age = 50) # step 4: calculate mortality
+# re-scale to cohort of 1000 patients
+v_cohort_1000 <- lapply(p_dt_ai[-length(p_dt_ai)], function(x) x*1000)
 
-#markov trace
+# markov trace
 a_trace_ai <- getMarkovTrace(strategy = "AI",  # run markov model for AI
-                             cohort = v_cohort_ai,
+                             cohort = v_cohort_1000,
                              df_mortality = df_mortality_clean, 
                              p_transition =  p_transition_ai, 
-                             age_init = 50,
-                             age_max = 100
+                             age_init = round(n_mean_age),
+                             age_max = 100,
+                             names_states = v_names_states
                              ) 
 
-# plot outputs
-VisualiseTrace(a_trace_ai)
+
+
+
+
+
 
 # 07 State Rewards 
 
@@ -105,7 +136,17 @@ for (i in 1:n_str) { # i <- 1
 }
 
 
-# 09 Cost-effectiveness analysis (CEA) 
+#------------------------------------------------------------------------------#
+####                       04 Visualization         ####
+#------------------------------------------------------------------------------#
+# plot trace output
+plot_trace(a_trace_ai[,-ncol(a_trace_ai)])
+
+
+
+#------------------------------------------------------------------------------#
+####                       05 Cost-effectiveness analysis (CEA)         ####
+#------------------------------------------------------------------------------#
 ## Incremental cost-effectiveness ratios (ICERs) 
 df_cea <- calculate_icers(cost       = v_tot_cost, 
                           effect     = v_tot_qaly,
