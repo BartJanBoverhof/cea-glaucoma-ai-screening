@@ -25,6 +25,8 @@ load("data/3_p_severity_undiagnosed.RData")
 load("data/4a_p_transition_ai.RData")
 load("data/4b_p_transition_soc.RData")
 load("data/5_v_utilities.RData")
+load("data/6_v_incidences.RData")
+
 
 #------------------------------------------------------------------------------#
 ####                       ## Obtain Cohort                            ####
@@ -37,10 +39,6 @@ t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "
 ####                       03 Markov Model                            ####
 #------------------------------------------------------------------------------#
 # markov model characteristics
-age_init = 50 # initial age
-age_max = 100 # maximum age
-cycle_length <- 1 # cycle length
-n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
 v_names_states <- c("Healthy", # markov model states
                     "Mild", 
                     "Moderate", 
@@ -49,7 +47,8 @@ v_names_states <- c("Healthy", # markov model states
                     #"Observation",
                     "Death")
 
-df_mortality_clean <- CalculateMortality(df_mortality, start_age = 50) # calculate all cause mortality mortality
+df_incidence_clean <- calculateIncidence(v_incidences, start_age = 50) # calculate incidence
+df_mortality_clean <- calculateMortality(df_mortality, start_age = 50) # calculate all cause mortality mortality
 n_mean_age <- getMeanAge(df_mortality, start_age = 50) # get mean age of cohort
 
 # get dt probabilities
@@ -65,7 +64,8 @@ a_trace_ai <- getMarkovTrace(strategy = "AI",  # run markov model for AI
                              p_transition =  p_transition_ai, 
                              age_init = round(n_mean_age),
                              age_max = 100,
-                             names_states = v_names_states
+                             names_states = v_names_states,
+                             incidences = df_incidence_clean
                              ) 
 
 

@@ -34,7 +34,7 @@ getCohortArm <- function(total_cohort, dt){
 }
 
 # function to calculate mortality
-CalculateMortality <- function(df_mortality, # mortality data
+calculateMortality <- function(df_mortality, # mortality data
                                start_age, # start age of the cohort
                                cycle_length = 1 # cycle length in years
                                ){
@@ -68,6 +68,35 @@ CalculateMortality <- function(df_mortality, # mortality data
   return(v_r_mortality)
 }
 
+# function to calculate incidence
+calculateIncidence <- function(incidences,
+                               start_age,
+                               cycle_length =1){
+  v_incidences_modified <- incidences %>%  
+    separate(Age, into = c("start_age", "end_age"), sep = "-", remove = FALSE) %>%
+    mutate(
+          start_age = as.numeric(gsub("[^0-9]", "", start_age)),
+          end_age = as.numeric(gsub("[^0-9]", "", end_age))
+        ) %>%
+        rowwise() %>%
+        mutate(year = list(seq(from = start_age, to = end_age - 1))) %>%
+        unnest(year) %>%
+        select(year, Incidence)
+
+  # remove rows that are lower than start_age
+  v_incidences_modified_by_age <- v_incidences_modified %>%
+    filter(year >= start_age)
+
+  # age-specific transition rates to the dead state for all cycles 
+  v_incidences_modified_by_age  <- rep(v_incidences_modified$Incidence, each = 1/cycle_length)  
+  
+  # name the ages in the vector
+  names(v_incidences_modified_by_age) <- v_incidences_modified$year
+
+  return (v_incidences_modified_by_age)
+}
+
+
 # function to calculate average age of the cohort
 getMeanAge <- function(df_mortality, # mortality data
                              start_age # start age of the cohort
@@ -89,24 +118,3 @@ getMeanAge <- function(df_mortality, # mortality data
   
   return(mean_age)
 }
-
-
-
-# Sample tibble
-your_tibble <- tibble(Age = c("50 - 55 years", "55 - 60 years"), `Average population` = c(100, 150))
-
-# Step 1: Extract age boundaries and Step 2: Calculate midpoints
-your_tibble <- your_tibble %>%
-  separate(Age, into = c("lower_bound", "upper_bound"), sep = " - ") %>%
-  mutate(
-    lower_bound = as.numeric(gsub("[^0-9]", "", lower_bound)),
-    upper_bound = as.numeric(gsub("[^0-9]", "", upper_bound)),
-    midpoint_age = (lower_bound + upper_bound) / 2
-  )
-
-# Step 3: Calculate weighted sum of midpoints and Step 4: Calculate total population
-weighted_sum <- sum(your_tibble$midpoint_age * your_tibble$`Average population`)
-total_population <- sum(your_tibble$`Average population`)
-
-# Step 5: Calculate the mean age
-mean_age <- weighted_sum / total_population
