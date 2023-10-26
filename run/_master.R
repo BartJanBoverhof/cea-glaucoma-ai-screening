@@ -38,15 +38,6 @@ t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "
 #------------------------------------------------------------------------------#
 ####                       03 Markov Model                            ####
 #------------------------------------------------------------------------------#
-# markov model characteristics
-v_names_states <- c("Healthy", # markov model states
-                    "Mild", 
-                    "Moderate", 
-                    "Severe", 
-                    "Blind", 
-                    #"Observation",
-                    "Death")
-
 df_incidence_clean <- calculateIncidence(v_incidences, start_age = 50) # calculate incidence
 df_mortality_clean <- calculateMortality(df_mortality, start_age = 50) # calculate all cause mortality mortality
 n_mean_age <- getMeanAge(df_mortality, start_age = 50) # get mean age of cohort
@@ -64,13 +55,19 @@ a_trace_ai <- getMarkovTrace(strategy = "AI",  # run markov model for AI
                              p_transition =  p_transition_ai, 
                              age_init = round(n_mean_age),
                              age_max = 100,
-                             names_states = v_names_states,
                              incidences = df_incidence_clean
                              ) 
 
 
 
-
+## temp ##
+strategy = "AI"  # run markov model for AI
+cohort = v_cohort_1000
+df_mortality = df_mortality_clean
+p_transition =  p_transition_ai
+age_init = round(n_mean_age)
+age_max = 100
+incidences = df_incidence_clean
 
 
 
