@@ -4,13 +4,20 @@ getMarkovTrace <- function(strategy, # strategy
                            p_transition, # transition probabilities
                            age_init, # initial age
                            age_max, # maximum age
-                           names_states, # names of states
                            incidences # incidence
                            ){ 
 
   #------------------------------------------------------------------------------#
   ####                       01 Prerequisites                           ####
   #------------------------------------------------------------------------------#
+  v_names_states <- c("Healthy", # markov model states
+                    "Mild", 
+                    "Moderate", 
+                    "Severe", 
+                    "Blind", 
+                    "Observation",
+                    "Death")
+                    
   cycle_length <- 1 #cycle length
   
   n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
@@ -19,7 +26,7 @@ getMarkovTrace <- function(strategy, # strategy
                         1:(1/cycle_length), 
                         sep = ".")  # labels of age vectors
   
-  n_states <- length(names_states)   # number of health states 
+  n_states <- length(v_names_states)   # number of health states 
 
   # drop age categories in mortality object before initial age
   v_mortality <- df_mortality[-c(1:(age_init-50))]
@@ -31,7 +38,9 @@ getMarkovTrace <- function(strategy, # strategy
   p_mild_mod <- p_transition$p_mild_mod
   p_mod_sev <- p_transition$p_mod_sev
   p_sev_blind <- p_transition$p_sev_blind
-  
+  p_healthy_obs <- p_transition$healthy_obs
+  p_obs_healthy <- p_transition$obs_healthy
+
   # hazard ratio's for soc_healthier and soc_sicker strategies
   hr_soc_healthier <- 0.8 # hazard ratio of glaucoma-related progression healthier population
   hr_soc_sicker <- 1.2 # hazard ratio of glaucoma-related progression sicker population
@@ -50,15 +59,14 @@ getMarkovTrace <- function(strategy, # strategy
   #------------------------------------------------------------------------------#
   ####                       02 Create matrices       ####
   #------------------------------------------------------------------------------#
-
   if (strategy == "AI"){
     # initial distribution per health state (path probability DT)
     v_m_init <- c(healthy = cohort$p_path_fp, 
                   mild = cohort$p_path_mild, 
                   moderate = cohort$p_path_mod, 
                   severe = cohort$p_path_severe, 
+                  observation = cohort$p_path_obs,
                   blind = cohort$p_path_blind,
-                  #observation = cohort$observation,
                   death = 0
                   )
     # total number of people in sub-cohort
@@ -71,43 +79,57 @@ getMarkovTrace <- function(strategy, # strategy
                   mild = cohort$mild, 
                   moderate = cohort$moderate, 
                   severe = cohort$severe, 
-                  blind = cohort$blind 
-                  #observation = cohort$observation,
-                  )
+                  observation = cohort$p_path_obs,
+                  blind = cohort$p_path_blind,
+                  death = 0
+                  )                 
   } else if (strategy == "SoC_sicker"){
     # initial distribution per health state (path probability DT)
     v_m_init <- c(healthy = cohort$false_pos, 
                   mild = cohort$mild, 
                   moderate = cohort$moderate, 
                   severe = cohort$severe, 
-                  blind = cohort$blind 
-                  #observation = cohort$observation,
+                  observation = cohort$p_path_obs,
+                  blind = cohort$p_path_blind,
+                  death = 0
                   )
   }
   
   # initialize cohort trace 
   m_trace <- matrix(NA, 
                     nrow = (n_cycles + 1), ncol = n_states, 
-                    dimnames = list(0:n_cycles, names_states))
+                    dimnames = list(0:n_cycles, v_names_states))
   
   # store the initial state vector in the first row of the cohort trace
   m_trace[1, ] <- v_m_init
   
-
   # create transition probability matrices
   a_matrices <- array(0,
               dim  = c(n_states, n_states, n_cycles),
-              dimnames = list(names_states, 
-                              names_states, 
+              dimnames = list(v_names_states, 
+                              v_names_states, 
                                   0:(n_cycles - 1)))
   
+  #do a rowsum of the array
+  #sum(a_matrices[,,1][1,])
 
-  # fill array
+  # fill array with transition probabilities
   # from healthy
-  a_matrices["Healthy", "Healthy", ]   <- (1 - v_mortality) * (1 - v_incidences)
+  #a_matrices["Healthy", "Healthy", ]   <- (1 - v_mortality) * (1 - v_incidences)
+  #a_matrices["Healthy", "Mild", ]  <- (1 - v_mortality) * v_incidences
+  #a_matrices["Healthy", "Death", ]   <-      v_mortality
+
+  a_matrices["Healthy", "Healthy", ]   <- (1 - v_mortality) * (1 - v_incidences) * (1 - p_healthy_obs)
   a_matrices["Healthy", "Mild", ]  <- (1 - v_mortality) * v_incidences
+  a_matrices["Healthy", "Observation", ]  <- (1 - v_mortality) * p_healthy_obs
   a_matrices["Healthy", "Death", ]   <-      v_mortality
-  
+
+  # from observation
+  a_matrices["Observation", "Observation", ]  <- (1 - v_mortality) * (1 - p_obs_healthy) * (1 - v_incidences)
+  a_matrices["Observation", "Healthy", ]      <- (1 - v_mortality) * p_obs_healthy
+  a_matrices["Observation", "Mild", ]      <- (1 - v_mortality) * v_incidences
+  a_matrices["Observation", "Death", ]        <-      v_mortality
+
   # from mild
   a_matrices["Mild", "Mild", ]  <- (1 - v_mortality) * (1 - p_mild_mod)
   a_matrices["Mild", "Moderate", ]  <- (1 - v_mortality) * p_mild_mod

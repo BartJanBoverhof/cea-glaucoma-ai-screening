@@ -7,13 +7,14 @@ getDtProbabilities <- function(p_dt_ai, p_severity_undiagnosed, cohort_strategy 
   p_screen_sensitivity <- p_dt$ai_sens       # screening sensitivity 
   p_screen_specificity <- p_dt$ai_spec       # screening specificity 
   p_referral_compliance <- p_dt$ref_comp     # referral compliance
-  p_referral_sensitivity <- p_dt$doct_sens   # referral sensitivity
-  p_referral_specificity <- p_dt$doct_sens   # referral sensitivity
+  p_referral_sensitivity <- p_dt$doct_sens   # referral sensitivity. Currently not used and assumed to be 1. 
+  p_referral_specificity <- p_dt$doct_sens   # referral sensitivity. Currently not used and assumed to be 1. 
   
   p_severity_mild <- p_severity_undiagnosed$undiagnosed_mild
   p_severity_mod <- p_severity_undiagnosed$undiagnosed_mod
   p_severity_severe <- p_severity_undiagnosed$undiagnosed_severe
   p_severity_blind <- p_severity_undiagnosed$undiagnosed_blind
+  p_observation <- p_severity_undiagnosed$undiagnosed_observation
   
   # calculate required probabilities
   ai_tp <- p_dt$ai_sens * p_dt$prevalence  # true positives
@@ -32,8 +33,8 @@ getDtProbabilities <- function(p_dt_ai, p_severity_undiagnosed, cohort_strategy 
   p_path_mod <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mod # path moderate
   p_path_severe <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_severe # path severe
   p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind # path blind
-  p_path_obs <- 0  # path observation
-  p_path_fp <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv) # path healthy (false positives)
+  p_path_obs <- p_screen_compliance * ai_positive * p_referral_compliance * p_observation  # path observation
+  p_path_fp <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv - p_observation) # path healthy (false positives)
   
   p_path_soc <- 1-p_screen_compliance # path non-compliant with screening
   p_path_soc_healthier <- p_screen_compliance * ai_negative # path negative screening result
