@@ -22,8 +22,8 @@ source("R/5_visualisation_functions.R", echo = TRUE) #Load visualization functio
 load("data/1_df_mortality.RData")
 load("data/2_p_dt.RData")
 load("data/3_p_severity_undiagnosed.RData")
-load("data/4a_p_transition_ai.RData")
-load("data/4b_p_transition_soc.RData")
+load("data/4a_p_transition_treated.RData")
+load("data/4b_p_transition_untreated.RData")
 load("data/5_v_utilities.RData")
 load("data/6_v_incidences.RData")
 
@@ -52,7 +52,7 @@ v_cohort_1000 <- lapply(p_dt_ai[-length(p_dt_ai)], function(x) x*1000)
 a_trace_ai <- getMarkovTrace(strategy = "AI",  # run markov model for AI
                              cohort = v_cohort_1000,
                              df_mortality = df_mortality_clean, 
-                             p_transition =  p_transition_ai, 
+                             p_transition =  p_transition_treated, 
                              age_init = round(n_mean_age),
                              age_max = 100,
                              incidences = df_incidence_clean

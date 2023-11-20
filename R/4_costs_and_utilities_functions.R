@@ -1,7 +1,24 @@
 getUtilities <- function(discount, # annual discount rate for utliities
-                         
+                         utilities = v_utilities # vector of utilities  
                          ){
   
+  # 07 State Rewards 
+
+## Scale by the cycle length 
+# Vector of state utilities under strategy SoC
+v_u_ai    <- c(Healthy  = u_healthy, 
+               Mild = u_mild, 
+               Moderate = u_moderate, 
+               Severe  = u_severe,
+               Blind = u_blind,
+               Observation = u_observation,
+               Death = u_death) * cycle_length
+
+
+
+
+
+
   # discount rate
   d_e <- discount_qalys     # annual discount rate for QALYs
   
