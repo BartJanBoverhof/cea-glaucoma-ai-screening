@@ -65,8 +65,8 @@ getMarkovTrace <- function(strategy, # strategy
                   mild = cohort$p_path_mild, 
                   moderate = cohort$p_path_mod, 
                   severe = cohort$p_path_severe, 
-                  observation = cohort$p_path_obs,
                   blind = cohort$p_path_blind,
+                  observation = cohort$p_path_obs,
                   death = 0
                   )
     # total number of people in sub-cohort
@@ -79,8 +79,8 @@ getMarkovTrace <- function(strategy, # strategy
                   mild = cohort$mild, 
                   moderate = cohort$moderate, 
                   severe = cohort$severe, 
-                  observation = cohort$p_path_obs,
                   blind = cohort$p_path_blind,
+                  observation = cohort$p_path_obs,
                   death = 0
                   )                 
   } else if (strategy == "SoC_sicker"){
@@ -89,8 +89,8 @@ getMarkovTrace <- function(strategy, # strategy
                   mild = cohort$mild, 
                   moderate = cohort$moderate, 
                   severe = cohort$severe, 
-                  observation = cohort$p_path_obs,
                   blind = cohort$p_path_blind,
+                  observation = cohort$p_path_obs,
                   death = 0
                   )
   }
@@ -111,74 +111,34 @@ getMarkovTrace <- function(strategy, # strategy
                                   0:(n_cycles - 1)))
   
   #do a rowsum of the array
-  sum(a_matrices[,,33][1,])
+  #sum(a_matrices[,,30][2,])
 
-  '''
   # fill array with transition probabilities
   # from healthy
-  a_matrices["Healthy", "Healthy", ]   <- (1 - v_mortality) * (1 - v_incidences)
-  a_matrices["Healthy", "Mild", ]  <- (1 - v_mortality) * v_incidences
-  a_matrices["Healthy", "Death", ]   <-      v_mortality
-
-  a_matrices["Healthy", "Healthy", ]   <- (1 - v_mortality) * (1 - v_incidences) * (1 - p_healthy_obs)
-  a_matrices["Healthy", "Mild", ]  <- (1 - v_mortality) * v_incidences
-  a_matrices["Healthy", "Observation", ]  <- (1 - v_mortality) * p_healthy_obs
-  a_matrices["Healthy", "Death", ]   <-      v_mortality
-
-  # from observation
-  a_matrices["Observation", "Observation", ]  <- (1 - v_mortality) * (1 - p_obs_healthy) * (1 - v_incidences)
-  a_matrices["Observation", "Healthy", ]      <- (1 - v_mortality) * p_obs_healthy
-  a_matrices["Observation", "Mild", ]      <- (1 - v_mortality) * v_incidences
-  a_matrices["Observation", "Death", ]        <-      v_mortality
-
-  # from mild
-  a_matrices["Mild", "Mild", ]  <- (1 - v_mortality) * (1 - p_mild_mod)
-  a_matrices["Mild", "Moderate", ]  <- (1 - v_mortality) * p_mild_mod
-  a_matrices["Mild", "Death", ]  <-      v_mortality
-  
-  # from moderate
-  a_matrices["Moderate", "Moderate", ]  <- (1 - v_mortality) * (1 - p_mod_sev)
-  a_matrices["Moderate", "Severe", ]  <- (1 - v_mortality) * p_mod_sev
-  a_matrices["Moderate", "Death", ]  <-      v_mortality
-  
-  # from severe
-  a_matrices["Severe", "Severe", ]  <- (1 - v_mortality) * (1 - p_sev_blind)
-  a_matrices["Severe", "Blind", ]  <- (1 - v_mortality) * p_sev_blind
-  a_matrices["Severe", "Death", ]  <-      v_mortality
-  
-  # from blind
-  a_matrices["Blind", "Blind", ]  <- (1 - v_mortality)
-  a_matrices["Blind", "Death", ]  <-      v_mortality
-  
-  # from death
-  a_matrices["Death", "Death", ]   <- 1
-  '''
-  # fill array with transition probabilities
-  # from healthy
-  a_matrices["Healthy", "Healthy", ]          <- 1 - v_mortality - v_incidences - p_healthy_obs
-  a_matrices["Healthy", "Mild", ]             <-     v_incidences
-  a_matrices["Healthy", "Observation", ]      <- p_healthy_obs  
-  a_matrices["Healthy", "Death", ]            <-      v_mortality
+  a_matrices["Healthy", "Healthy", ]          <- 1 - (((1-v_mortality) * v_incidences) + ((1-v_mortality) * p_healthy_obs) + v_mortality)
+  a_matrices["Healthy", "Mild", ]             <-     (1-v_mortality) * v_incidences
+  a_matrices["Healthy", "Observation", ]      <-     (1-v_mortality) * p_healthy_obs
+  a_matrices["Healthy", "Death", ]            <-     v_mortality
 
     # from observation
-  a_matrices["Observation", "Observation", ]  <- 1 - v_mortality - p_obs_healthy - v_incidences 
-  a_matrices["Observation", "Healthy", ]      <- p_obs_healthy
-  a_matrices["Observation", "Mild", ]         <- v_incidences
+  a_matrices["Observation", "Observation", ]  <- 1 - (((1-v_mortality) * v_incidences) + ((1-v_mortality) * p_obs_healthy) + v_mortality)
+  a_matrices["Observation", "Healthy", ]      <- (1-v_mortality) * p_obs_healthy
+  a_matrices["Observation", "Mild", ]         <- (1-v_mortality) * v_incidences
   a_matrices["Observation", "Death", ]        <- v_mortality
 
   # from mild
-  a_matrices["Mild", "Mild", ]                <- 1 - v_mortality - p_mild_mod
-  a_matrices["Mild", "Moderate", ]            <- p_mild_mod
+  a_matrices["Mild", "Mild", ]                <- 1 - ((1-v_mortality) * p_mild_mod + v_mortality)
+  a_matrices["Mild", "Moderate", ]            <- (1-v_mortality) * p_mild_mod
   a_matrices["Mild", "Death", ]               <- v_mortality
   
   # from moderate
-  a_matrices["Moderate", "Moderate", ]        <- 1 - v_mortality - p_mod_sev
-  a_matrices["Moderate", "Severe", ]          <- p_mod_sev
+  a_matrices["Moderate", "Moderate", ]        <- 1 - ((1-v_mortality) * p_mod_sev + v_mortality)
+  a_matrices["Moderate", "Severe", ]          <- (1-v_mortality) * p_mod_sev
   a_matrices["Moderate", "Death", ]           <- v_mortality
   
   # from severe
-  a_matrices["Severe", "Severe", ]            <- 1 - v_mortality - p_sev_blind
-  a_matrices["Severe", "Blind", ]             <- p_sev_blind
+  a_matrices["Severe", "Severe", ]            <-  1 - ((1-v_mortality) * p_sev_blind + v_mortality)
+  a_matrices["Severe", "Blind", ]             <- (1-v_mortality) * p_sev_blind
   a_matrices["Severe", "Death", ]             <- v_mortality
   
   # from blind
@@ -212,7 +172,5 @@ getMarkovTrace <- function(strategy, # strategy
   
   return(cohort_trace = m_trace)
 }
-
-
 
 
