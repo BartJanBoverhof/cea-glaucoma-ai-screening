@@ -14,7 +14,7 @@ p_load_gh("DARTH-git/darthtools") # load (install if required) packages from Git
 source("R/1_model_pipeline_functions.R", echo = TRUE) #Load cohort model input functions
 source("R/2_decision_tree_functions.R", echo = TRUE) #Load decision model functions
 source("R/3_markov_model_functions.R", echo = TRUE) #Load decision model functions
-#source("R/4_costs_and_utilities_functions.R", echo = TRUE) #Load utility functions
+source("R/4_costs_and_utilities_functions.R", echo = TRUE) #Load utility functions
 source("R/5_visualisation_functions.R", echo = TRUE) #Load visualization functions
 
 
@@ -29,22 +29,22 @@ load("data/6_v_incidences.RData")
 
 
 #------------------------------------------------------------------------------#
-####                       ## Obtain Cohort                            ####
+####                       0 Obtain Cohort                            ####
 #------------------------------------------------------------------------------#
-# obtain cohorts
-t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years")) # step 1: get cohort
-
-
+t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years")) # obtain cohorts
+ 
 #------------------------------------------------------------------------------#
-####                       03 Markov Model                            ####
+####                       1 Decision Tree                            ####
 #------------------------------------------------------------------------------#
 df_incidence_clean <- calculateIncidence(v_incidences, start_age = 50) # calculate incidence
 df_mortality_clean <- calculateMortality(df_mortality, start_age = 50) # calculate all cause mortality mortality
 n_mean_age <- getMeanAge(df_mortality, start_age = 50) # get mean age of cohort
 
-# get dt probabilities
-p_dt_ai <- getDtProbabilities(p_dt, p_severity_undiagnosed, "Ai Screening", visualize = T) # step 2: get dt probabilities
+p_dt_ai <- getDtProbabilitiesAI(p_dt, p_severity_undiagnosed, "Ai Screening", visualize = T) # obtain dt probabilities
 
+#------------------------------------------------------------------------------#
+####                       2 Markov model                            ####
+#------------------------------------------------------------------------------#
 # re-scale to cohort of 1000 patients
 v_cohort_1000 <- lapply(p_dt_ai[-length(p_dt_ai)], function(x) x*1000)
 
@@ -58,37 +58,36 @@ a_trace_ai <- getMarkovTrace(strategy = "AI",  # run markov model for AI
                              incidences = df_incidence_clean
                              ) 
 
+a_trace_soc <- getMarkovTrace(strategy = "SoC",  # run markov model for SoC
+                              cohort = v_cohort_1000,
+                              df_mortality = df_mortality_clean, 
+                              p_transition =  p_transition_untreated, 
+                              age_init = round(n_mean_age),
+                              age_max = 100,
+                              incidences = df_incidence_clean
+                              )
 
 
+'''
 ## temp ##
-strategy = "AI"  # run markov model for AI
+strategy = "SoC"  # run markov model for AI
 cohort = v_cohort_1000
 df_mortality = df_mortality_clean
-p_transition =  p_transition_ai
+p_transition =  p_transition_untreated
 age_init = round(n_mean_age)
 age_max = 100
 incidences = df_incidence_clean
+'''
 
 
 
-# 07 State Rewards 
-
-## Scale by the cycle length 
-# Vector of state utilities under strategy SoC
-v_u_ai    <- c(Healthy  = u_healthy, 
-               Mild = u_mild, 
-               Moderate = u_moderate, 
-               Severe  = u_severe,
-               Blind = u_blind,
-               #Observation = u_observation,
-               Death = u_death) * cycle_length
 # Vector of state costs under strategy SoC
 v_c_ai    <- c(Healthy  = c_healthy, 
                Mild = c_mild, 
                Moderate = c_moderate, 
                Severe  = c_severe,
                Blind = c_blind,
-               #Observation = u_observation,
+               Observation = u_observation,
                Death = c_death) * cycle_length
 
 v_u_soc <- v_u_ai

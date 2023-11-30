@@ -60,7 +60,7 @@ getMarkovTrace <- function(strategy, # strategy
   ####                       02 Create matrices       ####
   #------------------------------------------------------------------------------#
   if (strategy == "AI"){
-    # initial distribution per health state (path probability DT)
+    # initial distribution per health state for AI strategy (path probability DT)
     v_m_init <- c(healthy = cohort$p_path_fp, 
                   mild = cohort$p_path_mild, 
                   moderate = cohort$p_path_mod, 
@@ -72,6 +72,9 @@ getMarkovTrace <- function(strategy, # strategy
     # total number of people in sub-cohort
     n_cohort <- sum(v_m_init)
     
+    # initial distribution per health state for SoC strategy 
+    v_incidences
+
     # still incorrect, think about how to do this
     } else if (strategy == "SoC_healthier"){
     # initial distribution per health state (path probability DT)
@@ -167,8 +170,8 @@ getMarkovTrace <- function(strategy, # strategy
   check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
   
   # append column to m_trace that checks if all rows in the cohort trace sum up to 100% of the cohort
-  m_trace <- cbind(m_trace, rowSums(m_trace))
-  colnames(m_trace)[ncol(m_trace)] <- "Total"
+  #m_trace <- cbind(m_trace, rowSums(m_trace))
+  #colnames(m_trace)[ncol(m_trace)] <- "Total"
   
   return(cohort_trace = m_trace)
 }
