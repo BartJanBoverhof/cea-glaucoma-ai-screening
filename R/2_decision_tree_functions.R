@@ -1,5 +1,5 @@
-# decision tree
-getDtProbabilities <- function(p_dt_ai, p_severity_undiagnosed, cohort_strategy = c("AI Screening", "Standard of care"), visualize = TRUE){
+# decision tree AI scenario 
+getDtProbabilitiesAI <- function(p_dt_ai, p_severity_undiagnosed, cohort_strategy = c("AI Screening", "Standard of care"), visualize = TRUE){
   
   # read in fixed probabilities
   p_prevalence <- p_dt$prevalence 
@@ -117,6 +117,7 @@ getDtProbabilities <- function(p_dt_ai, p_severity_undiagnosed, cohort_strategy 
 }
 
 
+# function to obtain DT probabilities SoC
+getDtProbabilitiesSoC <- function(incidences, p_severity)
 
-
-
+  {}
