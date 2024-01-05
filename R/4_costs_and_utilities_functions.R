@@ -1,6 +1,6 @@
 getUtilities <- function(a_trace, # cohort trace
                         v_utilities = v_utilities, # vector of utilities  
-                        discount, # annual discount rate for utliities
+                        decrement, # annual discount rate for utliities
                         n_cycle_length = 1 # cycle length
                         ){
   
@@ -22,71 +22,57 @@ getUtilities <- function(a_trace, # cohort trace
               Observation = u_observation,
               Death = u_death) * n_cycle_length
 
+  # apply decrement
+  v_u <- a_trace * (1 - decrement)
+
   # apply state reward
-  v_qaly <- a_trace %*% v_u # sum the utilities of all states for each cycle
+  #v_qaly <- a_trace %*% v_u # sum the utilities of all states for each cycle
 
   #return the vector of qaly's
-  return(v_qaly)
+  return(v_u)
   
 }
 
-
-
-
-
-
-
-
-
-
-
-"""
-  # discount rate
-  d_e <- discount_qalys     # annual discount rate for QALYs
+getScreeningCosts <- function(a_trace_ai_noncompliant_screen, # cohort trace of the patients non-compliant with AI screening
+                              a_trace_ai_noncompliant_referral, # cohort trace of the patients non-compliant with clinical assessment
+                              a_trace_ai_compliant, # cohort trace of the patients compliant with AI screening and clinical assessment
+                              screening_cost # screening cost
+                              ){
+  # save objects of screening costs
+  screening_invitation <- screening_cost$screening_invitation
+  fundus_photo <- screening_cost$fundus_photo
+  ai_costs <- screening_cost$ai_costs
+  ophthalmologist <- screening_cost$ophthalmologist
   
-  # within-cycle correction
-  v_wcc  <- gen_wcc(n_cycles = n_cycles, method = "Simpson1/3")
+  ### noncompliant with screening
+  # total number of patients non-compliant with screening
+  patients_noncompliant_screen <- sum(a_trace_ai_noncompliant_screen[1,])
 
+  # costs total. Non-compliant screening patients receive only invitation costs.
+  costs_noncompliant_screen <- screening_invitation * patients_noncompliant_screen
+
+
+  ### noncompliant with referral
+  # total number of patients non-compliant with referral
+  patients_noncompliant_referral <- sum(a_trace_ai_noncompliant_referral[1,])
+
+  # costs total. Non-compliant referral patients receive invitation costs, funsus photo costs, and AI costs.
+  costs_noncompliant_referral <- (screening_invitation + fundus_photo + ai_costs) * patients_noncompliant_referral
+
+
+  ### compliant 
+  # total number of fully compliant patients 
+  patients_compliant <- sum(a_trace_ai_compliant[1,])
+  
+  # costs total. Compliant patients receice all costs.
+  costs_compliant <- (fundus_photo + screening_invitation + ai_costs + ophthalmologist) * patients_compliant
+  
+  # total costs
+  costs_total <- costs_noncompliant_screen + costs_noncompliant_referral + costs_compliant
+
+  # return costs
+  return(costs_total)
+}
  
-  
-  ### Discount weight for costs and effects 
-  v_dwc   <- 1 / ((1 + (d_e * cycle_length)) ^ (0:n_cycles))
-  v_dwe   <- 1 / ((1 + (d_c * cycle_length)) ^ (0:n_cycles))
-}
-
-getCosts <- function(){
-  
-  # split to costs and utilities 
-  # discount rates
-  d_c <- discount_costs        # annual discount rate for costs 
-  d_e <- discount_qalys     # annual discount rate for QALYs
-  
-  # within-cycle correction
-  v_wcc  <- gen_wcc(n_cycles = n_cycles, method = "Simpson1/3")
-  
-  # get costs
-  c_healthy <- costs$c_healthy
-  c_mild <- costs$c_mild
-  c_moderate <- costs$c_moderate
-  c_severe <- costs$c_severe
-  c_blind <- costs$c_blind
-  c_death <- costs$c_death
-  
-  # get utilities
-  u_healthy <- utilities$u_healthy
-  u_mild <- utilities$u_mild
-  u_moderate <- utilities$u_moderate
-  u_severe <- utilities$u_severe
-  u_blind <- utilities$u_blind
-  u_death <- utilities$u_death
-  
-  ### Discount weight for costs and effects 
-  v_dwc   <- 1 / ((1 + (d_e * cycle_length)) ^ (0:n_cycles))
-  v_dwe   <- 1 / ((1 + (d_c * cycle_length)) ^ (0:n_cycles))
-}
-
-"""
-
-
 
 
