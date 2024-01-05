@@ -21,7 +21,9 @@ source("R/5_visualisation_functions.R", echo = TRUE) #Load visualization functio
 # loading all required data objects
 load("data/1_df_mortality.RData")
 load("data/2_p_dt.RData")
-load("data/3_p_severity_undiagnosed.RData")
+load("data/3a_p_severity_undiagnosed.RData")
+load("data/3b_p_severity_diagnosed.RData")
+load("data/3c_p_severity_low_risk.RData")
 load("data/4a_p_transition_treated.RData")
 load("data/4b_p_transition_untreated.RData")
 load("data/5_v_utilities.RData")
@@ -32,6 +34,8 @@ load("data/7_v_cost_dt.RData")
 df_mortality <- df_mortality
 p_dt <- p_dt
 p_severity_undiagnosed <- p_severity_undiagnosed
+p_severity_diagnosed <- p_severity_diagnosed
+p_severity_low_risk <- p_severity_low_risk
 p_transition_treated <- p_transition_treated
 p_transition_untreated <- p_transition_untreated
 v_utilities <- v_utilities
@@ -56,63 +60,107 @@ df_incidence_clean <- calculateIncidence(v_incidences, start_age = start_age) # 
 df_mortality_clean <- calculateMortality(df_mortality, start_age = start_age) # calculate all cause mortality mortality
 n_mean_age <- getMeanAge(df_mortality, start_age = start_age) # get mean age of cohort
 
+### AI strategy
 # obtain starting severity distributions - AI strategy
-p_dt_ai_soc <- getDtProbabilitiesAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, cohort = "soc", visualize = F) # soc arm
-p_dt_ai_low_risk <- getDtProbabilitiesAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, cohort = "low_risk", visualize = F) # low risk arm
-p_dt_ai_high_risk <- getDtProbabilitiesAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, cohort = "high_risk", visualize = F) # high risk arm
-p_dt_ai_compliant <- getDtProbabilitiesAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, cohort = "compliant", visualize = F) # compliant arm
+p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "soc", visualize = F) # soc arm
+p_dt_ai_low_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_low_risk, strategy = "low_risk", visualize = F) # low risk arm
+p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_diagnosed, strategy = "high_risk", visualize = F) # high risk arm
+p_dt_ai_compliant <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_diagnosed, strategy = "compliant", visualize = F) # compliant arm
 
 # check if DT sums to 1
 validateDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant)
 
+### SoC strategy
+# obtain starting severity distributions - SoC strategy
+p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, visualize = F) 
 
 #------------------------------------------------------------------------------#
 ####                       2 Markov model                            ####
 #------------------------------------------------------------------------------#
 # re-scale to cohort of 1000 patients
-v_cohort_1000 <- lapply(p_dt_ai[-length(p_dt_ai)], function(x) x*1000)
+### AI strategy
+v_cohort_ai_soc <- lapply(p_dt_ai_soc, function(x) x*1000)
+v_cohort_ai_low_risk <- lapply(p_dt_ai_low_risk, function(x) x*1000)
+v_cohort_ai_high_risk <- lapply(p_dt_ai_high_risk, function(x) x*1000)
+v_cohort_ai_compliant <- lapply(p_dt_ai_compliant, function(x) x*1000)
+
+### SoC strategy
+v_cohort_soc <- lapply(p_dt_soc, function(x) x*1000)
+
 
 # markov traces
-# AI strategy - non-compliant with screening
-a_trace_ai_noncompliant_screen <- getMarkovTrace(strategy = "AI_noncompliant_screen",  
-                                                 cohort = v_cohort_1000,
-                                                 df_mortality = df_mortality_clean, 
-                                                 p_transition =  p_transition_treated, 
-                                                 age_init = round(n_mean_age),
-                                                 age_max = age_max,
-                                                 incidences = df_incidence_clean
-                                                 )
+### AI Strategy
+# AI strategy - non-compliant with screening (soc)
+a_trace_ai_soc<- getMarkovTrace(strategy = "soc",  
+                                cohort = v_cohort_ai_soc,
+                                df_mortality = df_mortality_clean, 
+                                p_transition =  p_transition_untreated, 
+                                age_init = round(n_mean_age),
+                                age_max = age_max,
+                                incidences = df_incidence_clean)                               
 
+# AI strategy - non-compliant with referral (low risk)
+a_trace_ai_low_risk<- getMarkovTrace(strategy = "low_risk",  
+                                     cohort = v_cohort_ai_low_risk,
+                                     df_mortality = df_mortality_clean, 
+                                     p_transition =  p_transition_untreated, 
+                                     age_init = round(n_mean_age),
+                                     age_max = age_max,
+                                     incidences = df_incidence_clean)
+                                     
+# AI strategy - positive AI result but non-compliant with follow-up (high risk)
+a_trace_ai_high_risk<- getMarkovTrace(strategy = "high_risk",  
+                                      cohort = v_cohort_ai_high_risk,
+                                      df_mortality = df_mortality_clean, 
+                                      p_transition =  p_transition_untreated, 
+                                      age_init = round(n_mean_age),
+                                      age_max = age_max,
+                                      incidences = df_incidence_clean)
+                                                                       
+# AI strategy - compliant with screening and referral (compliant)
+a_trace_ai_compliant<- getMarkovTrace(strategy = "compliant",  
+                                      cohort = v_cohort_ai_compliant,
+                                      df_mortality = df_mortality_clean, 
+                                      p_transition =  p_transition_treated, 
+                                      age_init = round(n_mean_age),
+                                      age_max = age_max,
+                                      incidences = df_incidence_clean)
+# combined AI strategy trace
+a_trace_ai <- a_trace_ai_soc + a_trace_ai_low_risk + a_trace_ai_high_risk + a_trace_ai_compliant
 
-# AI strategy - compliant
-a_trace_ai <- getMarkovTrace(strategy = "AI",  
-                             cohort = v_cohort_1000,
-                             df_mortality = df_mortality_clean, 
-                             p_transition =  p_transition_treated, 
-                             age_init = round(n_mean_age),
-                             age_max = age_max,
-                             incidences = df_incidence_clean
-                             ) 
-
-
-
-
-
+### SoC strategy
+# standard of care  
+a_trace_soc <- getMarkovTrace(strategy = "soc",  
+                              cohort = v_cohort_soc,
+                              df_mortality = df_mortality_clean, 
+                              p_transition =  p_transition_untreated, 
+                              age_init = round(n_mean_age),
+                              age_max = age_max,
+                              incidences = df_incidence_clean)
 
 #------------------------------------------------------------------------------#
 ####                       3 Utilities                           ####
 #------------------------------------------------------------------------------#
+# AI strategy
 getUtilities(a_trace = a_trace_ai, 
+            v_utilities = v_utilities, 
+            decrement = utility_decrement, # annual utility decrement
+            n_cycle_length = n_cycle_length) # obtain utilities
+
+#SoC strategy
+getUtilities(a_trace = a_trace_soc, 
             v_utilities, 
             decrement = utility_decrement, 
             n_cycle_length = n_cycle_length) # obtain utilities
 
-
 #------------------------------------------------------------------------------#
 ####                       4 Costs                           ####
 #------------------------------------------------------------------------------#
-# decision tree: screening costs
-getScreeningCosts(a_trace_ai_compliant = a_trace_ai, 
+# decision tree screening costs
+getScreeningCosts(a_trace_ai_soc = a_trace_ai_soc, # cohort trace of the patients non-compliant with AI screening
+                  a_trace_ai_low_risk = a_trace_ai_low_risk, # cohort trace of the patients with negaive AI result
+                  a_trace_ai_high_risk = a_trace_ai_high_risk, # cohort trace of the patients non-compliant with referral 
+                  a_trace_ai_compliant = a_trace_ai_compliant, # cohort trace of the patients compliant with screening and referral
                   screening_cost = v_cost_dt) # obtain screening costs
 
 
