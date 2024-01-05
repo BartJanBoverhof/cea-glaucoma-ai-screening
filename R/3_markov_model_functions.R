@@ -40,64 +40,28 @@ getMarkovTrace <- function(strategy, # strategy
   p_sev_blind <- p_transition$p_sev_blind
   p_healthy_obs <- p_transition$healthy_obs
   p_obs_healthy <- p_transition$obs_healthy
+  
+  # put transition probability observation to 0 if strategy is soc, low_risk, or high_risk
+  #if(strategy == "soc" | strategy == "low_risk" | strategy == "high_risk"){
+  #  p_healthy_obs <- 0
+  #  p_obs_healthy <- 0
+  #}
 
-  # hazard ratio's for soc_healthier and soc_sicker strategies
-  hr_soc_healthier <- 0.8 # hazard ratio of glaucoma-related progression healthier population
-  hr_soc_sicker <- 1.2 # hazard ratio of glaucoma-related progression sicker population
-  
-  # if strategy is SoC_healthier or SoC_sicker use the hazard ratio's to alter the transition probabilities defined above
-  if (strategy == "low_risk"){
-    p_mild_mod <- p_mild_mod * hr_soc_healthier
-    p_mod_sev <- p_mod_sev * hr_soc_healthier
-    p_sev_blind <- p_sev_blind * hr_soc_healthier
-  } else if (strategy == "high_risk"){
-    p_mild_mod <- p_mild_mod * hr_soc_sicker
-    p_mod_sev <- p_mod_sev * hr_soc_sicker
-    p_sev_blind <- p_sev_blind * hr_soc_sicker
-  }
-  
   #------------------------------------------------------------------------------#
   ####                       02 Create matrices       ####
   #------------------------------------------------------------------------------#
-  if (strategy == "AI"){
-    # initial distribution per health state for AI strategy (path probability DT)
-    v_m_init <- c(healthy = cohort$p_path_fp, 
-                  mild = cohort$p_path_mild, 
-                  moderate = cohort$p_path_mod, 
-                  severe = cohort$p_path_severe, 
-                  blind = cohort$p_path_blind,
-                  observation = cohort$p_path_obs,
-                  death = 0
-                  )
-    # total number of people in sub-cohort
-    n_cohort <- sum(v_m_init)
-    
-    # initial distribution per health state for SoC strategy 
-    v_incidences
+  # initial distribution per health state for AI strategy (path probability DT)
+  v_m_init <- c(healthy = cohort$p_path_no_glaucoma, 
+                mild = cohort$p_path_mild, 
+                moderate = cohort$p_path_mod, 
+                severe = cohort$p_path_severe, 
+                blind = cohort$p_path_blind,
+                observation = cohort$p_path_obs,
+                death = 0
+                )
+  # total number of people in sub-cohort
+  n_cohort <- sum(v_m_init)
 
-    # still incorrect, think about how to do this
-    } else if (strategy == "low_risk"){
-    # initial distribution per health state (path probability DT)
-    v_m_init <- c(healthy = cohort$false_pos, 
-                  mild = cohort$mild, 
-                  moderate = cohort$moderate, 
-                  severe = cohort$severe, 
-                  blind = cohort$p_path_blind,
-                  observation = cohort$p_path_obs,
-                  death = 0
-                  )                 
-  } else if (strategy == "high_risk"){
-    # initial distribution per health state (path probability DT)
-    v_m_init <- c(healthy = cohort$false_pos, 
-                  mild = cohort$mild, 
-                  moderate = cohort$moderate, 
-                  severe = cohort$severe, 
-                  blind = cohort$p_path_blind,
-                  observation = cohort$p_path_obs,
-                  death = 0
-                  )
-  }
-  
   # initialize cohort trace 
   m_trace <- matrix(NA, 
                     nrow = (n_cycles + 1), ncol = n_states, 
