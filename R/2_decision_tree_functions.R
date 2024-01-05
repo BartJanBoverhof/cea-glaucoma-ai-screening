@@ -1,14 +1,14 @@
 # decision tree AI scenario 
-getDtProbabilitiesAI <- function(p_dt_ai, p_severity_undiagnosed, cohort_strategy = c("AI Screening", "Standard of care"), visualize = TRUE){
+getDtProbabilitiesAI <- function(probabilities, severity_distribution, cohort, visualize = TRUE){
   
   # read in fixed probabilities
-  p_prevalence <- p_dt$prevalence 
-  p_screen_compliance <- p_dt$screen_comp    # screening compliance
-  p_screen_sensitivity <- p_dt$ai_sens       # screening sensitivity 
-  p_screen_specificity <- p_dt$ai_spec       # screening specificity 
-  p_referral_compliance <- p_dt$ref_comp     # referral compliance
-  p_referral_sensitivity <- p_dt$doct_sens   # referral sensitivity. Currently not used and assumed to be 1. 
-  p_referral_specificity <- p_dt$doct_sens   # referral sensitivity. Currently not used and assumed to be 1. 
+  p_prevalence <- probabilities$prevalence 
+  p_screen_compliance <- probabilities$screen_comp    # screening compliance
+  p_screen_sensitivity <- probabilities$ai_sens       # screening sensitivity 
+  p_screen_specificity <- probabilities$ai_spec       # screening specificity 
+  p_referral_compliance <- probabilities$ref_comp     # referral compliance
+  p_referral_sensitivity <- probabilities$doct_sens   # referral sensitivity. Currently not used and assumed to be 1. 
+  p_referral_specificity <- probabilities$doct_sens   # referral sensitivity. Currently not used and assumed to be 1. 
   
   p_severity_mild <- p_severity_undiagnosed$undiagnosed_mild
   p_severity_mod <- p_severity_undiagnosed$undiagnosed_mod
@@ -21,25 +21,63 @@ getDtProbabilitiesAI <- function(p_dt_ai, p_severity_undiagnosed, cohort_strateg
   ai_fp <- (1-p_dt$ai_spec) * (1-p_dt$prevalence) # false positives
   ai_tn <- p_dt$ai_spec * (1-p_dt$prevalence) # true negatives
   ai_fn <- (1-p_dt$ai_sens) * p_dt$prevalence # false negatives
-  
+
   ai_positive <- ai_tp + ai_fp # positive test result
   ai_negative <- ai_tn + ai_fn # negative test result
   
   ai_ppv <- ai_tp / ai_positive # positive predictive value
   ai_npv <- ai_tn / ai_negative # negative predictive value
   
-  ### 2. Decision tree weights
-  p_path_mild <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mild # path mild
-  p_path_mod <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mod # path moderate
-  p_path_severe <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_severe # path severe
-  p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind # path blind
-  p_path_obs <- p_screen_compliance * ai_positive * p_referral_compliance * p_observation  # path observation
-  p_path_fp <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv - p_observation) # path healthy (false positives)
+  # for the non-compliant to screening cohort (similair to soc)
+  if(cohort == "soc"){
+    
+    # decision tree weights
+    p_path_mild <-(1 - p_screen_compliance) * p_prevalence * p_severity_mild # path mild
+    p_path_mod <- (1 - p_screen_compliance) * p_prevalence * p_severity_mod # path moderate
+    p_path_severe <- (1 - p_screen_compliance) * p_prevalence * p_severity_severe # path severe
+    p_path_blind <- (1 - p_screen_compliance) * p_prevalence * p_severity_blind # path blind
+    p_path_obs <- 0 # path observation assumed 0
+    p_path_no_glaucoma <- (1 - p_screen_compliance) * (1-p_prevalence)  # path no glaucoma
+  }
+
+  # for the compliant, but negative and not referred (low risk)
+  else if (cohort == "low_risk"){
+    
+    # decision tree weights
+    p_path_mild <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_mild # path mild
+    p_path_mod <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_mod # path moderate
+    p_path_severe <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_severe # path severe
+    p_path_blind <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_blind # path blind
+    p_path_obs <- 0 # path observation assumed 0
+    p_path_no_glaucoma <- p_screen_compliance * ai_negative * ai_npv # path healthy (false positives)
+  }
+
+  # for the non-compliant to referral cohort
+  else if(cohort == "high_risk"){
+    
+    # decision tree weights
+    p_path_mild <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_mild # path mild
+    p_path_mod <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_mod # path moderate
+    p_path_severe <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_severe # path severe
+    p_path_blind <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_blind # path blind
+    p_path_obs <- 0  # path observation assumed 0
+    p_path_no_glaucoma <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * (1-ai_ppv) # path healthy (false positives)
+  }
+
+  # for the compliant cohort
+  if(cohort == "compliant"){
+    
+    # decision tree weights
+    p_path_mild <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mild * (1-p_observation) # path mild
+    p_path_mod <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv  * p_severity_mod * (1-p_observation) # path moderate
+    p_path_severe <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_severe * (1-p_observation) # path severe
+    p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind * (1-p_observation) # path blind
+    p_path_obs <- p_screen_compliance * ai_positive * p_referral_compliance * p_observation # path observation
+    p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv) * (1-p_observation) # path healthy (false positives)
+  }
+
   
-  p_path_soc <- 1-p_screen_compliance # path non-compliant with screening
-  p_path_soc_healthier <- p_screen_compliance * ai_negative # path negative screening result
-  p_path_soc_sicker <- p_screen_compliance * ai_positive * (1-p_referral_compliance) # path non-compliant with clinical assessment
-  
+
   # plot decision tree
   if (visualize) {
     graph <- grViz("
@@ -101,11 +139,7 @@ getDtProbabilitiesAI <- function(p_dt_ai, p_severity_undiagnosed, cohort_strateg
     p_path_severe = p_path_severe,
     p_path_blind = p_path_blind,
     p_path_obs = p_path_obs,
-    p_path_fp = p_path_fp,
-    p_path_soc = p_path_soc,
-    p_path_soc_healthier = p_path_soc_healthier,
-    p_path_soc_sicker = p_path_soc_sicker,
-    p_cumulative = sum(p_path_mild, p_path_mod,p_path_severe,p_path_blind,p_path_obs, p_path_fp, p_path_soc, p_path_soc_healthier, p_path_soc_sicker)
+    p_path_no_glaucoma = p_path_no_glaucoma
   )
   
   # Conditionally append the graph object to the return list
@@ -116,6 +150,14 @@ getDtProbabilitiesAI <- function(p_dt_ai, p_severity_undiagnosed, cohort_strateg
   return(results)
 }
 
+validateDT <- function(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) {
+  sum_soc <- sum(unlist(p_dt_ai_soc))
+  sum_low_risk <- sum(unlist(p_dt_ai_low_risk))
+  sum_high_risk <- sum(unlist(p_dt_ai_high_risk))
+  sum_compliant <- sum(unlist(p_dt_ai_compliant))
+  total_sum <- sum(sum_soc, sum_low_risk, sum_high_risk, sum_compliant)
+  print(paste("The decision tree arms sum to a total of", total_sum))
+}
 
 # function to obtain DT probabilities SoC
 getDtProbabilitiesSoC <- function(incidences, p_severity)

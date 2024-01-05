@@ -46,11 +46,11 @@ getMarkovTrace <- function(strategy, # strategy
   hr_soc_sicker <- 1.2 # hazard ratio of glaucoma-related progression sicker population
   
   # if strategy is SoC_healthier or SoC_sicker use the hazard ratio's to alter the transition probabilities defined above
-  if (strategy == "SoC_healthier"){
+  if (strategy == "low_risk"){
     p_mild_mod <- p_mild_mod * hr_soc_healthier
     p_mod_sev <- p_mod_sev * hr_soc_healthier
     p_sev_blind <- p_sev_blind * hr_soc_healthier
-  } else if (strategy == "SoC_sicker"){
+  } else if (strategy == "high_risk"){
     p_mild_mod <- p_mild_mod * hr_soc_sicker
     p_mod_sev <- p_mod_sev * hr_soc_sicker
     p_sev_blind <- p_sev_blind * hr_soc_sicker
@@ -76,7 +76,7 @@ getMarkovTrace <- function(strategy, # strategy
     v_incidences
 
     # still incorrect, think about how to do this
-    } else if (strategy == "SoC_healthier"){
+    } else if (strategy == "low_risk"){
     # initial distribution per health state (path probability DT)
     v_m_init <- c(healthy = cohort$false_pos, 
                   mild = cohort$mild, 
@@ -86,7 +86,7 @@ getMarkovTrace <- function(strategy, # strategy
                   observation = cohort$p_path_obs,
                   death = 0
                   )                 
-  } else if (strategy == "SoC_sicker"){
+  } else if (strategy == "high_risk"){
     # initial distribution per health state (path probability DT)
     v_m_init <- c(healthy = cohort$false_pos, 
                   mild = cohort$mild, 

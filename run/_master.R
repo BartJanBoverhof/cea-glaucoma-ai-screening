@@ -5,7 +5,7 @@ rm(list = ls()) # to clean the workspace
 set.seed(3791) # set seed for reproducibility
 
 # loading packages
-p_load_gh("DARTH-git/darthtools")
+#p_load_gh("DARTH-git/darthtools")
 if (!require('pacman')) install.packages('pacman'); library(pacman) # use this package to conveniently install other packages
 p_load("dplyr", "tidyr", "reshape2", "devtools", "scales", "ellipse", "ggplot2", "ggrepel", "gridExtra", "lazyeval", "igraph", "truncnorm", "ggraph", "reshape2", "patchwork", "knitr", "stringr", "diagram", "dampack","DiagrammeR") # load (install if required) packages from CRAN
 p_load_gh("DARTH-git/darthtools") # load (install if required) packages from GitHub
@@ -26,6 +26,21 @@ load("data/4a_p_transition_treated.RData")
 load("data/4b_p_transition_untreated.RData")
 load("data/5_v_utilities.RData")
 load("data/6_v_incidences.RData")
+load("data/7_v_cost_dt.RData")
+
+# re-saving all parameters for PSA
+df_mortality <- df_mortality
+p_dt <- p_dt
+p_severity_undiagnosed <- p_severity_undiagnosed
+p_transition_treated <- p_transition_treated
+p_transition_untreated <- p_transition_untreated
+v_utilities <- v_utilities
+v_incidences <- v_incidences
+v_utilities <- v_utilities
+start_age <- 50
+age_max <- 100
+n_cycle_length <- 1
+utility_decrement <- 0.03
 
 
 #------------------------------------------------------------------------------#
@@ -33,14 +48,23 @@ load("data/6_v_incidences.RData")
 #------------------------------------------------------------------------------#
 t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years")) # obtain cohorts
  
+
 #------------------------------------------------------------------------------#
 ####                       1 Decision Tree                            ####
 #------------------------------------------------------------------------------#
-df_incidence_clean <- calculateIncidence(v_incidences, start_age = 50) # calculate incidence
-df_mortality_clean <- calculateMortality(df_mortality, start_age = 50) # calculate all cause mortality mortality
-n_mean_age <- getMeanAge(df_mortality, start_age = 50) # get mean age of cohort
+df_incidence_clean <- calculateIncidence(v_incidences, start_age = start_age) # calculate incidence
+df_mortality_clean <- calculateMortality(df_mortality, start_age = start_age) # calculate all cause mortality mortality
+n_mean_age <- getMeanAge(df_mortality, start_age = start_age) # get mean age of cohort
 
-p_dt_ai <- getDtProbabilitiesAI(p_dt, p_severity_undiagnosed, "Ai Screening", visualize = T) # obtain dt probabilities
+# obtain starting severity distributions - AI strategy
+p_dt_ai_soc <- getDtProbabilitiesAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, cohort = "soc", visualize = F) # soc arm
+p_dt_ai_low_risk <- getDtProbabilitiesAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, cohort = "low_risk", visualize = F) # low risk arm
+p_dt_ai_high_risk <- getDtProbabilitiesAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, cohort = "high_risk", visualize = F) # high risk arm
+p_dt_ai_compliant <- getDtProbabilitiesAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, cohort = "compliant", visualize = F) # compliant arm
+
+# check if DT sums to 1
+validateDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant)
+
 
 #------------------------------------------------------------------------------#
 ####                       2 Markov model                            ####
@@ -48,88 +72,49 @@ p_dt_ai <- getDtProbabilitiesAI(p_dt, p_severity_undiagnosed, "Ai Screening", vi
 # re-scale to cohort of 1000 patients
 v_cohort_1000 <- lapply(p_dt_ai[-length(p_dt_ai)], function(x) x*1000)
 
-# markov trace
-a_trace_ai <- getMarkovTrace(strategy = "AI",  # run markov model for AI
+# markov traces
+# AI strategy - non-compliant with screening
+a_trace_ai_noncompliant_screen <- getMarkovTrace(strategy = "AI_noncompliant_screen",  
+                                                 cohort = v_cohort_1000,
+                                                 df_mortality = df_mortality_clean, 
+                                                 p_transition =  p_transition_treated, 
+                                                 age_init = round(n_mean_age),
+                                                 age_max = age_max,
+                                                 incidences = df_incidence_clean
+                                                 )
+
+
+# AI strategy - compliant
+a_trace_ai <- getMarkovTrace(strategy = "AI",  
                              cohort = v_cohort_1000,
                              df_mortality = df_mortality_clean, 
                              p_transition =  p_transition_treated, 
                              age_init = round(n_mean_age),
-                             age_max = 100,
+                             age_max = age_max,
                              incidences = df_incidence_clean
                              ) 
 
-a_trace_soc <- getMarkovTrace(strategy = "SoC",  # run markov model for SoC
-                              cohort = v_cohort_1000,
-                              df_mortality = df_mortality_clean, 
-                              p_transition =  p_transition_untreated, 
-                              age_init = round(n_mean_age),
-                              age_max = 100,
-                              incidences = df_incidence_clean
-                              )
-
-
-'''
-## temp ##
-strategy = "SoC"  # run markov model for AI
-cohort = v_cohort_1000
-df_mortality = df_mortality_clean
-p_transition =  p_transition_untreated
-age_init = round(n_mean_age)
-age_max = 100
-incidences = df_incidence_clean
-'''
 
 
 
-# Vector of state costs under strategy SoC
-v_c_ai    <- c(Healthy  = c_healthy, 
-               Mild = c_mild, 
-               Moderate = c_moderate, 
-               Severe  = c_severe,
-               Blind = c_blind,
-               Observation = u_observation,
-               Death = c_death) * cycle_length
-
-v_u_soc <- v_u_ai
-v_c_soc <- v_c_ai
-
-#<UTILITIES AND COSTS SOC>
-## Store state rewards 
-# Store the vectors of state utilities for each strategy in a list 
-l_u <- list(ai  = v_u_ai,
-            soc = v_u_soc)
-# Store the vectors of state cost for each strategy in a list 
-l_c <- list(ai  = v_c_ai,
-            soc = v_c_soc)
-
-# assign strategy names to matching items in the lists
-names(l_u) <- names(l_c) <- v_names_str
 
 
-# 08 Compute expected outcomes 
-# Create empty vectors to store total utilities and costs 
-v_tot_qaly <- v_tot_cost <- vector(mode = "numeric", length = n_str)
-names(v_tot_qaly) <- names(v_tot_cost) <- v_names_str
+#------------------------------------------------------------------------------#
+####                       3 Utilities                           ####
+#------------------------------------------------------------------------------#
+getUtilities(a_trace = a_trace_ai, 
+            v_utilities, 
+            decrement = utility_decrement, 
+            n_cycle_length = n_cycle_length) # obtain utilities
 
-## Loop through each strategy and calculate total utilities and costs 
-for (i in 1:n_str) { # i <- 1
-  
-  v_u_str <- l_u[[i]]   # select the vector of state utilities for the i-th strategy
-  v_c_str <- l_c[[i]]   # select the vector of state costs for the i-th strategy
-  
-  ### Expected QALYs and costs per cycle 
-  ## Vector of QALYs and Costs
-  # Apply state rewards 
-  v_qaly_str <- l_m_M[[i]] %*% v_u_str # sum the utilities of all states for each cycle
-  v_cost_str <- l_m_M[[i]] %*% v_c_str # sum the costs of all states for each cycle
-  
-  ### Discounted total expected QALYs and Costs per strategy and apply within-cycle correction if applicable
-  # QALYs
-  v_tot_qaly[i] <- t(v_qaly_str) %*% (v_dwe * v_wcc)
-  # Costs
-  v_tot_cost[i] <- t(v_cost_str) %*% (v_dwc * v_wcc)
-  
-}
+
+#------------------------------------------------------------------------------#
+####                       4 Costs                           ####
+#------------------------------------------------------------------------------#
+# decision tree: screening costs
+getScreeningCosts(a_trace_ai_compliant = a_trace_ai, 
+                  screening_cost = v_cost_dt) # obtain screening costs
+
 
 
 #------------------------------------------------------------------------------#
