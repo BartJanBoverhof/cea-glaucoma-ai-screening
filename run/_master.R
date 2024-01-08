@@ -44,7 +44,7 @@ v_utilities <- v_utilities
 start_age <- 50
 age_max <- 100
 n_cycle_length <- 1
-utility_decrement <- 0.03
+utility_decrement <- 0.02
 
 
 #------------------------------------------------------------------------------#
@@ -62,17 +62,17 @@ n_mean_age <- getMeanAge(df_mortality, start_age = start_age) # get mean age of 
 
 ### AI strategy
 # obtain starting severity distributions - AI strategy
-p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "soc", visualize = F) # soc arm
+p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_diagnosed, strategy = "soc", visualize = F) # soc arm
 p_dt_ai_low_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_low_risk, strategy = "low_risk", visualize = F) # low risk arm
-p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_diagnosed, strategy = "high_risk", visualize = F) # high risk arm
-p_dt_ai_compliant <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_diagnosed, strategy = "compliant", visualize = F) # compliant arm
+p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "high_risk", visualize = F) # high risk arm
+p_dt_ai_compliant <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "compliant", visualize = F) # compliant arm
 
 # check if DT sums to 1
 validateDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant)
 
 ### SoC strategy
 # obtain starting severity distributions - SoC strategy
-p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, visualize = F) 
+p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_diagnosed, visualize = F) 
 
 #------------------------------------------------------------------------------#
 ####                       2 Markov model                            ####
@@ -149,7 +149,7 @@ getUtilities(a_trace = a_trace_ai,
 
 #SoC strategy
 getUtilities(a_trace = a_trace_soc, 
-            v_utilities, 
+            v_utilities = v_utilities, 
             decrement = utility_decrement, 
             n_cycle_length = n_cycle_length) # obtain utilities
 
@@ -163,15 +163,11 @@ getScreeningCosts(a_trace_ai_soc = a_trace_ai_soc, # cohort trace of the patient
                   a_trace_ai_compliant = a_trace_ai_compliant, # cohort trace of the patients compliant with screening and referral
                   screening_cost = v_cost_dt) # obtain screening costs
 
-
-
 #------------------------------------------------------------------------------#
 ####                       04 Visualization         ####
 #------------------------------------------------------------------------------#
 # plot trace output
 plot_trace(a_trace_ai[,-ncol(a_trace_ai)])
-
-
 
 #------------------------------------------------------------------------------#
 ####                       05 Cost-effectiveness analysis (CEA)         ####
