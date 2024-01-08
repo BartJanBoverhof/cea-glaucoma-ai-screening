@@ -1,4 +1,4 @@
-getUtilities <- function(a_trace, # cohort trace
+getQALYs <- function(a_trace, # cohort trace
                         v_utilities = v_utilities, # vector of utilities  
                         decrement, # annual discount rate for utliities
                         n_cycle_length = 1 # cycle length
@@ -25,19 +25,21 @@ getUtilities <- function(a_trace, # cohort trace
               Observation = u_observation,
               Death = u_death) * n_cycle_length
 
-  # apply decrement
+  # apply age decrement
   # loop over all ages (i.e. rows in trace)
-  for (i in 1:nrow(a_trace)-1) {
+  for (i in 1:(nrow(a_trace)-1)) {
     a_trace[i+1, ] <- a_trace[i+1, ] * factor # in row i, multiply all utilities with the discount factor
     factor <- factor - decrement # update factor
   }
   
+  # recode negative values to 0
+  a_trace[a_trace < 0] <- 0
 
-  # apply state reward
-  #v_qaly <- a_trace %*% v_u # sum the utilities of all states for each cycle
+  # multiply utilities with cohort trace
+  v_qaly <- a_trace %*% v_u # sum the utilities of all states for each cycle
 
   #return the vector of qaly's
-  return(v_u)
+  return(sum(v_qaly))
   
 }
 
