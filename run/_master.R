@@ -24,8 +24,7 @@ load("data/2_p_dt.RData")
 load("data/3a_p_severity_undiagnosed.RData")
 load("data/3b_p_severity_diagnosed.RData")
 load("data/3c_p_severity_low_risk.RData")
-load("data/4a_p_transition_treated.RData")
-load("data/4b_p_transition_untreated.RData")
+load("data/4_p_transition.RData")
 load("data/5_v_utilities.RData")
 load("data/6_v_incidences.RData")
 load("data/7_v_cost_dt.RData")
@@ -36,8 +35,7 @@ p_dt <- p_dt
 p_severity_undiagnosed <- p_severity_undiagnosed
 p_severity_diagnosed <- p_severity_diagnosed
 p_severity_low_risk <- p_severity_low_risk
-p_transition_treated <- p_transition_treated
-p_transition_untreated <- p_transition_untreated
+p_transition <- p_transition
 v_utilities <- v_utilities
 v_incidences <- v_incidences
 v_utilities <- v_utilities
@@ -62,7 +60,7 @@ n_mean_age <- getMeanAge(df_mortality, start_age = start_age) # get mean age of 
 
 ### AI strategy
 # obtain starting severity distributions - AI strategy
-p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_diagnosed, strategy = "soc", visualize = F) # soc arm
+p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "soc", visualize = F) # soc arm
 p_dt_ai_low_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_low_risk, strategy = "low_risk", visualize = F) # low risk arm
 p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "high_risk", visualize = F) # high risk arm
 p_dt_ai_compliant <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "compliant", visualize = F) # compliant arm
@@ -94,7 +92,7 @@ v_cohort_soc <- lapply(p_dt_soc, function(x) x*1000)
 a_trace_ai_soc<- getMarkovTrace(strategy = "soc",  
                                 cohort = v_cohort_ai_soc,
                                 df_mortality = df_mortality_clean, 
-                                p_transition =  p_transition_untreated, 
+                                p_transition =  p_transition , 
                                 age_init = round(n_mean_age),
                                 age_max = age_max,
                                 incidences = df_incidence_clean)                               
@@ -103,7 +101,7 @@ a_trace_ai_soc<- getMarkovTrace(strategy = "soc",
 a_trace_ai_low_risk<- getMarkovTrace(strategy = "low_risk",  
                                      cohort = v_cohort_ai_low_risk,
                                      df_mortality = df_mortality_clean, 
-                                     p_transition =  p_transition_untreated, 
+                                     p_transition =  p_transition, 
                                      age_init = round(n_mean_age),
                                      age_max = age_max,
                                      incidences = df_incidence_clean)
@@ -112,7 +110,7 @@ a_trace_ai_low_risk<- getMarkovTrace(strategy = "low_risk",
 a_trace_ai_high_risk<- getMarkovTrace(strategy = "high_risk",  
                                       cohort = v_cohort_ai_high_risk,
                                       df_mortality = df_mortality_clean, 
-                                      p_transition =  p_transition_untreated, 
+                                      p_transition =  p_transition, 
                                       age_init = round(n_mean_age),
                                       age_max = age_max,
                                       incidences = df_incidence_clean)
@@ -121,7 +119,7 @@ a_trace_ai_high_risk<- getMarkovTrace(strategy = "high_risk",
 a_trace_ai_compliant<- getMarkovTrace(strategy = "compliant",  
                                       cohort = v_cohort_ai_compliant,
                                       df_mortality = df_mortality_clean, 
-                                      p_transition =  p_transition_treated, 
+                                      p_transition =  p_transition, 
                                       age_init = round(n_mean_age),
                                       age_max = age_max,
                                       incidences = df_incidence_clean)
@@ -133,7 +131,7 @@ a_trace_ai <- a_trace_ai_soc + a_trace_ai_low_risk + a_trace_ai_high_risk + a_tr
 a_trace_soc <- getMarkovTrace(strategy = "soc",  
                               cohort = v_cohort_soc,
                               df_mortality = df_mortality_clean, 
-                              p_transition =  p_transition_untreated, 
+                              p_transition =  p_transition, 
                               age_init = round(n_mean_age),
                               age_max = age_max,
                               incidences = df_incidence_clean)
@@ -142,16 +140,18 @@ a_trace_soc <- getMarkovTrace(strategy = "soc",
 ####                       3 Utilities                           ####
 #------------------------------------------------------------------------------#
 # AI strategy
-getUtilities(a_trace = a_trace_ai, 
-            v_utilities = v_utilities, 
-            decrement = utility_decrement, # annual utility decrement
-            n_cycle_length = n_cycle_length) # obtain utilities
+qalys_ai <- getQALYs(a_trace = a_trace_ai, 
+                     v_utilities = v_utilities, 
+                     decrement = utility_decrement, # annual utility decrement
+                     n_cycle_length = n_cycle_length) # obtain utilities
 
 #SoC strategy
-getUtilities(a_trace = a_trace_soc, 
-            v_utilities = v_utilities, 
-            decrement = utility_decrement, 
-            n_cycle_length = n_cycle_length) # obtain utilities
+qalys_soc <- getQALYs(a_trace = a_trace_soc, 
+                      v_utilities = v_utilities, 
+                      decrement = utility_decrement, 
+                      n_cycle_length = n_cycle_length) # obtain utilities
+
+# QALYS ZITTEN HEEL ERG DICHT BIJ ELKAAR. KOMT WAARSCHIJNLIJK DOOR GELIJKE UTILITIES IN BEIDE ARMEN. MAAR CHECK EERST OF DIT KLOPT. 
 
 #------------------------------------------------------------------------------#
 ####                       4 Costs                           ####

@@ -3,12 +3,10 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   
   # read in fixed probabilities
   p_prevalence <- probabilities$prevalence 
-  p_screen_compliance <- probabilities$screen_comp    # screening compliance
+  p_screen_compliance <-  probabilities$screen_comp      # screening compliance
   p_screen_sensitivity <- probabilities$ai_sens       # screening sensitivity 
   p_screen_specificity <- probabilities$ai_spec       # screening specificity 
-  p_referral_compliance <- probabilities$ref_comp     # referral compliance
-  p_referral_sensitivity <- probabilities$doct_sens   # referral sensitivity. Currently not used and assumed to be 1. 
-  p_referral_specificity <- probabilities$doct_sens   # referral sensitivity. Currently not used and assumed to be 1. 
+  p_referral_compliance <- probabilities$ref_comp   # referral compliance
   
   p_severity_mild <- severity_distribution$mild
   p_severity_mod <- severity_distribution$moderate
@@ -16,6 +14,10 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   p_severity_blind <- severity_distribution$blind
   p_observation <- severity_distribution$observation
   
+  # temporary: higehr compliance
+  p_screen_compliance <-  0.9     # screening compliance
+  p_referral_compliance <- 0.9   # referral compliance
+
   # calculate required probabilities
   ai_tp <- p_dt$ai_sens * p_dt$prevalence  # true positives
   ai_fp <- (1-p_dt$ai_spec) * (1-p_dt$prevalence) # false positives
@@ -32,48 +34,68 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   if(strategy == "soc"){
     
     # decision tree path probabilities
-    p_path_mild <-(1 - p_screen_compliance) * p_prevalence * p_severity_mild # path mild
-    p_path_mod <- (1 - p_screen_compliance) * p_prevalence * p_severity_mod # path moderate
-    p_path_severe <- (1 - p_screen_compliance) * p_prevalence * p_severity_severe # path severe
-    p_path_blind <- (1 - p_screen_compliance) * p_prevalence * p_severity_blind # path blind
-    p_path_obs <- 0 # path observation assumed 0
     p_path_no_glaucoma <- (1 - p_screen_compliance) * (1-p_prevalence)  # path no glaucoma
+    p_path_obs <- 0 # path observation assumed 0
+
+    p_path_mild_diagnosed <- 0 # path mild diagnosed
+    p_path_mod_diagnosed <- 0 # path moderate diagnosed
+    p_path_severe_diagnosed <- 0 # path severe diagnosed
+
+    p_path_mild_undiagnosed <-(1 - p_screen_compliance) * p_prevalence * p_severity_mild # path mild
+    p_path_mod_undiagnosed <- (1 - p_screen_compliance) * p_prevalence * p_severity_mod # path moderate
+    p_path_severe_undiagnosed <- (1 - p_screen_compliance) * p_prevalence * p_severity_severe # path severe
+    p_path_blind <- (1 - p_screen_compliance) * p_prevalence * p_severity_blind # path blind
   }
 
   # for the compliant, but negative and not referred (low risk)
   else if (strategy == "low_risk"){
     
     # decision tree path probabilities
-    p_path_mild <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_mild # path mild
-    p_path_mod <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_mod # path moderate
-    p_path_severe <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_severe # path severe
-    p_path_blind <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_blind # path blind
-    p_path_obs <- 0 # path observation assumed 0
     p_path_no_glaucoma <- p_screen_compliance * ai_negative * ai_npv # path healthy (false positives)
+    p_path_obs <- 0 # path observation assumed 0
+
+    p_path_mild_diagnosed <- 0 # path mild diagnosed
+    p_path_mod_diagnosed <- 0 # path moderate diagnosed
+    p_path_severe_diagnosed <- 0 # path severe diagnosed
+
+    p_path_mild_undiagnosed <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_mild # path mild
+    p_path_mod_undiagnosed <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_mod # path moderate
+    p_path_severe_undiagnosed <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_severe # path severe
+    p_path_blind <- p_screen_compliance * ai_negative * (1-ai_npv) * p_severity_blind # path blind
   }
 
   # for the non-compliant to referral cohort
   else if(strategy == "high_risk"){
     
     # decision tree path probabilities
-    p_path_mild <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_mild # path mild
-    p_path_mod <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_mod # path moderate
-    p_path_severe <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_severe # path severe
-    p_path_blind <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_blind # path blind
-    p_path_obs <- 0  # path observation assumed 0
     p_path_no_glaucoma <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * (1-ai_ppv) # path healthy (false positives)
+    p_path_obs <- 0  # path observation assumed 0
+
+    p_path_mild_diagnosed <- 0 # path mild diagnosed
+    p_path_mod_diagnosed <- 0 # path moderate diagnosed
+    p_path_severe_diagnosed <- 0 # path severe diagnosed
+
+    p_path_mild_undiagnosed <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_mild # path mild
+    p_path_mod_undiagnosed <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_mod # path moderate
+    p_path_severe_undiagnosed <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_severe # path severe
+    p_path_blind <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * ai_ppv * p_severity_blind # path blind
   }
 
   # for the compliant cohort
   if(strategy == "compliant"){
     
     # decision tree path probabilities
-    p_path_mild <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mild # path mild
-    p_path_mod <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv  * p_severity_mod # path moderate
-    p_path_severe <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_severe # path severe
-    p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind # path blind
-    p_path_obs <- 0 # path observation
     p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv) # path healthy (false positives)
+    p_path_obs <- 0 # path observation
+    
+    p_path_mild_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mild # path mild
+    p_path_mod_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv  * p_severity_mod # path moderate
+    p_path_severe_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_severe # path severe
+    
+    p_path_mild_undiagnosed <- 0 # path mild undiagnosed
+    p_path_mod_undiagnosed <- 0 # path moderate undiagnosed
+    p_path_severe_undiagnosed <- 0 # path severe undiagnosed
+    p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind # path blind
   }
 
   # plot decision tree
@@ -132,12 +154,15 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   
   # Create the return list
   results <- list(
-    p_path_mild = p_path_mild,
-    p_path_mod = p_path_mod,
-    p_path_severe = p_path_severe,
-    p_path_blind = p_path_blind,
+    p_path_no_glaucoma = p_path_no_glaucoma,
     p_path_obs = p_path_obs,
-    p_path_no_glaucoma = p_path_no_glaucoma
+    p_path_mild_diagnosed = p_path_mild_diagnosed,
+    p_path_mod_diagnosed = p_path_mod_diagnosed,
+    p_path_severe_diagnosed = p_path_severe_diagnosed,
+    p_path_mild_undiagnosed = p_path_mild_undiagnosed,
+    p_path_mod_undiagnosed = p_path_mod_undiagnosed,
+    p_path_severe_undiagnosed = p_path_severe_undiagnosed,
+    p_path_blind = p_path_blind
   )
   
   # Conditionally append the graph object to the return list
@@ -169,12 +194,17 @@ getStartDistSoc <- function(probabilities, severity_distribution, strategy, visu
   p_observation <- severity_distribution$observation
   
   # decision tree path probabilities
-  p_path_mild <- p_prevalence * p_severity_mild # path mild
-  p_path_mod <- p_prevalence * p_severity_mod # path moderate
-  p_path_severe <- p_prevalence * p_severity_severe # path severe
-  p_path_blind <- p_prevalence * p_severity_blind # path blind
-  p_path_obs <- 0 # path observation assumed 0
   p_path_no_glaucoma <- (1-p_prevalence)  # path no glaucoma
+  p_path_obs <- 0 # path observation assumed 0
+
+  p_path_mild_diagnosed <- 0 # path mild diagnosed
+  p_path_mod_diagnosed <- 0 # path moderate diagnosed
+  p_path_severe_diagnosed <- 0 # path severe diagnosed
+
+  p_path_mild_undiagnosed <- p_prevalence * p_severity_mild # path mild
+  p_path_mod_undiagnosed <- p_prevalence * p_severity_mod # path moderate
+  p_path_severe_undiagnosed <- p_prevalence * p_severity_severe # path severe
+  p_path_blind <- p_prevalence * p_severity_blind # path blind
 
   # plot decision tree
   if (visualize) {
@@ -232,12 +262,15 @@ getStartDistSoc <- function(probabilities, severity_distribution, strategy, visu
   
   # Create the return list
   results <- list(
-    p_path_mild = p_path_mild,
-    p_path_mod = p_path_mod,
-    p_path_severe = p_path_severe,
-    p_path_blind = p_path_blind,
+    p_path_no_glaucoma = p_path_no_glaucoma,
     p_path_obs = p_path_obs,
-    p_path_no_glaucoma = p_path_no_glaucoma
+    p_path_mild_diagnosed = p_path_mild_diagnosed,
+    p_path_mod_diagnosed = p_path_mod_diagnosed,
+    p_path_severe_diagnosed = p_path_severe_diagnosed,
+    p_path_mild_undiagnosed = p_path_mild_undiagnosed,
+    p_path_mod_undiagnosed = p_path_mod_undiagnosed,
+    p_path_severe_undiagnosed = p_path_severe_undiagnosed,
+    p_path_blind = p_path_blind
   )
   
   # Conditionally append the graph object to the return list

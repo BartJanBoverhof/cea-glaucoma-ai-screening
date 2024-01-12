@@ -5,7 +5,7 @@ getQALYs <- function(a_trace, # cohort trace
                         ){
   
   # obtain the utilities for each state
-  u_healthy <- v_utilities$healthy
+  u_no_glaucoma <- v_utilities$healthy
   u_mild <- v_utilities$mild
   u_moderate <- v_utilities$mod
   u_severe <- v_utilities$severe
@@ -16,14 +16,16 @@ getQALYs <- function(a_trace, # cohort trace
   # annual decrement factor
   factor <- (1-decrement)
 
-  # scale by the cycle length 
-  v_u    <- c(Healthy  = u_healthy, 
-              Mild = u_mild, 
-              Moderate = u_moderate, 
-              Severe  = u_severe,
-              Blind = u_blind,
-              Observation = u_observation,
-              Death = u_death) * n_cycle_length
+  v_u <- c(no_glaucoma = u_no_glaucoma, 
+            mild_diagnosed = u_mild,
+            moderate_diagnosed = u_moderate,
+            severe_diagnosed = u_severe,
+            mild_undiagnosed = u_mild,
+            moderate_undiagnosed = u_moderate,
+            severe_undiagnosed = u_severe,
+            blind = u_blind,
+            observation = u_observation,
+            death = 0 ) * n_cycle_length
 
   # apply age decrement
   # loop over all ages (i.e. rows in trace)

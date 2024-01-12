@@ -41,18 +41,11 @@ p_severity_low_risk  <- read_delim(file.init, delim = ';') #loading csv
 save(p_severity_low_risk, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/3c_p_severity_low_risk.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
 #------------------------------------------------------------------------------#
-####                    04a transition probabilities treated                        ####
+####                    04 transition probabilities                        ####
 #------------------------------------------------------------------------------#
-file.init <- "data-raw/4a_p_transition_treated.csv" #Init statement
-p_transition_treated  <- read_delim(file.init, delim = ';') #loading csv
-save(p_transition_treated, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/4a_p_transition_treated.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
-
-#------------------------------------------------------------------------------#
-####                    04b transition probabilities untreated                        ####
-#------------------------------------------------------------------------------#
-file.init <- "data-raw/4b_p_transition_untreated.csv" #Init statement
-p_transition_untreated  <- read_delim(file.init, delim = ';') #loading csv
-save(p_transition_untreated, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/4b_p_transition_untreated.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+file.init <- "data-raw/4_p_transition.csv" #Init statement
+p_transition  <- read_delim(file.init, delim = ';') #loading csv
+save(p_transition, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/4_p_transition.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
 #------------------------------------------------------------------------------#
 ####                    05 utilities                         ####
@@ -74,5 +67,6 @@ save(v_incidences, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/6_v
 file.init <- "data-raw/7_cost_dt.csv" #Init statement
 v_cost_dt  <- read_delim(file.init, delim = ';') #loading csv
 save(v_cost_dt, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/7_v_cost_dt.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
 
 
