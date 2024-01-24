@@ -62,11 +62,19 @@ v_incidences  <- read_delim(file.init, delim = ';') #loading csv
 save(v_incidences, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/6_v_incidences.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
 #------------------------------------------------------------------------------#
-####                    07 costs screening                        ####
+####                    07 utilisation                         ####
 #------------------------------------------------------------------------------#
-file.init <- "data-raw/7_cost_dt.csv" #Init statement
+file.init <- "data-raw/7a_utilisation_medicine.csv" #Init statement
+df_utilisation_medicine  <- read_delim(file.init, delim = ';') #loading csv
+save(df_utilisation_medicine, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/7a_df_utilisation_medicine.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
+#------------------------------------------------------------------------------#
+####                    08 costs                         ####
+#------------------------------------------------------------------------------#
+file.init <- "data-raw/8a_cost_dt.csv" #Init statement
 v_cost_dt  <- read_delim(file.init, delim = ';') #loading csv
-save(v_cost_dt, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/7_v_cost_dt.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+save(v_cost_dt, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/8a_v_cost_dt.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
-
-
+file.init <- "data-raw/8b_cost_medicine.csv" #Init statement
+v_cost_medicine  <- read_delim(file.init, delim = ';') #loading csv
+save(v_cost_medicine, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/8b_v_cost_medicine.RData") # Create .rda object for initial set of parameters and store it in 'data' folder

@@ -27,7 +27,9 @@ load("data/3c_p_severity_low_risk.RData")
 load("data/4_p_transition.RData")
 load("data/5_v_utilities.RData")
 load("data/6_v_incidences.RData")
-load("data/7_v_cost_dt.RData")
+load("data/7a_df_utilisation_medicine.RData")
+load("data/8a_v_cost_dt.RData")
+load("data/8b_v_cost_medicine.RData")
 
 # re-saving all parameters for PSA
 df_mortality <- df_mortality
@@ -154,14 +156,28 @@ qalys_soc <- getQALYs(a_trace = a_trace_soc,
 # QALYS ZITTEN HEEL ERG DICHT BIJ ELKAAR. KOMT WAARSCHIJNLIJK DOOR GELIJKE UTILITIES IN BEIDE ARMEN. MAAR CHECK EERST OF DIT KLOPT. 
 
 #------------------------------------------------------------------------------#
-####                       4 Costs                           ####
+####                   4a Costs decision tree screening costs                    ####
 #------------------------------------------------------------------------------#
-# decision tree screening costs
 getScreeningCosts(a_trace_ai_soc = a_trace_ai_soc, # cohort trace of the patients non-compliant with AI screening
                   a_trace_ai_low_risk = a_trace_ai_low_risk, # cohort trace of the patients with negaive AI result
                   a_trace_ai_high_risk = a_trace_ai_high_risk, # cohort trace of the patients non-compliant with referral 
                   a_trace_ai_compliant = a_trace_ai_compliant, # cohort trace of the patients compliant with screening and referral
                   screening_cost = v_cost_dt) # obtain screening costs
+
+#------------------------------------------------------------------------------#
+####                   4a Costs medicine                    ####
+#------------------------------------------------------------------------------
+## ai scenario
+getMedicineCosts(a_trace = a_trace_ai, # cohort trace of the patients non-compliant with AI screening
+                 medicine_cost = v_cost_medicine,
+                 medicine_utilisation = df_utilisation_medicine) # obtain medicine costs
+
+# soc scenario
+getMedicineCosts(a_trace = a_trace_soc, # cohort trace of the patients non-compliant with AI screening
+                 medicine_cost = v_cost_medicine,
+                 medicine_utilisation = df_utilisation_medicine) # obtain medicine costs
+
+
 
 #------------------------------------------------------------------------------#
 ####                       04 Visualization         ####
