@@ -94,5 +94,51 @@ getScreeningCosts <- function(a_trace_ai_soc,  # cohort trace of the patients no
   return(costs_total)
 }
  
+getMedicineCosts <- function(a_trace, # cohort trace
+                             medicine_costs, # medicine costs
+                             medicine_utilisation){ # medicine utilisation
 
+  # save objects of medicine costs
+  price_latanopros <- medicine_costs$latanopros
+  price_timolol <- medicine_costs$timolol
+  price_dorzolamide <- medicine_costs$dorzolamide
+  price_brimonidine <- medicine_costs$brimonidine
+  price_pilocarpine <- medicine_costs$pilocarpine
+  price_mannitol <- medicine_costs$mannitol
+  price_diamox <- medicine_costs$diamox
 
+  # total number of patients in each state
+  patients_mild <- sum(a_trace[,"Mild treated"])
+  patients_moderate <- sum(a_trace[,"Moderate treated"])
+  patients_severe <- sum(a_trace[,"Severe treated"])
+  patients_blind <- sum(a_trace[,"Blind"])
+
+  v_patients <- c(mild = patients_mild,
+                  moderate = patients_moderate,
+                  severe = patients_severe,
+                  blind = patients_blind)
+
+  # multiply the total patients with medicine utilisation
+  patients_latanopros <- medicine_utilisation$latanopros * v_patients
+  patients_timolol <- medicine_utilisation$timolol * v_patients
+  patients_dorzolamide <- medicine_utilisation$dorzolamide * v_patients
+  patients_brimonidine <- medicine_utilisation$brimonidine * v_patients
+  patients_pilocarpine <- medicine_utilisation$pilocarpine * v_patients
+  patients_mannitol <- medicine_utilisation$mannitol * v_patients
+  patients_diamox <- medicine_utilisation$diamox * v_patients
+  
+  # total costs total for each medicine
+  cost_latanopros <- sum(patients_latanopros) * medicine_costs$latanopros
+  cost_timolol <- sum(patients_timolol) * medicine_costs$timolol
+  cost_dorzolamide <- sum(patients_dorzolamide) * medicine_costs$dorzolamide
+  cost_brimonidine <- sum(patients_brimonidine) * medicine_costs$brimonidine
+  cost_pilocarpine <- sum(patients_pilocarpine) * medicine_costs$pilocarpine
+  cost_mannitol <- sum(patients_mannitol) * medicine_costs$mannitol
+  cost_diamox <- sum(patients_diamox) * medicine_costs$diamox
+
+  # total yearly costs
+  costs_total <- sum(cost_latanopros, cost_timolol, cost_dorzolamide, cost_brimonidine, cost_pilocarpine, cost_mannitol, cost_diamox)
+
+  # return costs
+  return(costs_total)
+}
