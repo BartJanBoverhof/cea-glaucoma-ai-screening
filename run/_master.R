@@ -144,14 +144,16 @@ a_trace_soc <- getMarkovTrace(strategy = "soc",
 # AI strategy
 qalys_ai <- getQALYs(a_trace = a_trace_ai, 
                      v_utilities = v_utilities, 
-                     decrement = utility_decrement, # annual utility decrement
-                     n_cycle_length = n_cycle_length) # obtain utilities
+                     age_decrement = 0.03, # annual utility decrement
+                     n_cycle_length = n_cycle_length,
+                     discount_rate = 0.015) # obtain utilities
 
 #SoC strategy
 qalys_soc <- getQALYs(a_trace = a_trace_soc, 
                       v_utilities = v_utilities, 
-                      decrement = utility_decrement, 
-                      n_cycle_length = n_cycle_length) # obtain utilities
+                      decrement = 0.03, 
+                      n_cycle_length = n_cycle_length,
+                      discount_rate =0.015) # obtain utilities
 
 # QALYS ZITTEN HEEL ERG DICHT BIJ ELKAAR. KOMT WAARSCHIJNLIJK DOOR GELIJKE UTILITIES IN BEIDE ARMEN. MAAR CHECK EERST OF DIT KLOPT. 
 
