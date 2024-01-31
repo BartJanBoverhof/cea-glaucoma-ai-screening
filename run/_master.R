@@ -25,7 +25,8 @@ load("data/3a_p_severity_undiagnosed.RData")
 load("data/3b_p_severity_diagnosed.RData")
 load("data/3c_p_severity_low_risk.RData")
 load("data/4_p_transition.RData")
-load("data/5_v_utilities.RData")
+load("data/5a_v_utilities.RData")
+load("data/5b_v_utilities_age_decrement.RData")
 load("data/6_v_incidences.RData")
 load("data/7a_df_utilisation_medicine.RData")
 load("data/8a_v_cost_dt.RData")
@@ -39,10 +40,13 @@ p_severity_diagnosed <- p_severity_diagnosed
 p_severity_low_risk <- p_severity_low_risk
 p_transition <- p_transition
 v_utilities <- v_utilities
+v_utilities_age_decrement <- v_utilities_age_decrement
 v_incidences <- v_incidences
 v_utilities <- v_utilities
-start_age <- 50
-age_max <- 100
+age_start <- 50 # start age of the cohort
+age_max <- 100 # maximum age through which to model
+age_lower <- 50 # initial age of the cohort
+age_upper <- 75 # upper age of the cohort
 n_cycle_length <- 1
 utility_decrement <- 0.02
 
@@ -50,15 +54,15 @@ utility_decrement <- 0.02
 #------------------------------------------------------------------------------#
 ####                       0 Obtain Cohort                            ####
 #------------------------------------------------------------------------------#
-t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years")) # obtain cohorts
+#t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years")) # obtain cohorts
  
 
 #------------------------------------------------------------------------------#
 ####                       1 Decision Tree                            ####
 #------------------------------------------------------------------------------#
-df_incidence_clean <- calculateIncidence(v_incidences, start_age = start_age) # calculate incidence
-df_mortality_clean <- calculateMortality(df_mortality, start_age = start_age) # calculate all cause mortality mortality
-n_mean_age <- getMeanAge(df_mortality, start_age = start_age) # get mean age of cohort
+df_incidence_clean <- calculateIncidence(v_incidences, age_start = age_start, age_max = age_max) # calculate incidence
+df_mortality_clean <- calculateMortality(df_mortality, age_start = age_start, age_max = age_max) # calculate all cause mortality
+n_mean_age <- getMeanAge(df_mortality, age_start = age_lower, age_max = age_upper) # get mean age of cohort
 
 ### AI strategy
 # obtain starting severity distributions - AI strategy
@@ -144,18 +148,19 @@ a_trace_soc <- getMarkovTrace(strategy = "soc",
 # AI strategy
 qalys_ai <- getQALYs(a_trace = a_trace_ai, 
                      v_utilities = v_utilities, 
-                     age_decrement = 0.03, # annual utility decrement
+                     age_decrement = v_utilities_age_decrement, # annual utility decrement
                      n_cycle_length = n_cycle_length,
-                     discount_rate = 0.015) # obtain utilities
-
+                     discount_rate = 0.015,
+                     age_init = round(n_mean_age),
+                     age_max = age_max) # obtain utilities
 #SoC strategy
 qalys_soc <- getQALYs(a_trace = a_trace_soc, 
                       v_utilities = v_utilities, 
-                      decrement = 0.03, 
+                      age_decrement = v_utilities_age_decrement, 
                       n_cycle_length = n_cycle_length,
-                      discount_rate =0.015) # obtain utilities
-
-# QALYS ZITTEN HEEL ERG DICHT BIJ ELKAAR. KOMT WAARSCHIJNLIJK DOOR GELIJKE UTILITIES IN BEIDE ARMEN. MAAR CHECK EERST OF DIT KLOPT. 
+                      discount_rate =0.015,
+                     age_init = round(n_mean_age),
+                     age_max = age_max) # obtain utilities
 
 #------------------------------------------------------------------------------#
 ####                   4a Costs decision tree screening costs                    ####

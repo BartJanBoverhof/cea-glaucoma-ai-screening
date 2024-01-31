@@ -2,48 +2,39 @@ getQALYs <- function(a_trace, # cohort trace
                         v_utilities = v_utilities, # vector of utilities  
                         age_decrement, # annual discount rate for utliities
                         n_cycle_length = 1, # cycle length
-                        discount_rate){
-  
-  # obtain the utilities for each state
-  u_no_glaucoma <- v_utilities$healthy
-  u_mild <- v_utilities$mild
-  u_moderate <- v_utilities$mod
-  u_severe <- v_utilities$severe
-  u_blind <- v_utilities$blind
-  u_observation <- v_utilities$obs
-  u_death <- v_utilities$death
+                        discount_rate,
+                        age_init,
+                        age_max){
 
-  # discount factor
-  v_u <- c(no_glaucoma = u_no_glaucoma, 
-            mild_diagnosed = u_mild,
-            moderate_diagnosed = u_moderate,
-            severe_diagnosed = u_severe,
-            mild_undiagnosed = u_mild,
-            moderate_undiagnosed = u_moderate,
-            severe_undiagnosed = u_severe,
-            blind = u_blind,
-            observation = u_observation,
-            death = 0 ) * n_cycle_length
+  # vector of utilities
+  v_u <- c(no_glaucoma = v_utilities$healthy, 
+            mild_diagnosed = v_utilities$mild,
+            moderate_diagnosed = v_utilities$mod,
+            severe_diagnosed = v_utilities$severe,
+            mild_undiagnosed = v_utilities$mild,
+            moderate_undiagnosed = v_utilities$mod,
+            severe_undiagnosed = v_utilities$severe,
+            blind = v_utilities$blind,
+            observation = v_utilities$obs,
+            death = v_utilities$death) * n_cycle_length
 
-  # apply age decrement
-  # loop over amount of cycles (i.e. rows in trace)
-  for (i in 1:(nrow(a_trace)-1)) {
-    
-    age_factor <- (1 + age_decrement)^-i # define / update factor
-    discount_factor <- (1 + discount_rate)^-i # define / update factor
-    
-    a_trace[i+1, ] <- a_trace[i+1, ] * age_factor # in row i, multiply all utilities with the discount factor
-    a_trace[i+1, ] <- a_trace[i+1, ] * discount_factor # in row i, multiply all utilities with the discount factor
-  }
-  
-  # recode negative values to 0
-  a_trace[a_trace < 0] <- 0
+  # assuming utility_age_decrement is a data.frame and "age" is one of its columns
+  age_decrement_vector <- subset(age_decrement, age >= age_init & age <= age_max)
+  age_decrement_vector <- as.vector(age_decrement_vector[,"dutch_utility_decrement"]) # vector of age utility decrements 50-100 
+
+  # age correction
+  a_trace_corrected <- sweep(a_trace, 1, age_decrement_vector$dutch_utility_decrement, "*")
 
   # multiply utilities with cohort trace
-  v_qaly <- a_trace %*% v_u # sum the utilities of all states for each cycle
+  v_qaly <- a_trace_corrected %*% v_u # sum the utilities of all states for each cycle
+
+  # discount
+  discount_vector <- 1 - discount_rate * (0:(nrow(a_trace_corrected) - 1))
+  v_qaly_discounted <-  v_qaly * discount_vector
+  #a_trace_correctedd <- sweep(a_trace_corrected, 1, discount_vector, "*")
 
   #return the vector of qaly's
-  return(sum(v_qaly))
+  return(sum(v_qaly_discounted))
   
 }
 

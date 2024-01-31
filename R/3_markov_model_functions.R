@@ -31,7 +31,7 @@ getMarkovTrace <- function(strategy, # strategy
   
   n_states <- length(v_names_states)   # number of health states 
 
-  # drop age categories in mortality object before initial age
+  # drop age categories in mortality object before initial age and after maximum age
   v_mortality <- df_mortality[-c(1:(age_init-50))]
 
   # drop age categories in incidence object before initial age

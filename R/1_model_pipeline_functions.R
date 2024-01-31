@@ -35,9 +35,13 @@ getCohortArm <- function(total_cohort, dt){
 
 # function to calculate mortality
 calculateMortality <- function(df_mortality, # mortality data
-                               start_age, # start age of the cohort
+                               age_start, # start age of the cohort
+                               age_max, # maximum age of the cohort
                                cycle_length = 1 # cycle length in years
                                ){
+  start_age <- age_start
+  end_age <- age_max
+
   # filter, transform and reshape the mortality data
   v_r_mort_by_age <- df_mortality %>%
     filter(Attribute == "Total male and female") %>%
@@ -54,9 +58,9 @@ calculateMortality <- function(df_mortality, # mortality data
     unnest(year) %>%
     select(year, mortality)
   
-  # remove rows that are lower than start_age
+  # remove rows that are lower than start_age and higher than end_age
   v_r_mort_by_age <- v_r_mort_by_age %>%
-    filter(year >= start_age)
+    filter(year >= start_age & year <= end_age)
   
   # age-specific transition rates to the dead state for all cycles 
   v_r_mortality  <- rep(v_r_mort_by_age$mortality, each = 1/cycle_length)
@@ -70,7 +74,8 @@ calculateMortality <- function(df_mortality, # mortality data
 
 # function to calculate incidence
 calculateIncidence <- function(incidences,
-                               start_age,
+                               age_start,
+                               age_max,
                                cycle_length =1){
   v_incidences_modified <- incidences %>%  
     separate(Age, into = c("start_age", "end_age"), sep = "-", remove = FALSE) %>%
@@ -83,15 +88,18 @@ calculateIncidence <- function(incidences,
         unnest(year) %>%
         select(year, Incidence)
 
-  # remove rows that are lower than start_age
+  # remove rows that are lower than start_age and higher than end_age
   v_incidences_modified_by_age <- v_incidences_modified %>%
-    filter(year >= start_age)
+    filter(year >= age_start & year <= age_max)
 
   # age-specific transition rates to the dead state for all cycles 
-  v_incidences_modified_by_age  <- rep(v_incidences_modified$Incidence, each = 1/cycle_length)  
+  v_incidences_modified_by_age  <- rep(v_incidences_modified_by_age$Incidence, each = 1/cycle_length)  
   
+  # generate a sequence of ages 
+  v_age <- seq(from = age_start, to = age_max-1, by = 1/cycle_length)
+
   # name the ages in the vector
-  names(v_incidences_modified_by_age) <- v_incidences_modified$year
+  names(v_incidences_modified_by_age) <- v_age
 
   return (v_incidences_modified_by_age)
 }
@@ -99,9 +107,12 @@ calculateIncidence <- function(incidences,
 
 # function to calculate average age of the cohort
 getMeanAge <- function(df_mortality, # mortality data
-                             start_age # start age of the cohort
+                             age_start, # start age of the cohort
+                             age_max # maximum age of the cohort
                              ){
-  
+  start_age <- age_start
+  end_age <- age_max
+
   df_mean_age <- df_mortality %>% #to calculate the midpoint age
     filter(Attribute == "Total male and female") %>%
     filter(!(Age %in% c("Total of all ages", "40 to 45 years", "45 to 50 years"))) %>% 
@@ -110,7 +121,9 @@ getMeanAge <- function(df_mortality, # mortality data
     mutate(
       lower_bound = as.numeric(gsub("[^0-9]", "", lower_bound)),
       upper_bound = as.numeric(gsub("[^0-9]", "", gsub(" years", "", upper_bound))),  # Remove ' years' then keep only numbers
-      midpoint_age = (lower_bound + upper_bound) / 2)
+      midpoint_age = (lower_bound + upper_bound) / 2) %>%
+    filter(lower_bound >= start_age & upper_bound <= end_age)
+    
    
   weighted_sum <- sum(df_mean_age$midpoint_age * df_mean_age$`Average population`) # total years per in the cohort
   total_population <- sum(df_mean_age$`Average population`) # total population in the cohort
