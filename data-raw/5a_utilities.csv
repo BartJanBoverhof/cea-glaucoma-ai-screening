@@ -1,2 +1,2 @@
-healthy;mild;mod;severe;blind;obs;death
-1;0.8015;0.7471;0.7113;0.5350;1;0
+healthy,mild,mod,severe,blind,obs,death
+1,0.8015,0.7471,0.7113,0.535,1,0

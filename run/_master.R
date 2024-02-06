@@ -31,6 +31,10 @@ load("data/6_v_incidences.RData")
 load("data/7a_df_utilisation_medicine.RData")
 load("data/8a_v_cost_dt.RData")
 load("data/8b_v_cost_medicine.RData")
+load("data/8c_v_cost_utilisation_diagnostics.RData")
+load("data/8d_v_cost_utilisation_intervention.RData")
+load("data/8e_v_cost_visually_impaired.RData")
+load("data/8f_v_cost_blind.RData")
 
 # re-saving all parameters for PSA
 df_mortality <- df_mortality
@@ -172,7 +176,7 @@ getScreeningCosts(a_trace_ai_soc = a_trace_ai_soc, # cohort trace of the patient
                   screening_cost = v_cost_dt) # obtain screening costs
 
 #------------------------------------------------------------------------------#
-####                   4a Costs medicine                    ####
+####                   4b Costs medicine                    ####
 #------------------------------------------------------------------------------
 ## ai scenario
 getMedicineCosts(a_trace = a_trace_ai, # cohort trace of the patients non-compliant with AI screening
@@ -184,7 +188,24 @@ getMedicineCosts(a_trace = a_trace_soc, # cohort trace of the patients non-compl
                  medicine_cost = v_cost_medicine,
                  medicine_utilisation = df_utilisation_medicine) # obtain medicine costs
 
+#------------------------------------------------------------------------------#
+####                   4c Costs diagnostics                    ####
+#------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------#
+####                   4d Costs intervention                    ####
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------#
+####                 4e Costs burden of disease visually impaired & blind   ####
+#------------------------------------------------------------------------------
+## ai scenario
+getVisuallyImpairedCosts(costs = v_cost_visually_impaired, trace = a_trace_ai)
+getBlindCosts(costs = v_cost_visually_impaired, trace = a_trace_ai)
+
+#soc scenario
+getVisuallyImpairedCosts(costs = v_cost_visually_impaired, trace = a_trace_soc)
+getBlindCosts(costs = v_cost_visually_impaired, trace = a_trace_soc)
 
 #------------------------------------------------------------------------------#
 ####                       04 Visualization         ####
