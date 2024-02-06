@@ -1,5 +1,5 @@
 # decision tree AI scenario 
-getStartDistAI <- function(probabilities, severity_distribution, strategy, visualize = TRUE){
+getStartDistAI <- function(probabilities, severity_distribution, strategy, visualize = TRUE, model_compliance){
   
   # read in fixed probabilities
   p_prevalence <- probabilities$prevalence 
@@ -14,9 +14,13 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   p_severity_blind <- severity_distribution$blind
   p_observation <- severity_distribution$observation
   
-  # temporary: higehr compliance
-  p_screen_compliance <-  0.9     # screening compliance
-  p_referral_compliance <- 0.9   # referral compliance
+  if (model_compliance == FALSE){
+    p_screen_compliance <-  1     # screening compliance
+    p_referral_compliance <- 1   # referral compliance
+  } else if (model_compliance == TRUE) {
+    p_screen_compliance <-  probabilities$screen_comp # screening compliance
+    referral_compliance <- probabilities$ref_comp   # referral compliance
+  }
 
   # calculate required probabilities
   ai_tp <- p_dt$ai_sens * p_dt$prevalence  # true positives
@@ -173,13 +177,14 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   return(results)
 }
 
-validateDT <- function(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) {
-  sum_soc <- sum(unlist(p_dt_ai_soc))
-  sum_low_risk <- sum(unlist(p_dt_ai_low_risk))
-  sum_high_risk <- sum(unlist(p_dt_ai_high_risk))
-  sum_compliant <- sum(unlist(p_dt_ai_compliant))
-  total_sum <- sum(sum_soc, sum_low_risk, sum_high_risk, sum_compliant)
+CombineDT <- function(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) {
+  
+  starting_probabilities <- mapply(sum, p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant, SIMPLIFY = FALSE)
+  total_sum <- sum(unlist(starting_probabilities))
+
   print(paste("The decision tree arms sum to a total of", total_sum))
+
+  return(starting_probabilities) 
 }
 
 # function to obtain DT probabilities SoC
@@ -279,4 +284,19 @@ getStartDistSoc <- function(probabilities, severity_distribution, strategy, visu
   }
   
   return(results)
+}
+
+getScreeningDetectionRate <- function(probabilities, model_compliance){
+
+  if (model_compliance == FALSE){
+    p_screen_compliance <-  1     # screening compliance
+    p_referral_compliance <- 1   # referral compliance
+  } else if (model_compliance == TRUE) {
+    p_screen_compliance <-  probabilities$screen_comp # screening compliance
+    referral_compliance <- probabilities$ref_comp   # referral compliance
+  }
+
+probability <- p_screen_compliance * probabilities$ai_sens * referral_compliance 
+
+return(probability)
 }
