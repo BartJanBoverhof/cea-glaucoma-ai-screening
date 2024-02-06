@@ -226,4 +226,94 @@ getBlindCosts <- function(costs, trace) {
   return(total)
 }
 
+getDiagnosticCosts <- function(trace, diagnostics_cost) {
+  
+  # total patients
+  patients_observation <- sum(trace[,"Observation"]) #observation state
+  patients_mild <- sum(trace[,"Mild treated"]) 
+  patients_moderate <- sum(trace[,"Moderate treated"])
+  patients_severe <- sum(trace[,"Severe treated"])
+  patients_blind <- sum(trace[,"Blind"])
+  
+  # calculating weighted price
+  # observation state
+  costs_obs <- diagnostics_cost %>%
+    filter(str_detect(item, "_obs$")) %>%
+    transmute(real_price = as.numeric(average_best) * price) %>%
+    transmute(weighted_price = real_price * patients_observation)
+  
+  # mild state
+  costs_mild <- diagnostics_cost %>%
+    filter(str_detect(item, "_mild$")) %>%
+    transmute(real_price = as.numeric(average_best) * price) %>%
+    transmute(weighted_price = real_price * patients_mild) 
 
+  # moderate state
+  costs_mod <- diagnostics_cost %>%
+    filter(str_detect(item, "_mod$")) %>%
+    transmute(real_price = as.numeric(average_best) * price) %>%
+    transmute(weighted_price = real_price * patients_moderate)
+
+  # severe state
+  costs_sev <- diagnostics_cost %>%
+    filter(str_detect(item, "_sev$")) %>%
+    transmute(real_price = as.numeric(average_best) * price) %>%
+    transmute(weighted_price = real_price * patients_severe)
+
+  # blind state
+  costs_blind <- diagnostics_cost %>%
+    filter(str_detect(item, "_blind$")) %>%
+    transmute(real_price = as.numeric(average_best) * price) %>%
+    transmute(weighted_price = real_price * patients_blind)     
+
+  # discount
+
+  # Return the result
+  return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
+}
+
+getInterventionCosts <- function(trace, intervention_cost){
+    
+    # total patients
+    patients_observation <- sum(trace[,"Observation"]) #observation state
+    patients_mild <- sum(trace[,"Mild treated"]) 
+    patients_moderate <- sum(trace[,"Moderate treated"])
+    patients_severe <- sum(trace[,"Severe treated"])
+    patients_blind <- sum(trace[,"Blind"])
+    
+    # calculating weighted price
+    # observation state
+    costs_obs <- intervention_cost %>%
+      filter(str_detect(item, "_obs$")) %>%
+      transmute(real_price = as.numeric(average_best) * price) %>%
+      transmute(weighted_price = real_price * patients_observation)
+
+    # mild state
+    costs_mild <- intervention_cost %>%
+      filter(str_detect(item, "_mild")) %>%
+      transmute(real_price = as.numeric(average_best) * price) %>%
+      transmute(weighted_price = real_price * patients_mild)
+
+    # moderate state
+    costs_mod <- intervention_cost %>%
+      filter(str_detect(item, "_mod")) %>%
+      transmute(real_price = as.numeric(average_best) * price) %>%
+      transmute(weighted_price = real_price * patients_moderate)
+
+    # severe state
+    costs_sev <- intervention_cost %>%
+      filter(str_detect(item, "_sev")) %>%
+      transmute(real_price = as.numeric(average_best) * price) %>%
+      transmute(weighted_price = real_price * patients_severe)
+
+    # blind state
+    costs_blind <- intervention_cost %>%
+      filter(str_detect(item, "_blind")) %>%
+      transmute(real_price = as.numeric(average_best) * price) %>%
+      transmute(weighted_price = real_price * patients_blind)
+
+    # discount
+
+    # return the result
+    return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
+  }

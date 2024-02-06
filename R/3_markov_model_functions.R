@@ -1,10 +1,12 @@
-getMarkovTrace <- function(strategy, # strategy
-                           cohort, # cohort
-                           df_mortality, # mortality data
-                           p_transition, # transition probabilities
-                           age_init, # initial age
-                           age_max, # maximum age
-                           incidences # incidence
+getMarkovTrace <- function(scenario, # scenario
+                            cohort, # cohort
+                            screening_detection_rate, # probabilities of the AI for repeated screening
+                            df_mortality, # mortality data
+                            p_transition, # transition probabilities
+                            age_init, # initial age
+                            incidences, # incidence
+                            interval, # years interval
+                            max_repititions # maximum number of repititions
                            ){ 
 
   #------------------------------------------------------------------------------#
@@ -20,9 +22,9 @@ getMarkovTrace <- function(strategy, # strategy
                     "Blind", 
                     "Observation",
                     "Death")
-                    
+
+  age_max <- 100 # time horizon               
   cycle_length <- 1 #cycle length
-  
   n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
   
   v_age_names  <- paste(rep(age_init:(age_max-1), each = 1/cycle_length),   # labels of age vectors
@@ -30,12 +32,11 @@ getMarkovTrace <- function(strategy, # strategy
                         sep = ".")  # labels of age vectors
   
   n_states <- length(v_names_states)   # number of health states 
-
-  # drop age categories in mortality object before initial age and after maximum age
-  v_mortality <- df_mortality[-c(1:(age_init-50))]
-
-  # drop age categories in incidence object before initial age
-  v_incidences <- incidences[-c(1:(age_init-50))]
+  sequence <- seq(from = interval, by = interval, length.out = max_repititions) # generate sequence of number on which repeated screening is conducted
+  
+  # drop age categories before initial age
+  v_mortality <- df_mortality[(age_init-n_cycles):(age_max-n_cycles)]
+  v_incidences <- incidences[(age_init-n_cycles):(age_max-n_cycles)]
   
   # transition probabilities
   p_healthy_obs <- p_transition$healthy_obs
@@ -48,12 +49,6 @@ getMarkovTrace <- function(strategy, # strategy
   p_mild_mod_untreated <- p_transition$p_mild_mod_untreated
   p_mod_sev_untreated <- p_transition$p_mod_sev_untreated
   p_sev_blind_untreated <- p_transition$p_sev_blind_untreated
-  
-  # put transition probability observation to 0 if strategy is soc, low_risk, or high_risk
-  #if(strategy == "soc" | strategy == "low_risk" | strategy == "high_risk"){
-  #  p_healthy_obs <- 0
-  #  p_obs_healthy <- 0
-  #}
 
   #------------------------------------------------------------------------------#
   ####                       02 Create matrices       ####
@@ -151,6 +146,17 @@ getMarkovTrace <- function(strategy, # strategy
   for(t in 1:n_cycles){
     # fill in cohort trace
     m_trace[t + 1, ]   <- m_trace[t, ]   %*% a_matrices[, , t]
+
+    if (t %in% sequence && scenario == "ai"){ # patients that are undiagnosed move to the diagnosed ones 
+      m_trace[t + 1, "Mild treated"] <- m_trace[t + 1, "Mild treated"] + (m_trace[t + 1, "Mild untreated"] * screening_detection_rate)
+      m_trace[t + 1, "Moderate treated"] <- m_trace[t + 1, "Moderate treated"] + (m_trace[t + 1, "Moderate untreated"] * screening_detection_rate)
+      m_trace[t + 1, "Severe treated"] <- m_trace[t + 1, "Severe treated"] + (m_trace[t + 1, "Severe untreated"] * screening_detection_rate)
+
+      m_trace[t + 1, "Mild untreated"] <- m_trace[t + 1, "Mild untreated"] * (1 - screening_detection_rate)
+      m_trace[t + 1, "Moderate untreated"] <- m_trace[t + 1, "Moderate untreated"] * (1 - screening_detection_rate)
+      m_trace[t + 1, "Severe untreated"] <- m_trace[t + 1, "Severe untreated"] * (1 - screening_detection_rate)
+
+    }
   }
   
   #------------------------------------------------------------------------------#
@@ -168,5 +174,3 @@ getMarkovTrace <- function(strategy, # strategy
   
   return(cohort_trace = m_trace)
 }
-
-
