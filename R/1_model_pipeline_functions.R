@@ -14,8 +14,26 @@ getCohort <- function(data,
     dplyr::filter(Attribute %in% sex) %>%
     dplyr::summarise(total_population = sum(`Average population`, na.rm = TRUE))
   
-  return(total_cohort)
+  age_weighted <- data %>%
+    dplyr::filter(Attribute == sex) %>%
+    dplyr::filter(Age != "Total of all ages") %>%
+    dplyr::filter(Age %in% age_categories) %>%
+    dplyr::mutate(age_weighted = `Average population` / total_cohort$total_population)
+
+  vector <- as.vector(age_weighted$age_weighted)
+  names(vector) <- age_weighted$Age
+  
+  return(vector)
 }
+
+getMaleFemaleRatio <- function(df_mortality){
+  
+  total <- df_mortality %>%
+    dplyr::filter(Age == "Total of all ages") 
+
+  return(unname(unlist(total[2, 4] / total[3, 4])))                      
+}
+
 
 # cohort per decision tree arm
 getCohortArm <- function(total_cohort, dt){
@@ -130,4 +148,35 @@ getMeanAge <- function(df_mortality, # mortality data
   mean_age <- weighted_sum / total_population # mean age of the cohort
   
   return(mean_age)
+}
+
+padArray <- function(pad, pad_to) {
+  if(nrow(pad) < nrow(pad_to)) {
+    rows_to_add <- nrow(pad_to) - nrow(pad)
+    padding <- matrix(0, nrow = rows_to_add, ncol = ncol(pad))
+    pad <- rbind(pad, padding)
+  }
+  return(pad)
+}
+
+traceCorrectionUtil <- function(a_trace, age_decrement, age_init) { #makes age utility decrement and discounting correction
+
+  # discounting
+  discount_vector <- 1.015 - 0.015 * (1:(nrow(a_trace)))
+  a_trace_corrected <-  a_trace * discount_vector
+
+  # age correction
+  age_decrement_vector <- subset(age_decrement, age >= age_init & age <= 100)
+  age_decrement_vector <- as.vector(age_decrement_vector[,"dutch_utility_decrement"]) # vector of age utility decrements 50-100 
+  a_trace_corrected <- sweep(a_trace_corrected, 1, age_decrement_vector$dutch_utility_decrement, "*")   # age correction
+
+  return(a_trace_corrected)
+}
+
+discountTraceCosts <- function(a_trace) {
+  
+  # discounting
+  discount_vector <- 1.015 - 0.015 * (1:(nrow(a_trace)))
+  a_trace_discount <-  a_trace * discount_vector
+  return(a_trace_discount)
 }

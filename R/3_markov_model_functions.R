@@ -35,8 +35,8 @@ getMarkovTrace <- function(scenario, # scenario
   sequence <- seq(from = interval, by = interval, length.out = max_repititions) # generate sequence of number on which repeated screening is conducted
   
   # drop age categories before initial age
-  v_mortality <- df_mortality[(age_init-n_cycles):(age_max-n_cycles)]
-  v_incidences <- incidences[(age_init-n_cycles):(age_max-n_cycles)]
+  v_mortality <- df_mortality[(age_init-49):(age_max-50)]
+  v_incidences <- incidences[(age_init-49):(age_max-50)]
   
   # transition probabilities
   p_healthy_obs <- p_transition$healthy_obs
@@ -82,9 +82,6 @@ getMarkovTrace <- function(scenario, # scenario
               dimnames = list(v_names_states, 
                               v_names_states, 
                                   0:(n_cycles - 1)))
-  
-  #do a rowsum of the array
-  #sum(a_matrices[,,30][2,])
 
   # fill array with transition probabilities
   # from healthy
