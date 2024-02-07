@@ -1,10 +1,7 @@
 getQALYs <- function(a_trace, # cohort trace
                         v_utilities = v_utilities, # vector of utilities  
-                        age_decrement, # annual discount rate for utliities
                         n_cycle_length = 1, # cycle length
-                        discount_rate,
-                        age_init,
-                        age_max){
+                        age_init){
 
   # vector of utilities
   v_u <- c(no_glaucoma = v_utilities$healthy, 
@@ -18,25 +15,13 @@ getQALYs <- function(a_trace, # cohort trace
             observation = v_utilities$obs,
             death = v_utilities$death) * n_cycle_length
 
-  # assuming utility_age_decrement is a data.frame and "age" is one of its columns
-  age_decrement_vector <- subset(age_decrement, age >= age_init & age <= age_max)
-  age_decrement_vector <- as.vector(age_decrement_vector[,"dutch_utility_decrement"]) # vector of age utility decrements 50-100 
-
-  # age correction
-  a_trace_corrected <- sweep(a_trace, 1, age_decrement_vector$dutch_utility_decrement, "*")
-
-  # multiply utilities with cohort trace
-  v_qaly <- a_trace_corrected %*% v_u # sum the utilities of all states for each cycle
-
-  # discount
-  discount_vector <- 1 - discount_rate * (0:(nrow(a_trace_corrected) - 1))
-  v_qaly_discounted <-  v_qaly * discount_vector
-  #a_trace_correctedd <- sweep(a_trace_corrected, 1, discount_vector, "*")
+  v_qaly <- a_trace %*% v_u # multiply utilities with cohort trace
+  total_qalys <- sum(v_qaly)/1000 # return total qaly's per person
 
   #return the vector of qaly's
-  return(sum(v_qaly_discounted))
-  
+  return(total_qalys)
 }
+
 
 getScreeningCosts <- function(a_trace_ai_soc,  # cohort trace of the patients non-compliant with AI screening
                               a_trace_ai_low_risk, # cohort trace of the patients with negaive AI result

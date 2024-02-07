@@ -37,118 +37,247 @@ load("data/8d_v_cost_utilisation_intervention.RData")
 load("data/8e_v_cost_visually_impaired.RData")
 load("data/8f_v_cost_blind.RData")
 
-# re-saving all parameters for PSA
-df_mortality <- df_mortality
-p_dt <- p_dt
-p_severity_undiagnosed <- p_severity_undiagnosed
-p_severity_diagnosed <- p_severity_diagnosed
+# non-fixed paramaters (PSA)
+p_dt <- p_dt # Isaac: for all these probabilities we need to provide an uncertainty range. These will be sampled in the PSA separately using rbeta(...)
+p_severity_undiagnosed <- p_severity_undiagnosed # Isaac: 'same' as p_dt but since this is a vector of linked probabilities we'll use rdirichlet(...)
+p_severity_diagnosed <- p_severity_diagnosed # Isaac: same as undiagnosed
 p_severity_low_risk <- p_severity_low_risk
-p_transition <- p_transition
-v_utilities <- v_utilities
+p_transition <- p_transition # Isaac: we need to check this one carefully to avoid illogical values when considering all transitions together
+v_utilities <- v_utilities # Isaac: unclear why healthy and obs get a value = 1. Maybe this is corrected later in the code, but it should be equivalent to the general population utility. # Then each utility will be sampled independently from a beta distribution: we may need to check for illogical values here too. 
 v_utilities_age_decrement <- v_utilities_age_decrement
-v_incidences <- v_incidences
-v_utilities <- v_utilities
-age_start <- 50 # start age of the cohort
-age_max <- 100 # maximum age through which to model
-age_lower <- 50 # initial age of the cohort
-age_upper <- 75 # upper age of the cohort
-n_cycle_length <- 1
-utility_decrement <- 0.02
 
 
 #------------------------------------------------------------------------------#
 ####                       0 Obtain Cohort                            ####
 #------------------------------------------------------------------------------#
-#t_total_cohort <- getCohort(df_mortality, age_categories = c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years")) # obtain cohorts
- 
+age_categories <- c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years") # modelled age categories
+t_total_cohort <- getCohort(df_mortality, age_categories = age_categories) # obtain cohorts
+r_male_female <- getMaleFemaleRatio(df_mortality = df_mortality)
 
 #------------------------------------------------------------------------------#
 ####                       1 Decision Tree                            ####
 #------------------------------------------------------------------------------#
-df_incidence_clean <- calculateIncidence(v_incidences, age_start = age_start, age_max = age_max) # calculate incidence
-df_mortality_clean <- calculateMortality(df_mortality, age_start = age_start, age_max = age_max) # calculate all cause mortality
-n_mean_age <- getMeanAge(df_mortality, age_start = age_lower, age_max = age_upper) # get mean age of cohort
+df_incidence_clean <- calculateIncidence(v_incidences, age_start = 50, age_max = 100) # calculate incidence
+df_mortality_clean <- calculateMortality(df_mortality, age_start = 50, age_max = 100) # calculate all cause mortality
 
 ### AI strategy
-# obtain starting severity distributions - AI strategy
 p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "soc", visualize = F, model_compliance = TRUE) # soc arm
 p_dt_ai_low_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_low_risk, strategy = "low_risk", visualize = F, model_compliance = TRUE) # low risk arm
 p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "high_risk", visualize = F, model_compliance = TRUE) # high risk arm
 p_dt_ai_compliant <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "compliant", visualize = F, model_compliance = TRUE) # compliant arm
 
-# combine the DT into one single starting distribution
-p_dt_ai <- CombineDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant)
+p_dt_ai <- CombineDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) # combine all arms
+p_screening_dr <- getScreeningDetectionRate(probabilities = p_dt, model_compliance = TRUE) # obtain screening detection rate
 
-# probability of patients to be fully compliant (for later use)
-p_screening_dr <- getScreeningDetectionRate(probabilities = p_dt, model_compliance = TRUE)
+# scale cohorts
+v_cohort_ai_50_55 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["50 to 55 years"]) * 1000)) # re-scale to cohort of 1000 patients
+v_cohort_ai_55_60 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["55 to 60 years"]) * 1000)) # re-scale to cohort of 1000 patients
+v_cohort_ai_60_65 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["60 to 65 years"]) * 1000)) # re-scale to cohort of 1000 patients
+v_cohort_ai_65_70 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["65 to 70 years"]) * 1000)) # re-scale to cohort of 1000 patients
+v_cohort_ai_70_75 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["70 to 75 years"]) * 1000)) # re-scale to cohort of 1000 patients
+sum(unlist(v_cohort_ai_50_55)) + sum(unlist(v_cohort_ai_55_60)) + sum(unlist(v_cohort_ai_60_65)) + sum(unlist(v_cohort_ai_65_70)) + sum(unlist(v_cohort_ai_70_75)) # check
 
 ### SoC strategy
-# obtain starting severity distributions - SoC strategy
-p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_diagnosed, visualize = F) 
+p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_diagnosed, visualize = F) # obtain severity distribution 
+
+# scale cohorts
+v_cohort_soc_50_55 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["50 to 55 years"]) * 1000)) # re-scale to cohort of 1000 patients
+v_cohort_soc_55_60 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["55 to 60 years"]) * 1000)) # re-scale to cohort of 1000 patients
+v_cohort_soc_60_65 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["60 to 65 years"]) * 1000)) # re-scale to cohort of 1000 patients
+v_cohort_soc_65_70 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["65 to 70 years"]) * 1000)) # re-scale to cohort of 1000 patients
+v_cohort_soc_70_75 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["70 to 75 years"]) * 1000)) # re-scale to cohort of 1000 patients
+sum(unlist(v_cohort_soc_50_55)) + sum(unlist(v_cohort_soc_55_60)) + sum(unlist(v_cohort_soc_60_65)) + sum(unlist(v_cohort_soc_65_70)) + sum(unlist(v_cohort_soc_70_75)) # check 
 
 #------------------------------------------------------------------------------#
 ####                       2 Markov model                            ####
 #------------------------------------------------------------------------------#
-# re-scale to cohort of 1000 patients
-### AI strategy
-v_cohort_ai <- lapply(p_dt_ai, function(x) x*1000)
-
-### SoC strategy
-v_cohort_soc <- lapply(p_dt_soc, function(x) x*1000)
-
-# markov traces
 ### AI Strategy
-a_trace_ai<- getMarkovTrace(scenario = "ai",
-                            cohort = v_cohort_ai,
-                            screening_detection_rate = p_screening_dr, 
-                            df_mortality = df_mortality_clean, 
-                            p_transition =  p_transition , 
-                            age_init = 50,
-                            incidences = df_incidence_clean,
-                            interval = 5, 
-                            max_repititions = 5)                            
+a_trace_ai_5055 <- getMarkovTrace(scenario = "ai",
+                                  cohort = v_cohort_ai_50_55,
+                                  screening_detection_rate = p_screening_dr, 
+                                  df_mortality = df_mortality_clean, 
+                                  p_transition =  p_transition , 
+                                  age_init = 52,
+                                  incidences = df_incidence_clean,
+                                  interval = 5, 
+                                  max_repititions = 4)  
+
+patients_ai_5055 <- sum(a_trace_ai_5055[1,]) # number of patients in the subcohort
+a_trace_ai_5055_utility <- traceCorrectionUtil(a_trace_ai_5055, v_utilities_age_decrement, age_init = 52) # trace corrected for utilities (discount & age)
+
+a_trace_ai_5560 <- getMarkovTrace(scenario = "ai",
+                                  cohort = v_cohort_ai_55_60,
+                                  screening_detection_rate = p_screening_dr, 
+                                  df_mortality = df_mortality_clean, 
+                                  p_transition =  p_transition , 
+                                  age_init = 57,
+                                  incidences = df_incidence_clean,
+                                  interval = 5, 
+                                  max_repititions = 3)
+
+patients_ai_5560 <- sum(a_trace_ai_5560[1,]) # number of patients in the subcohort
+a_trace_ai_5560_utility <- traceCorrectionUtil(a_trace_ai_5560, v_utilities_age_decrement, age_init = 57) # trace corrected for utilities (discount & age)                                                  
+
+a_trace_ai_6065 <- getMarkovTrace(scenario = "ai",
+                                  cohort = v_cohort_ai_60_65,
+                                  screening_detection_rate = p_screening_dr, 
+                                  df_mortality = df_mortality_clean, 
+                                  p_transition =  p_transition , 
+                                  age_init = 62,
+                                  incidences = df_incidence_clean,
+                                  interval = 5, 
+                                  max_repititions = 2)
+
+patients_ai_6065 <- sum(a_trace_ai_6065[1,]) # number of patients in the subcohort
+a_trace_ai_6065_utility <- traceCorrectionUtil(a_trace_ai_6065, v_utilities_age_decrement, age_init = 62) # trace corrected for utilities (discount & age)
+
+
+a_trace_ai_6570 <- getMarkovTrace(scenario = "ai",
+                                  cohort = v_cohort_ai_65_70,
+                                  screening_detection_rate = p_screening_dr, 
+                                  df_mortality = df_mortality_clean, 
+                                  p_transition =  p_transition , 
+                                  age_init = 67,
+                                  incidences = df_incidence_clean,
+                                  interval = 5, 
+                                  max_repititions = 1)
+
+patients_ai_6570 <- sum(a_trace_ai_6570[1,]) # number of patients in the subcohort
+a_trace_ai_6570_utility <- traceCorrectionUtil(a_trace_ai_6570, v_utilities_age_decrement, age_init = 67) # trace corrected for utilities (discount & age)
+
+a_trace_ai_7075 <- getMarkovTrace(scenario = "ai",  
+                                  cohort = v_cohort_ai_70_75,
+                                  screening_detection_rate = p_screening_dr, 
+                                  df_mortality = df_mortality_clean, 
+                                  p_transition =  p_transition , 
+                                  age_init = 72,
+                                  incidences = df_incidence_clean,
+                                  interval = 5, 
+                                  max_repititions = 0)           
+
+patients_ai_7075 <- sum(a_trace_ai_7075[1,]) # number of patients in the subcohort
+a_trace_ai_7075_utility <- traceCorrectionUtil(a_trace_ai_7075, v_utilities_age_decrement, age_init = 72) # trace corrected for utilities (discount & age)
+
+# create summed traces
+a_trace_ai_uncorrected <- a_trace_ai_5055 + # uncorrected trace (for reference)
+  padArray(pad = a_trace_ai_5560, pad_to = a_trace_ai_5055) + 
+  padArray(pad = a_trace_ai_6065, pad_to = a_trace_ai_5055) + 
+  padArray(pad = a_trace_ai_6570, pad_to = a_trace_ai_5055) + 
+  padArray(pad = a_trace_ai_7075, pad_to = a_trace_ai_5055) 
+
+a_trace_ai_utillity <- a_trace_ai_5055_utility + # corrected trace
+  padArray(pad = a_trace_ai_5560_utility, pad_to = a_trace_ai_5055_utility) + 
+  padArray(pad = a_trace_ai_6065_utility, pad_to = a_trace_ai_5055_utility) + 
+  padArray(pad = a_trace_ai_6570_utility, pad_to = a_trace_ai_5055_utility) + 
+  padArray(pad = a_trace_ai_7075_utility, pad_to = a_trace_ai_5055_utility)
 
 ### SoC strategy
-# standard of care  
-a_trace_soc <- getMarkovTrace(scenario = "soc",
-                            cohort = v_cohort_ai,
-                            screening_detection_rate = NULL, 
-                            df_mortality = df_mortality_clean, 
-                            p_transition =  p_transition , 
-                            age_init = 50,
-                            incidences = df_incidence_clean,
-                            interval = 0, 
-                            max_repititions = 0)                            
+a_trace_soc_5055 <- getMarkovTrace(scenario = "soc",
+                                   cohort = v_cohort_soc_50_55,
+                                   screening_detection_rate = 0, 
+                                   df_mortality = df_mortality_clean, 
+                                   p_transition =  p_transition , 
+                                   age_init = 52,
+                                   incidences = df_incidence_clean,
+                                   interval = 0, 
+                                   max_repititions = 0)                         
+
+patients_soc_5055 <- sum(a_trace_soc_5055[1,]) # number of patients in the subcohort
+a_trace_soc_5055_utility <- traceCorrectionUtil(a_trace_soc_5055, v_utilities_age_decrement, age_init = 52) # trace corrected for utilities (discount & age)
+
+a_trace_soc_5560 <- getMarkovTrace(scenario = "soc",
+                                    cohort = v_cohort_soc_55_60,
+                                    screening_detection_rate = 0, 
+                                    df_mortality = df_mortality_clean, 
+                                    p_transition =  p_transition , 
+                                    age_init = 57,
+                                    incidences = df_incidence_clean,
+                                    interval = 0, 
+                                    max_repititions = 0)
+
+patients_soc_5560 <- sum(a_trace_soc_5560[1,]) # number of patients in the subcohort
+a_trace_soc_5560_utility <- traceCorrectionUtil(a_trace_soc_5560, v_utilities_age_decrement, age_init = 57) # trace corrected for utilities (discount & age)
+
+a_trace_soc_6065 <- getMarkovTrace(scenario = "soc",
+                                    cohort = v_cohort_soc_60_65,
+                                    screening_detection_rate = 0, 
+                                    df_mortality = df_mortality_clean, 
+                                    p_transition =  p_transition , 
+                                    age_init = 62,
+                                    incidences = df_incidence_clean,
+                                    interval = 0, 
+                                    max_repititions = 0)
+
+patients_soc_6065 <- sum(a_trace_soc_6065[1,]) # number of patients in the subcohort
+a_trace_soc_6065_utility <- traceCorrectionUtil(a_trace_soc_6065, v_utilities_age_decrement, age_init = 62) # trace corrected for utilities (discount & age)
+
+a_trace_soc_6570 <- getMarkovTrace(scenario = "soc",
+                                    cohort = v_cohort_soc_65_70,
+                                    screening_detection_rate = 0, 
+                                    df_mortality = df_mortality_clean, 
+                                    p_transition =  p_transition , 
+                                    age_init = 67,
+                                    incidences = df_incidence_clean,
+                                    interval = 0, 
+                                    max_repititions = 0)
+
+patients_soc_6570 <- sum(a_trace_soc_6570[1,]) # number of patients in the subcohort
+a_trace_soc_6570_utility <- traceCorrectionUtil(a_trace_soc_6570, v_utilities_age_decrement, age_init = 67) # trace corrected for utilities (discount & age)
+
+a_trace_soc_7075 <- getMarkovTrace(scenario = "soc", 
+                                    cohort = v_cohort_soc_70_75,
+                                    screening_detection_rate = 0, 
+                                    df_mortality = df_mortality_clean, 
+                                    p_transition =  p_transition , 
+                                    age_init = 72,
+                                    incidences = df_incidence_clean,
+                                    interval = 0, 
+                                    max_repititions = 0)                                  
+
+patients_soc_7075 <- sum(a_trace_soc_7075[1,]) # number of patients in the subcohort
+a_trace_soc_7075_utility <- traceCorrectionUtil(a_trace_soc_7075, v_utilities_age_decrement, age_init = 72) # trace corrected for utilities (discount & age)
+
+# create summed trace
+a_trace_soc_uncorrected <- a_trace_soc_5055 + # uncorrected trace (for reference)
+  padArray(pad = a_trace_soc_5560, pad_to = a_trace_soc_5055) + 
+  padArray(pad = a_trace_soc_6065, pad_to = a_trace_soc_5055) + 
+  padArray(pad = a_trace_soc_6570, pad_to = a_trace_soc_5055) + 
+  padArray(pad = a_trace_soc_7075, pad_to = a_trace_soc_5055)
+
+a_trace_soc_utillity <- a_trace_soc_5055_utility + # corrected trace
+  padArray(pad = a_trace_soc_5560_utility, pad_to = a_trace_soc_5055_utility) + 
+  padArray(pad = a_trace_soc_6065_utility, pad_to = a_trace_soc_5055_utility) + 
+  padArray(pad = a_trace_soc_6570_utility, pad_to = a_trace_soc_5055_utility) + 
+  padArray(pad = a_trace_soc_7075_utility, pad_to = a_trace_soc_5055_utility)
 
 
 #------------------------------------------------------------------------------#
 ####                       3 Utilities                           ####
 #------------------------------------------------------------------------------#
+sum(a_trace_ai_5055[1,]) + sum(a_trace_ai_5560[1,]) + sum(a_trace_ai_6065[1,]) + sum(a_trace_ai_6570[1,]) + sum(a_trace_ai_7075[1,]) # check whether the traces sum up to 1000
+sum(a_trace_soc_5055[1,]) + sum(a_trace_soc_5560[1,]) + sum(a_trace_soc_6065[1,]) + sum(a_trace_soc_6570[1,]) + sum(a_trace_soc_7075[1,]) # check whether the traces sum up to 1000
+
 # AI strategy
 qalys_ai <- getQALYs(a_trace = a_trace_ai, 
                      v_utilities = v_utilities, 
-                     age_decrement = v_utilities_age_decrement, # annual utility decrement
-                     n_cycle_length = n_cycle_length,
-                     discount_rate = 0.015,
-                     age_init = round(n_mean_age),
-                     age_max = age_max) # obtain utilities
+                     n_cycle_length = 1,
+                     age_init = 52) 
+
 #SoC strategy
 qalys_soc <- getQALYs(a_trace = a_trace_soc, 
                       v_utilities = v_utilities, 
-                      age_decrement = v_utilities_age_decrement, 
-                      n_cycle_length = n_cycle_length,
-                      discount_rate =0.015,
-                     age_init = round(n_mean_age),
-                     age_max = age_max) # obtain utilities
+                      n_cycle_length = 1,
+                      age_init = 52,
+                      age_max = 100) # obtain utilities
 
 #------------------------------------------------------------------------------#
 ####                   4a Costs decision tree screening costs                    ####
 #------------------------------------------------------------------------------#
-ai_screening_costs <-   getScreeningCosts(a_trace_ai_soc = a_trace_ai_soc, # patients non-compliant with AI screening
-                                          a_trace_ai_low_risk = a_trace_ai_low_risk, # patients with negaive AI result
-                                          a_trace_ai_high_risk = a_trace_ai_high_risk, # patients non-compliant with referral 
-                                          a_trace_ai_compliant = a_trace_ai_compliant, # patients compliant with screening and referral
-                                          screening_cost = v_cost_dt) # obtain screening costs
+ai_screening_costs <- getScreeningCosts(a_trace_ai_soc = a_trace_ai_soc, # patients non-compliant with AI screening
+                                        a_trace_ai_low_risk = a_trace_ai_low_risk, # patients with negaive AI result
+                                        a_trace_ai_high_risk = a_trace_ai_high_risk, # patients non-compliant with referral 
+                                        a_trace_ai_compliant = a_trace_ai_compliant, # patients compliant with screening and referral
+                                        screening_cost = v_cost_dt) # obtain screening costs
 
 #------------------------------------------------------------------------------#
 ####                   4b Costs medicine                    ####
