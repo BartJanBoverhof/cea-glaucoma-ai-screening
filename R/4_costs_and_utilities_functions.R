@@ -16,62 +16,54 @@ getQALYs <- function(a_trace, # cohort trace
             death = v_utilities$death) * n_cycle_length
 
   v_qaly <- a_trace %*% v_u # multiply utilities with cohort trace
-  total_qalys <- sum(v_qaly)/1000 # return total qaly's per person
 
-  #return the vector of qaly's
-  return(total_qalys)
+  #return qaly's (per patient)
+  return(sum(v_qaly)/1000)
 }
 
-
-getScreeningCosts <- function(a_trace_ai_soc,  # cohort trace of the patients non-compliant with AI screening
-                              a_trace_ai_low_risk, # cohort trace of the patients with negaive AI result
-                              a_trace_ai_high_risk, # cohort trace of the patients non-compliant with referral 
-                              a_trace_ai_compliant, # cohort trace of the patients compliant with screening and referral
-                              screening_cost # screening cost
+getScreeningCosts <- function(trace, 
+                              screening_probabilities, # probabilities to end up in the different DT arms
+                              screening_cost, # screening cost
+                              interval, # screening interval (years)
+                              max_repititions # maximum number of screening repititions
                               ){
-  # save objects of screening costs
+  # save objects
   screening_invitation <- screening_cost$screening_invitation
   fundus_photo <- screening_cost$fundus_photo
   ai_costs <- screening_cost$ai_costs
   ophthalmologist <- screening_cost$ophthalmologist
-  
-  ### noncompliant with screening
-  # total number of patients non-compliant with screening
-  patients_soc <- sum(a_trace_ai_soc[1,])
 
-  # costs total. Non-compliant screening patients receive only invitation costs.
-  costs_soc <- screening_invitation * patients_soc
+  p_soc <- screening_probabilities$p_soc
+  p_low_risk <- screening_probabilities$p_low_risk
+  p_high_risk <- screening_probabilities$p_high_risk
+  p_fully_compliant <- screening_probabilities$p_fully_compliant
 
+  # creating indices for calculating screening costs
+  row_indices <- seq(from = 1, by = interval, length.out = max_repititions+1)  
+  column_names <- c("No glaucoma", "Mild untreated", "Moderate untreated", "Severe untreated", "Observation") # people to sum in the 
+  screening_cost <- list() # create an empty list
 
-  ### negative result
-  # total number of patients with negative AI result
-  patients_low_risk <- sum(a_trace_ai_low_risk[1,])
+  for (i in seq_along(row_indices)) {
+    
+    if (row_indices[i] == 1){ # if dealing with the first row
+      patients <- sum(trace[i,]) # if the first cycle, take the first rowsum
+    } else {
+       patients <- sum(trace[row_indices[i], column_names]) # for other cycles, only screen non-diagnosed patients
+    }
 
-  # costs total. Negative AI result patients receive only invitation costs.
-  costs_low_risk <- screening_invitation * patients_low_risk
-
-
-  ### non-compliant with referral
- # total number of patients non-compliant with referral
-  patients_high_risk <- sum(a_trace_ai_high_risk[1,])
-  
-# costs total. Non-compliant referral patients receive invitation costs, AI costs and fundus photo costs.
-  costs_high_risk <- screening_invitation * patients_high_risk + ai_costs * patients_high_risk + fundus_photo * patients_high_risk
-
-  ### compliant
-  # total number of patients compliant with screening and referral
-  patients_compliant <- sum(a_trace_ai_compliant[1,])
-
-  # costs total. Compliant patients receive invitation costs, AI costs, fundus photo costs and ophthalmologist costs.
-  costs_compliant <- screening_invitation * patients_compliant + ai_costs * patients_compliant + fundus_photo * patients_compliant + ophthalmologist * patients_compliant
-
-  # total costs
-  costs_total <- sum(costs_soc, costs_low_risk, costs_high_risk, costs_compliant)
-
-  # return costs
-  return(costs_total)
+    # determining  costs
+    cost_soc <- ( patients * p_soc) * screening_invitation 
+    cost_low_risk <- (patients * p_low_risk) * (screening_invitation + fundus_photo + ai_costs)
+    cost_high_risk <- (patients * p_high_risk) * (screening_invitation + fundus_photo + ai_costs)
+    cost_compliant <- (patients * p_fully_compliant) * (screening_invitation + fundus_photo + ai_costs + ophthalmologist)
+    screening_cost[i] <- cost_soc + cost_low_risk + cost_high_risk + cost_compliant # add cost to the list
+  }
+ 
+  # return costs per patient 
+  return(sum(unlist(screening_cost)) / 1000)
 }
  
+
 getMedicineCosts <- function(a_trace, # cohort trace
                              medicine_costs, # medicine costs
                              medicine_utilisation){ # medicine utilisation
@@ -85,7 +77,7 @@ getMedicineCosts <- function(a_trace, # cohort trace
   price_mannitol <- medicine_costs$mannitol
   price_diamox <- medicine_costs$diamox
 
-  # total number of patients in each state
+  # total number of patient years in each state
   patients_mild <- sum(a_trace[,"Mild treated"])
   patients_moderate <- sum(a_trace[,"Moderate treated"])
   patients_severe <- sum(a_trace[,"Severe treated"])
@@ -118,7 +110,7 @@ getMedicineCosts <- function(a_trace, # cohort trace
   costs_total <- sum(cost_latanopros, cost_timolol, cost_dorzolamide, cost_brimonidine, cost_pilocarpine, cost_mannitol, cost_diamox)
 
   # return costs
-  return(costs_total)
+  return(costs_total / 1000)
 }
 
 getVisuallyImpairedCosts <- function(v_cost_visually_impaired, a_trace) {
@@ -178,7 +170,7 @@ getVisuallyImpairedCosts <- function(costs, trace) {
   total <- sum(direct_med, direct_nonmed, productivity)
 
   # Return the result
-  return(total)
+  return(total / 1000)
 }
 
 getBlindCosts <- function(costs, trace) {
@@ -208,7 +200,7 @@ getBlindCosts <- function(costs, trace) {
   total <- sum(direct_med, direct_nonmed, productivity)
 
   # Return the result
-  return(total)
+  return(total / 1000)
 }
 
 getDiagnosticCosts <- function(trace, diagnostics_cost) {
@@ -254,7 +246,7 @@ getDiagnosticCosts <- function(trace, diagnostics_cost) {
   # discount
 
   # Return the result
-  return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
+  return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind)/1000)
 }
 
 getInterventionCosts <- function(trace, intervention_cost){
@@ -300,5 +292,5 @@ getInterventionCosts <- function(trace, intervention_cost){
     # discount
 
     # return the result
-    return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
+    return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind)/1000)
   }

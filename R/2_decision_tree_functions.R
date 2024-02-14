@@ -285,18 +285,3 @@ getStartDistSoc <- function(probabilities, severity_distribution, strategy, visu
   
   return(results)
 }
-
-getScreeningDetectionRate <- function(probabilities, model_compliance){
-
-  if (model_compliance == FALSE){
-    p_screen_compliance <-  1     # screening compliance
-    p_referral_compliance <- 1   # referral compliance
-  } else if (model_compliance == TRUE) {
-    p_screen_compliance <-  probabilities$screen_comp # screening compliance
-    referral_compliance <- probabilities$ref_comp   # referral compliance
-  }
-
-probability <- p_screen_compliance * probabilities$ai_sens * referral_compliance 
-
-return(probability)
-}
