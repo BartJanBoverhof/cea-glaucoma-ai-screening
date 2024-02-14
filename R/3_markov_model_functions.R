@@ -5,8 +5,8 @@ getMarkovTrace <- function(scenario, # scenario
                             p_transition, # transition probabilities
                             age_init, # initial age
                             incidences, # incidence
-                            interval, # years interval
-                            max_repititions # maximum number of repititions
+                            interval, # screening interval (years)
+                            max_repititions # maximum number of screening repititions
                            ){ 
 
   #------------------------------------------------------------------------------#
@@ -164,10 +164,14 @@ getMarkovTrace <- function(scenario, # scenario
   
   # check that all rows for each slice of the array sum to 1 
   check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
+
+  #------------------------------------------------------------------------------#
+  ####                       05 Creating corrected traces             ####
+  #------------------------------------------------------------------------------#
+  patients <- sum(m_trace[1,]) # number of patients in the subcohort
+  trace_utility <- traceCorrectionUtil(m_trace, v_utilities_age_decrement, age_init = age_init) # trace corrected for utilities (discount & age)
+  trace_cost <- discountTraceCosts(m_trace) # trace corrected for cost discount
   
-  # append column to m_trace that checks if all rows in the cohort trace sum up to 100% of the cohort
-  #m_trace <- cbind(m_trace, rowSums(m_trace))
-  #colnames(m_trace)[ncol(m_trace)] <- "Total"
-  
-  return(cohort_trace = m_trace)
+  return(list(trace = m_trace, patients = patients, trace_utility = trace_utility, trace_cost = trace_cost))
 }
+

@@ -95,6 +95,7 @@ calculateIncidence <- function(incidences,
                                age_start,
                                age_max,
                                cycle_length =1){
+
   v_incidences_modified <- incidences %>%  
     separate(Age, into = c("start_age", "end_age"), sep = "-", remove = FALSE) %>%
     mutate(
@@ -102,7 +103,7 @@ calculateIncidence <- function(incidences,
           end_age = as.numeric(gsub("[^0-9]", "", end_age))
         ) %>%
         rowwise() %>%
-        mutate(year = list(seq(from = start_age, to = end_age - 1))) %>%
+        mutate(year = list(seq(from = start_age, to = end_age ))) %>%
         unnest(year) %>%
         select(year, Incidence)
 
@@ -150,6 +151,27 @@ getMeanAge <- function(df_mortality, # mortality data
   return(mean_age)
 }
 
+getScreeningProbabilities <- function(probabilities, model_compliance){
+
+  if (model_compliance == FALSE){
+    p_screen_compliance <-  1     # screening compliance
+    p_referral_compliance <- 1   # referral compliance
+  } else if (model_compliance == TRUE) {
+    p_screen_compliance <-  probabilities$screen_comp # screening compliance
+    p_referral_compliance <- probabilities$ref_comp   # referral compliance
+  }
+
+p_soc <- (1-p_screen_compliance)
+p_low_risk <- p_screen_compliance * (1-probabilities$ai_sens)
+p_high_risk <- p_screen_compliance * probabilities$ai_sens * (1-p_referral_compliance)
+p_fully_compliant <- p_screen_compliance * probabilities$ai_sens * p_referral_compliance 
+
+# check if they sum up to 1
+#p_soc + p_low_risk + p_high_risk +p_fully_compliant
+
+return(list(p_soc = p_soc, p_low_risk = p_low_risk, p_high_risk = p_high_risk, p_fully_compliant = p_fully_compliant))
+}
+
 padArray <- function(pad, pad_to) {
   if(nrow(pad) < nrow(pad_to)) {
     rows_to_add <- nrow(pad_to) - nrow(pad)
@@ -176,7 +198,10 @@ traceCorrectionUtil <- function(a_trace, age_decrement, age_init) { #makes age u
 discountTraceCosts <- function(a_trace) {
   
   # discounting
-  discount_vector <- 1.015 - 0.015 * (1:(nrow(a_trace)))
+  discount_vector <- 1.03 - 0.03 * (1:(nrow(a_trace)))
+  discount_vector <- pmax(discount_vector, 0) # dont allow negative figures
+
   a_trace_discount <-  a_trace * discount_vector
+
   return(a_trace_discount)
 }
