@@ -23,8 +23,6 @@ source("R/5_visualisation_functions.R", echo = TRUE) #Load visualization functio
 load("data/1_df_mortality.RData")
 load("data/2_p_dt.RData")
 load("data/3a_p_severity_undiagnosed.RData")
-load("data/3b_p_severity_diagnosed.RData")
-load("data/3c_p_severity_low_risk.RData")
 load("data/4_p_transition.RData")
 load("data/5a_v_utilities.RData")
 load("data/5b_v_utilities_age_decrement.RData")
@@ -40,8 +38,6 @@ load("data/8f_v_cost_blind.RData")
 # non-fixed paramaters (PSA)
 p_dt <- p_dt # Isaac: for all these probabilities we need to provide an uncertainty range. These will be sampled in the PSA separately using rbeta(...)
 p_severity_undiagnosed <- p_severity_undiagnosed # Isaac: 'same' as p_dt but since this is a vector of linked probabilities we'll use rdirichlet(...)
-p_severity_diagnosed <- p_severity_diagnosed # Isaac: same as undiagnosed
-p_severity_low_risk <- p_severity_low_risk
 p_transition <- p_transition # Isaac: we need to check this one carefully to avoid illogical values when considering all transitions together
 v_utilities <- v_utilities # Isaac: unclear why healthy and obs get a value = 1. Maybe this is corrected later in the code, but it should be equivalent to the general population utility. # Then each utility will be sampled independently from a beta distribution: we may need to check for illogical values here too. 
 v_utilities_age_decrement <- v_utilities_age_decrement
@@ -63,14 +59,12 @@ df_mortality_clean <- calculateMortality(df_mortality, age_start = 50, age_max =
 ################## AI STRATEGY
 ### functions return probability of patients in each health state, seperately for each arm of the decision tree
 p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "soc", visualize = F, model_compliance = FALSE) # soc arm
-p_dt_ai_low_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_low_risk, strategy = "low_risk", visualize = F, model_compliance = FALSE) # low risk arm
+p_dt_ai_low_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "low_risk", visualize = F, model_compliance = FALSE) # low risk arm
 p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "high_risk", visualize = F, model_compliance = FALSE) # high risk arm
 p_dt_ai_compliant <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "compliant", visualize = F, model_compliance = FALSE) # compliant arm
 
 p_dt_ai <- CombineDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) ### function combines all arms of the decision tree into single starting distribution per health state
 p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE) ### function returns list of probabilities related to each screening arm (for later use)
-
-Map(sum, p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant)
 
 v_cohort_ai_50_55 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["50 to 55 years"]) * 1000)) # re-scale to cohort of 1000 patients
 v_cohort_ai_55_60 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["55 to 60 years"]) * 1000)) # re-scale to cohort of 1000 patients
@@ -80,7 +74,7 @@ v_cohort_ai_70_75 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["70 to
 sum(unlist(v_cohort_ai_50_55)) + sum(unlist(v_cohort_ai_55_60)) + sum(unlist(v_cohort_ai_60_65)) + sum(unlist(v_cohort_ai_65_70)) + sum(unlist(v_cohort_ai_70_75)) # check if sum of all subcohorts is 1000
 
 ################## SOC STRATEGY
-p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_diagnosed, visualize = F) # obtain severity distribution 
+p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, visualize = F) # obtain severity distribution 
 
 v_cohort_soc_50_55 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["50 to 55 years"]) * 1000)) # re-scale to cohort of 1000 patients
 v_cohort_soc_55_60 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["55 to 60 years"]) * 1000)) # re-scale to cohort of 1000 patients
