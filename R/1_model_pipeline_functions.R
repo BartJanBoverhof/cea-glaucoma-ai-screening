@@ -184,8 +184,9 @@ padArray <- function(pad, pad_to) {
 traceCorrectionUtil <- function(a_trace, age_decrement, age_init) { #makes age utility decrement and discounting correction
 
   # discounting
-  discount_vector <- 1.015 - 0.015 * (1:(nrow(a_trace)))
-  a_trace_corrected <-  a_trace * discount_vector
+  exponents <- seq(from = 0, to = -(nrow(a_trace)-1), length.out = nrow(a_trace))
+  sequence <- (1 + 0.015) ^ exponents
+  a_trace_corrected <-  a_trace * sequence
 
   # age correction
   age_decrement_vector <- subset(age_decrement, age >= age_init & age <= 100)
@@ -198,10 +199,11 @@ traceCorrectionUtil <- function(a_trace, age_decrement, age_init) { #makes age u
 discountTraceCosts <- function(a_trace) {
   
   # discounting
-  discount_vector <- 1.03 - 0.03 * (1:(nrow(a_trace)))
-  discount_vector <- pmax(discount_vector, 0) # dont allow negative figures
+  exponents <- seq(from = 0, to = -(nrow(a_trace)-1), length.out = nrow(a_trace))
+  sequence <- (1 + 0.03) ^ exponents
 
-  a_trace_discount <-  a_trace * discount_vector
+
+  a_trace_discount <-  a_trace * sequence
 
   return(a_trace_discount)
 }
