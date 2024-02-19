@@ -113,94 +113,81 @@ getMedicineCosts <- function(a_trace, # cohort trace
   return(costs_total / 1000)
 }
 
-getVisuallyImpairedCosts <- function(v_cost_visually_impaired, a_trace) {
+
+getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
+  
+  # filter on visually impaired (vf) costs 
+  costs_vi <- costs %>%
+    filter(str_detect(type, "vi$")) 
+  
+  # filter on blind (blind) costs
+  costs_blind <- costs %>%
+    filter(str_detect(type, "blind$"))
+  
+  if (societal_perspective == FALSE) {
+    # set all costs to 0
+    costs_vi$informal_care_household <- 0
+    costs_vi$informal_care_personal <- 0
+    costs_vi$informal_care_communication <- 0
+    costs_vi$informal_care_companionship <- 0
+    costs_vi$transportation <- 0
+  }
   
   # direct medical costs
-  direct_med_physician <- v_cost_visually_impaired$direct_med_physician
-  direct_med_inpatient <- v_cost_visually_impaired$direct_med_inpatient
-  direct_med_non_physician <- v_cost_visually_impaired$direct_med_non_physician
-  direct_med_devices <- v_cost_visually_impaired$direct_med_devices
+  direct_med_vi <- costs_vi$general_practitioner + costs_vi$inpatient_services + costs_vi$physician + costs_vi$mobility_training + costs_vi$practical_skills + costs_vi$blind_aids + costs_vi$communication_aids + costs_vi$vision_aids + costs_vi$measuring_devices # direct medical costs visually impaired
+  direct_med_blind <- costs_blind$general_practitioner + costs_blind$inpatient_services + costs_blind$physician + costs_blind$mobility_training + costs_blind$practical_skills + costs_blind$blind_aids + costs_blind$communication_aids + costs_blind$vision_aids + costs_blind$measuring_devices # direct medical costs blind
 
   # direct non-medical costs
-  direct_nonmed_home <- v_cost_visually_impaired$direct_nonmed_home
-  direct_nonmed_informal <- v_cost_visually_impaired$direct_nonmed_informal
-  direct_nonmed_transportation <- v_cost_visually_impaired$direct_nonmed_transportation
-
-  # productivity costs
-  productivity_absent <- v_cost_visually_impaired$productivity_absent
-  productivity_disability <- v_cost_visually_impaired$productivity_disability
-
+  direct_nonmed_vi <- costs_vi$transportation + costs_vi$home_care_household + costs_vi$home_care_household + costs_vi$home_care_personal + costs_vi$informal_care_household + costs_vi$informal_care_personal + costs_vi$informal_care_communication + costs_vi$informal_care_companionship # direct non-medical costs visually impaired
+  direct_nonmed_blind <- costs_blind$transportation + costs_blind$home_care_household + costs_blind$home_care_household + costs_blind$home_care_personal + costs_blind$informal_care_household + costs_blind$informal_care_personal + costs_blind$informal_care_communication + costs_blind$informal_care_companionship # direct non-medical costs blind
+  
   # total number of patients
-  patients_severe <- sum(a_trace[,"Severe treated"]) + sum(a_trace[,"Severe untreated"]) 
-
+  patients_severe_treated <- sum(trace[,"Severe treated"]) 
+  patients_severe_untreated <- sum(trace[,"Severe untreated"])
+  patients_blind <- sum(trace[,"Blind"])
+  
   # total costs
-  direct_med <- (direct_med_physician + direct_med_inpatient + direct_med_non_physician + direct_med_devices) * patients_severe
-  direct_nonmed <- (direct_nonmed_home + direct_nonmed_informal + direct_nonmed_transportation) * patients_severe
-  productivity <- (productivity_absent + productivity_disability) * patients_severe
-  total <- sum(direct_med, direct_nonmed, productivity)
-
+  costs_severe_treated <- ((direct_med_vi + direct_nonmed_vi) * patients_severe_treated) / 1000
+  costs_severe_untreated <- ((direct_med_vi + direct_nonmed_vi) * patients_severe_untreated) / 1000
+  costs_blind <- ((direct_med_blind + direct_nonmed_blind ) * patients_blind) / 1000
+  total <- sum(costs_severe_treated, costs_severe_untreated, costs_blind)
+  
   # Return the result
-  return(total)
+  return(list(costs_severe_treated = costs_severe_treated, costs_severe_untreated = costs_severe_untreated, costs_blind = costs_blind, total = total))
 }
 
-getVisuallyImpairedCosts <- function(costs, trace) {
+getProductivityCosts <- function(costs, traces, age_inits) {
   
-  # direct medical costs
-  direct_med_physician <- costs$direct_med_physician
-  direct_med_inpatient <- costs$direct_med_inpatient
-  direct_med_non_physician <- costs$direct_med_non_physician
-  direct_med_devices <- costs$direct_med_devices
-
-  # direct non-medical costs
-  direct_nonmed_home <- costs$direct_nonmed_home
-  direct_nonmed_informal <- costs$direct_nonmed_informal
-  direct_nonmed_transportation <- costs$direct_nonmed_transportation
-
-  # productivity costs
-  productivity_absent <- v_cost_visually_impaired$productivity_absent
-  productivity_disability <- v_cost_visually_impaired$productivity_disability
-
-  # total number of patients
-  patients <- sum(trace[,"Severe treated"]) + sum(trace[,"Severe untreated"]) 
-
-  # total costs
-  direct_med <- (direct_med_physician + direct_med_inpatient + direct_med_non_physician + direct_med_devices) * patients
-  direct_nonmed <- (direct_nonmed_home + direct_nonmed_informal + direct_nonmed_transportation) * patients
-  productivity <- (productivity_absent + productivity_disability) * patients
-  total <- sum(direct_med, direct_nonmed, productivity)
-
-  # Return the result
-  return(total / 1000)
-}
-
-getBlindCosts <- function(costs, trace) {
+  # filter on visually impaired (vf) costs 
+  costs_vi <- costs %>%
+    filter(str_detect(type, "vi$")) 
   
-  # direct medical costs
-  direct_med_physician <- costs$direct_med_physician
-  direct_med_inpatient <- costs$direct_med_inpatient
-  direct_med_non_physician <- costs$direct_med_non_physician
-  direct_med_devices <- costs$direct_med_devices
+  # filter on blind (blind) costs
+  costs_blind <- costs %>%
+    filter(str_detect(type, "blind$"))
+  
+  # initialize variables  
+  pension_age <- 67 # dutch pension age
+  age_inits <- age_inits[age_inits < pension_age] # removing ages from the list that are higher than pension age
+  patients_severe_treated <- rep(0, length(age_inits))
+  patients_severe_untreated <- rep(0, length(age_inits))
+  patients_blind <- rep(0, length(age_inits))
 
-  # direct non-medical costs
-  direct_nonmed_home <- costs$direct_nonmed_home
-  direct_nonmed_informal <- costs$direct_nonmed_informal
-  direct_nonmed_transportation <- costs$direct_nonmed_transportation
-
-  # productivity costs
-  productivity_absent <- v_cost_visually_impaired$productivity_absent
-  productivity_disability <- v_cost_visually_impaired$productivity_disability
-
-  # total number of patients
-  patients <- sum(trace[,"Blind"])
-
+  # calculate total number of patients for each entry in traces
+  for (i in 1:length(age_inits)) {
+    trace <- traces[[i]]
+    patients_severe_treated[i] <- sum(trace[,"Severe treated"][1: (pension_age - age_inits[i])])
+    patients_severe_untreated[i] <- sum(trace[,"Severe untreated"][1: (pension_age - age_inits[i])])
+    patients_blind[i] <- sum(trace[,"Blind"][1: (pension_age - age_inits[i])])
+  }
+  
   # total costs
-  direct_med <- (direct_med_physician + direct_med_inpatient + direct_med_non_physician + direct_med_devices) * patients
-  direct_nonmed <- (direct_nonmed_home + direct_nonmed_informal + direct_nonmed_transportation) * patients
-  productivity <- (productivity_absent + productivity_disability) * patients
-  total <- sum(direct_med, direct_nonmed, productivity)
-
-  # Return the result
-  return(total / 1000)
+  costs_severe_treated <- ((costs_vi$productivity_absent + costs_vi$productivity_disability) * sum(patients_severe_treated)) / 1000 
+  costs_severe_untreated <- ((costs_vi$productivity_absent + costs_vi$productivity_disability) * sum(patients_severe_untreated)) / 1000
+  costs_blind <- ((costs_blind$productivity_absent + costs_blind$productivity_disability) * sum(patients_blind)) / 1000
+  total <- sum(costs_severe_treated, costs_severe_untreated, costs_blind)
+  
+  return(list(costs_severe_treated = costs_severe_treated, costs_severe_untreated = costs_severe_untreated, costs_blind = costs_blind, total = total))
 }
 
 getDiagnosticCosts <- function(trace, diagnostics_cost) {
