@@ -32,8 +32,7 @@ load("data/8a_v_cost_dt.RData")
 load("data/8b_v_cost_medicine.RData")
 load("data/8c_v_cost_utilisation_diagnostics.RData")
 load("data/8d_v_cost_utilisation_intervention.RData")
-load("data/8e_v_cost_visually_impaired.RData")
-load("data/8f_v_cost_blind.RData")
+load("data/8f_v_cost_burden_disease.RData")
 
 # non-fixed paramaters (PSA)
 p_dt <- p_dt # Isaac: for all these probabilities we need to provide an uncertainty range. These will be sampled in the PSA separately using rbeta(...)
@@ -86,13 +85,16 @@ sum(unlist(v_cohort_soc_50_55)) + sum(unlist(v_cohort_soc_55_60)) + sum(unlist(v
 #------------------------------------------------------------------------------#
 ####                       2 Markov model                            ####
 #------------------------------------------------------------------------------#
+# prerequisites
+age_inits <- c(52, 57, 62, 67, 72) # initial age for each age category
+
 ################## AI STRATEGY
 a_trace_ai_5055 <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
                                   cohort = v_cohort_ai_50_55,
                                   screening_detection_rate = p_screening$p_fully_compliant, 
                                   df_mortality = df_mortality_clean, 
                                   p_transition =  p_transition , 
-                                  age_init = 52,
+                                  age_init = age_inits[1],
                                   incidences = df_incidence_clean,
                                   interval = 5, 
                                   max_repititions = 4)  
@@ -102,7 +104,7 @@ a_trace_ai_5560 <- getMarkovTrace(scenario = "ai", ### (function returns list of
                                   screening_detection_rate = p_screening$p_fully_compliant, 
                                   df_mortality = df_mortality_clean, 
                                   p_transition =  p_transition , 
-                                  age_init = 57,
+                                  age_init = age_inits[2],
                                   incidences = df_incidence_clean,
                                   interval = 5, 
                                   max_repititions = 3)
@@ -112,7 +114,7 @@ a_trace_ai_6065 <- getMarkovTrace(scenario = "ai", ### (function returns list of
                                   screening_detection_rate = p_screening$p_fully_compliant, 
                                   df_mortality = df_mortality_clean, 
                                   p_transition =  p_transition , 
-                                  age_init = 62,
+                                  age_init = age_inits[3],
                                   incidences = df_incidence_clean,
                                   interval = 5, 
                                   max_repititions = 2)
@@ -122,7 +124,7 @@ a_trace_ai_6570 <- getMarkovTrace(scenario = "ai", ### (function returns list of
                                   screening_detection_rate = p_screening$p_fully_compliant, 
                                   df_mortality = df_mortality_clean, 
                                   p_transition =  p_transition , 
-                                  age_init = 67,
+                                  age_init = age_inits[4],
                                   incidences = df_incidence_clean,
                                   interval = 5, 
                                   max_repititions = 1)
@@ -132,7 +134,7 @@ a_trace_ai_7075 <- getMarkovTrace(scenario = "ai", ### (function returns list of
                                   screening_detection_rate = p_screening$p_fully_compliant, 
                                   df_mortality = df_mortality_clean, 
                                   p_transition =  p_transition , 
-                                  age_init = 72,
+                                  age_init = age_inits[5],
                                   incidences = df_incidence_clean,
                                   interval = 5, 
                                   max_repititions = 0)           
@@ -155,13 +157,16 @@ a_trace_ai_cost <- a_trace_ai_5055$trace_cost + # corrected trace (for costs)
   padArray(pad = a_trace_ai_6570$trace_cost, pad_to = a_trace_ai_5055$trace_cost) +
   padArray(pad = a_trace_ai_7075$trace_cost, pad_to = a_trace_ai_5055$trace_cost)
 
+# create list with all traces
+list_traces_ai_costs <- list(a_trace_5055 = a_trace_ai_5055$trace_cost, a_trace_5560 = a_trace_ai_5560$trace_cost, a_trace_6065 = a_trace_ai_6065$trace_cost, a_trace_6570 = a_trace_ai_6570$trace_cost, a_trace_7075 = a_trace_ai_7075$trace_cost)
+
 ################## SOC STRATEGY
 a_trace_soc_5055 <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
                                    cohort = v_cohort_soc_50_55,
                                    screening_detection_rate = 0, 
                                    df_mortality = df_mortality_clean, 
                                    p_transition =  p_transition , 
-                                   age_init = 52,
+                                   age_init = age_inits[1],
                                    incidences = df_incidence_clean,
                                    interval = 0, 
                                    max_repititions = 0)                         
@@ -171,7 +176,7 @@ a_trace_soc_5560 <- getMarkovTrace(scenario = "soc", ### (function returns list 
                                     screening_detection_rate = 0, 
                                     df_mortality = df_mortality_clean, 
                                     p_transition =  p_transition , 
-                                    age_init = 57,
+                                    age_init = age_inits[2],
                                     incidences = df_incidence_clean,
                                     interval = 0, 
                                     max_repititions = 0)
@@ -181,7 +186,7 @@ a_trace_soc_6065 <- getMarkovTrace(scenario = "soc", ### (function returns list 
                                     screening_detection_rate = 0, 
                                     df_mortality = df_mortality_clean, 
                                     p_transition =  p_transition , 
-                                    age_init = 62,
+                                    age_init = age_inits[3],
                                     incidences = df_incidence_clean,
                                     interval = 0, 
                                     max_repititions = 0)
@@ -191,7 +196,7 @@ a_trace_soc_6570 <- getMarkovTrace(scenario = "soc", ### (function returns list 
                                     screening_detection_rate = 0, 
                                     df_mortality = df_mortality_clean, 
                                     p_transition =  p_transition , 
-                                    age_init = 67,
+                                    age_init = age_inits[4],
                                     incidences = df_incidence_clean,
                                     interval = 0, 
                                     max_repititions = 0)
@@ -201,7 +206,7 @@ a_trace_soc_7075 <- getMarkovTrace(scenario = "soc", ### (function returns list 
                                     screening_detection_rate = 0, 
                                     df_mortality = df_mortality_clean, 
                                     p_transition =  p_transition , 
-                                    age_init = 72,
+                                    age_init = age_inits[5],
                                     incidences = df_incidence_clean,
                                     interval = 0, 
                                     max_repititions = 0)                                  
@@ -224,7 +229,10 @@ a_trace_soc_cost <- a_trace_soc_5055$trace_cost + ### corrected trace (for costs
   padArray(pad = a_trace_soc_6065$trace_cost, pad_to = a_trace_soc_5055$trace_cost) +
   padArray(pad = a_trace_soc_6570$trace_cost, pad_to = a_trace_soc_5055$trace_cost) +
   padArray(pad = a_trace_soc_7075$trace_cost, pad_to = a_trace_soc_5055$trace_cost)
-    
+
+# create list with all traces
+list_traces_soc_costs <- list(a_trace_5055 = a_trace_soc_5055$trace_cost, a_trace_5560 = a_trace_soc_5560$trace_cost, a_trace_6065 = a_trace_soc_6065$trace_cost, a_trace_6570 = a_trace_soc_6570$trace_cost, a_trace_7075 = a_trace_soc_7075$trace_cost)
+
 sum(a_trace_ai_5055$trace[1,]) + sum(a_trace_ai_5560$trace[1,]) + sum(a_trace_ai_6065$trace[1,]) + sum(a_trace_ai_6570$trace[1,]) + sum(a_trace_ai_7075$trace[1,]) # check whether the traces sum up to 1000
 sum(a_trace_soc_5055$trace[1,]) + sum(a_trace_soc_5560$trace[1,]) + sum(a_trace_soc_6065$trace[1,]) + sum(a_trace_soc_6570$trace[1,]) + sum(a_trace_soc_7075$trace[1,]) # check whether the traces sum up to 1000
 
@@ -283,12 +291,12 @@ soc_intervention_costs <- getInterventionCosts(trace = a_trace_soc_cost, # cohor
 #------------------------------------------------------------------------------#
 ####                 4e Costs burden of disease visually impaired & blind   ####
 #------------------------------------------------------------------------------
-ai_visually_impaired <- getVisuallyImpairedCosts(costs = v_cost_visually_impaired, trace = a_trace_ai_cost)
-ai_blind <- getBlindCosts(costs = v_cost_visually_impaired, trace = a_trace_ai_cost)
+ai_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, trace = a_trace_ai_cost, societal_perspective = TRUE)
+ai_productivity <- getProductivityCosts(costs = v_cost_burden_disease, traces = list_traces_ai_costs, age_inits = age_inits)
 
 #soc scenario
-soc_visually_impaired  <- getVisuallyImpairedCosts(costs = v_cost_visually_impaired, trace = a_trace_soc_cost)
-soc_blind <- getBlindCosts(costs = v_cost_visually_impaired, trace = a_trace_soc_cost)
+soc_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, trace = a_trace_soc_cost, societal_perspective = TRUE)
+soc_productivity <- getProductivityCosts(costs = v_cost_burden_disease, traces = list_traces_soc_costs, age_inits = age_inits)
 
 #------------------------------------------------------------------------------#
 ####                         4f Total costs                                 ####
