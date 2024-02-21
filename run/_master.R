@@ -47,7 +47,21 @@ v_utilities_age_decrement <- v_utilities_age_decrement
 #------------------------------------------------------------------------------#
 age_categories <- c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years") # modelled age categories
 t_total_cohort <- getCohort(df_mortality, age_categories = age_categories) ### (function returns distribution of age cohort category)
-r_male_female <- getMaleFemaleRatio(df_mortality = df_mortality) ### (function returns proportion of patients that are male)
+# Isaac: as far as I remember, the average age of the patient population was around 65 years old, right?
+# If that's the case, the numbers provided in t_total_cohort do not match with that average age, since these proportions suggest 
+# that the most frequent age is 50-55 followed by 55-60. The proportions decrease, so I cannot see how the average age of ~65 can be 
+# obtained with these numbers.
+r_male_female <- getMaleFemaleRatio(df_mortality = df_mortality) ### (function returns proportion of patients that are male) 
+
+# Isaac: I understand why you prefer to run age-dependent cohorts separately. 
+# However, this approach has several issues associated as discussed.
+# I wonder for example if the proportion of patients that are male should also be age-dependent. In fact, the same could be said about 
+# all parameters in the model, such as p_dt, p_severity_undiagnosed, p_transition or even the utilities. 
+# For the utilities, I know we consider age in terms of age-related decrement. However, the values at baseline were obtained 
+# for a cohort of a certain age. It could also be argued that these baseline values could also be age-dependent.
+# The reason I insist on this issue is because I believe it might be criticised by some reviewers. It's totally fine to have
+# different age cohorts, but then each cohort parameters' should be cohort specific (in theory) and I wonder whether that's
+# actually the case. Clear justification has to be provided for the assumptins made. 
 
 #------------------------------------------------------------------------------#
 ####                       1 Decision Tree                            ####
@@ -56,14 +70,14 @@ df_incidence_clean <- calculateIncidence(v_incidences, age_start = 50, age_max =
 df_mortality_clean <- calculateMortality(df_mortality, age_start = 50, age_max = 100) ### (function returns mortality per age year)
 
 ################## AI STRATEGY
-### functions return probability of patients in each health state, seperately for each arm of the decision tree
-p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "soc", visualize = F, model_compliance = FALSE) # soc arm
+### functions return probability of patients in each health state, separately for each arm of the decision tree
+p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "soc", visualize = F, model_compliance = FALSE) # soc arm #Isaac: this is all 0. Please check
 p_dt_ai_low_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "low_risk", visualize = F, model_compliance = FALSE) # low risk arm
-p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "high_risk", visualize = F, model_compliance = FALSE) # high risk arm
+p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "high_risk", visualize = F, model_compliance = FALSE) # high risk arm #Isaac: this is all 0 too
 p_dt_ai_compliant <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "compliant", visualize = F, model_compliance = FALSE) # compliant arm
 
-p_dt_ai <- CombineDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) ### function combines all arms of the decision tree into single starting distribution per health state
-p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE) ### function returns list of probabilities related to each screening arm (for later use)
+p_dt_ai <- CombineDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) ### function combines all arms of the decision tree into single starting distribution per health state #Isaac: as above: why are these not age-dependent?
+p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE) ### function returns list of probabilities related to each screening arm (for later use) # Isaac: please clarify how these are going to be used later. Please not as mentioned above that there are 0's here.
 
 v_cohort_ai_50_55 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["50 to 55 years"]) * 1000)) # re-scale to cohort of 1000 patients
 v_cohort_ai_55_60 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["55 to 60 years"]) * 1000)) # re-scale to cohort of 1000 patients
@@ -82,13 +96,21 @@ v_cohort_soc_65_70 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["65 
 v_cohort_soc_70_75 <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort["70 to 75 years"]) * 1000)) # re-scale to cohort of 1000 patients
 sum(unlist(v_cohort_soc_50_55)) + sum(unlist(v_cohort_soc_55_60)) + sum(unlist(v_cohort_soc_60_65)) + sum(unlist(v_cohort_soc_65_70)) + sum(unlist(v_cohort_soc_70_75)) # check if sum of all subcohorts is 1000
 
+# Isaac:  same as above: what we do here is to re-scale the cohorts based on the age distribution, but I'm not sure if that's correct.
+# I would think that the older patients the higher the probability of being severe, but right now the opposite happens. 
+# I think this happens for two reasons: 1. p_dt_soc is not age dependent and 2. t_total_cohort seems incorrect. 
+
 #------------------------------------------------------------------------------#
 ####                       2 Markov model                            ####
 #------------------------------------------------------------------------------#
 # prerequisites
-age_inits <- c(52, 57, 62, 67, 72) # initial age for each age category
+age_inits <- c(52, 57, 62, 67, 72) # initial age for each age category 
+# Isaac: I understand you have chosen the middle point of each category, right? I think it's OK to start with 50 (not in the middle).
 
 ################## AI STRATEGY
+#Isaac: we need to explain the input parameters of these functions (low priority right now)
+# We should also add what the function is returning. I see the traces (LYs, costs and utilities and total patients)
+# Question here: are these results discounted? I cannot see the option of discounting by the way and I think this was implemented in aprevious version of the code.
 a_trace_ai_5055 <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
                                   cohort = v_cohort_ai_50_55,
                                   screening_detection_rate = p_screening$p_fully_compliant, 
@@ -145,6 +167,12 @@ a_trace_ai_uncorrected <- a_trace_ai_5055$trace + # uncorrected trace (for refer
   padArray(pad = a_trace_ai_6570$trace, pad_to = a_trace_ai_5055$trace) + 
   padArray(pad = a_trace_ai_7075$trace, pad_to = a_trace_ai_5055$trace) 
 
+# Isaac: why is this called uncorrected? Have you checked that all rows sum to 1000 or that does not need to happen?
+# Also, unclear why we need to sum all these when traces will be of different length for each cohort.
+# The same applies for the two objects below.
+# For a_trace_ai_utillity, please check that a_trace_ai_utillity < a_trace_ai_uncorrected, and that they are 
+# equal if all utilities = 1.
+
 a_trace_ai_utillity <- a_trace_ai_5055$trace_utility + # corrected trace (for utility)
   padArray(pad = a_trace_ai_5560$trace_utility, pad_to = a_trace_ai_5055$trace_utility) + 
   padArray(pad = a_trace_ai_6065$trace_utility, pad_to = a_trace_ai_5055$trace_utility) + 
@@ -157,7 +185,7 @@ a_trace_ai_cost <- a_trace_ai_5055$trace_cost + # corrected trace (for costs)
   padArray(pad = a_trace_ai_6570$trace_cost, pad_to = a_trace_ai_5055$trace_cost) +
   padArray(pad = a_trace_ai_7075$trace_cost, pad_to = a_trace_ai_5055$trace_cost)
 
-# create list with all traces
+# create list with all traces #Isaac: what is the purpose of this object and why it contains only costs?
 list_traces_ai_costs <- list(a_trace_5055 = a_trace_ai_5055$trace_cost, a_trace_5560 = a_trace_ai_5560$trace_cost, a_trace_6065 = a_trace_ai_6065$trace_cost, a_trace_6570 = a_trace_ai_6570$trace_cost, a_trace_7075 = a_trace_ai_7075$trace_cost)
 
 ################## SOC STRATEGY
@@ -235,6 +263,8 @@ list_traces_soc_costs <- list(a_trace_5055 = a_trace_soc_5055$trace_cost, a_trac
 
 sum(a_trace_ai_5055$trace[1,]) + sum(a_trace_ai_5560$trace[1,]) + sum(a_trace_ai_6065$trace[1,]) + sum(a_trace_ai_6570$trace[1,]) + sum(a_trace_ai_7075$trace[1,]) # check whether the traces sum up to 1000
 sum(a_trace_soc_5055$trace[1,]) + sum(a_trace_soc_5560$trace[1,]) + sum(a_trace_soc_6065$trace[1,]) + sum(a_trace_soc_6570$trace[1,]) + sum(a_trace_soc_7075$trace[1,]) # check whether the traces sum up to 1000
+
+# Isaac: I stopped here 21/02/2024
 
 #------------------------------------------------------------------------------#
 ####                       3 Utilities                           ####
