@@ -264,11 +264,16 @@ list_traces_soc_costs <- list(a_trace_5055 = a_trace_soc_5055$trace_cost, a_trac
 sum(a_trace_ai_5055$trace[1,]) + sum(a_trace_ai_5560$trace[1,]) + sum(a_trace_ai_6065$trace[1,]) + sum(a_trace_ai_6570$trace[1,]) + sum(a_trace_ai_7075$trace[1,]) # check whether the traces sum up to 1000
 sum(a_trace_soc_5055$trace[1,]) + sum(a_trace_soc_5560$trace[1,]) + sum(a_trace_soc_6065$trace[1,]) + sum(a_trace_soc_6570$trace[1,]) + sum(a_trace_soc_7075$trace[1,]) # check whether the traces sum up to 1000
 
-# Isaac: I stopped here 21/02/2024
-
 #------------------------------------------------------------------------------#
 ####                       3 Utilities                           ####
 #------------------------------------------------------------------------------#
+
+# Isaac: these two functions are based on the objects above where you combined traces of different lengths.
+# As discussed before, I'm not sure why that step is needed. To validate the results, it'd be easier to calculate
+# total QALYs for each cohort separately and then take the weighted average.
+# It could also be a good exercise to check whether these calculations are correct, since they should be equal I suppose.
+# I've also noticed that changing age_init does not change the results of ai_total_qaly or soc_total_qaly. Is that correct?
+
 ai_total_qaly <- getQALYs(a_trace = a_trace_ai_utillity, ### (function returns average QALY per patient)
                      v_utilities = v_utilities, 
                      n_cycle_length = 1,
@@ -282,16 +287,28 @@ soc_total_qaly <- getQALYs(a_trace = a_trace_soc_utillity, ### (returns average 
 #------------------------------------------------------------------------------#
 ####                   4a Costs decision tree screening costs                    ####
 #------------------------------------------------------------------------------#
-ai_screening_costs <- getScreeningCosts(trace = a_trace_ai_cost, ### function returns screening costs per screening repition
+
+# Isaac: I also don't understand this one since this should be different for each cohort. So the question is why the max is set to 4.
+# Again, why don't we get results per age cohort separately and then calculate the weighted average?
+# Is the cost of one screening sum(v_cost_dt)? This is equal to 188€. If ai_screening_costs = 557€, that means that on average there 
+# are 3 AI screenings per patient per lifetime. Do we consider that a valid result? My point is that we need to link that with the 
+# average age of the patient population. If this is 67 years, then 3 AI screenings do not seem correct. However, in the model now
+# I suppose the average age should be a bit above 60 years then. We need to consider whether that's valid or not.
+
+ai_screening_costs <- getScreeningCosts(trace = a_trace_ai_cost, ### function returns screening costs per screening repetition
                                         screening_probabilities = p_screening,
                                         screening_cost = v_cost_dt, # obtain screening costs
                                         interval = 5, 
-                                        max_repititions = 4) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model 
+                                        max_repititions = 4) # screening repetition reflects the amount of repetitions IN ADDITION to the screening before the markov model 
 
 
 #------------------------------------------------------------------------------#
 ####                   4b Costs medicine                    ####
 #------------------------------------------------------------------------------
+
+# Isaac: same comments apply here and I suppose below too. One of the advantages of having separating age cohorts is the 
+# ability to show them separately, which is lost when these are combined in this way.  
+
 ai_medicine_costs <- getMedicineCosts(a_trace = a_trace_ai_cost, ### function returns the total medicine costs
                                       medicine_cost = v_cost_medicine,
                                       medicine_utilisation = df_utilisation_medicine) # obtain medicine costs
@@ -303,6 +320,9 @@ soc_medicine_costs <- getMedicineCosts(a_trace = a_trace_soc_cost, # cohort trac
 #------------------------------------------------------------------------------#
 ####                   4c Costs diagnostics                    ####
 #------------------------------------------------------------------------------
+
+# Isaac: please briefly define what these costs are
+
 ai_diagnostic_costs <- getDiagnosticCosts(trace = a_trace_ai_cost, # cohort trace of the patients non-compliant with AI screening
                                           diagnostics_cost = v_cost_utilisation_diagnostics) # obtain diagnostic costs
 
@@ -312,6 +332,9 @@ soc_diagnostic_costs <- getDiagnosticCosts(trace = a_trace_soc_cost, # cohort tr
 #------------------------------------------------------------------------------#
 ####                   4d Costs intervention                    ####
 #------------------------------------------------------------------------------
+
+# Isaac: please briefly define what these costs are
+
 ai_intervention_costs <- getInterventionCosts(trace = a_trace_ai_cost, # cohort trace of the patients non-compliant with AI screening
                                              intervention_cost = v_cost_utilisation_intervention) # obtain intervention costs
 
@@ -321,6 +344,16 @@ soc_intervention_costs <- getInterventionCosts(trace = a_trace_soc_cost, # cohor
 #------------------------------------------------------------------------------#
 ####                 4e Costs burden of disease visually impaired & blind   ####
 #------------------------------------------------------------------------------
+
+# Isaac: similar comments as above. In addition: societal_perspective = TRUE -> this is an option that we should have in another 
+# part of the code, so that we can easily change this once allowing to select societal or health care perspective.
+# I see for example that for burden you used a_trace_ai_cost but for productivity you used list_traces_ai_costs. 
+# I understand that list_traces_ai_costs is used for productivity because it's easier to assign 0 costs to some cohorts.
+# But this also has the advantage of getting results separately per cohort. As mentioned above, I find the approach of combining
+# traces of different length confusing and difficult to validate. I'd propose to use something like list_traces_ai_costs all the time
+# and have results separated per cohort (we will need to present these anyway!) and then take the weighted average for the total cohort results.
+# Also noticed that productivity costs change significantly if age_inits is changed as well.
+
 ai_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, trace = a_trace_ai_cost, societal_perspective = TRUE)
 ai_productivity <- getProductivityCosts(costs = v_cost_burden_disease, traces = list_traces_ai_costs, age_inits = age_inits)
 
@@ -331,8 +364,17 @@ soc_productivity <- getProductivityCosts(costs = v_cost_burden_disease, traces =
 #------------------------------------------------------------------------------#
 ####                         4f Total costs                                 ####
 #------------------------------------------------------------------------------#
-ai_total_costs <- ai_screening_costs + ai_medicine_costs + ai_diagnostic_costs + ai_intervention_costs + ai_visually_impaired + ai_blind
-soc_total_costs <- soc_medicine_costs + soc_diagnostic_costs + soc_intervention_costs + soc_visually_impaired + soc_blind
+
+# Isaac: costs associated to visually impaired and blind patients have not been defined yet
+# > ai_visually_impaired
+# Error: object 'ai_visually_impaired' not found
+# > soc_total_costs <- soc_medicine_costs + soc_diagnostic_costs + soc_intervention_costs + soc_visually_impaired + soc_blind
+# Error: object 'soc_visually_impaired' not found
+
+# I've commented these costs in lines below to continue running the code. Also, productivity costs not included yet.
+
+ai_total_costs <- ai_screening_costs + ai_medicine_costs + ai_diagnostic_costs + ai_intervention_costs + ai_burden$total + ai_productivity$total #+ ai_visually_impaired + ai_blind
+soc_total_costs <- soc_medicine_costs + soc_diagnostic_costs + soc_intervention_costs + soc_burden$total + soc_productivity$total #+ soc_visually_impaired + soc_blind
 
 #------------------------------------------------------------------------------#
 ####                       04 Visualization         ####
@@ -343,13 +385,16 @@ v_names_states <- colnames(a_trace_ai_uncorrected)
 plot_trace(a_trace_ai_uncorrected)
 plot_trace(a_trace_soc_uncorrected)
 
+# Isaac: The plots of the traces are incorrect. As discussed yesterday, these are not actual traces since the row sums do not 
+# equal to 1000: rowSums(a_trace_ai_uncorrected). This is problematic and it has to do with combining traces of different length.
+# I've also noticed that the number of patients in No glaucoma and in Observation are identical between AI and SoC. Is that a valid result?
+
 #------------------------------------------------------------------------------#
 ####                       05 Cost-effectiveness analysis (CEA)         ####
 #------------------------------------------------------------------------------#
 ## Incremental cost-effectiveness ratios (ICERs) 
-icer <- (ai_total_costs - soc_total_costs) / (ai_total_qaly - soc_total_qaly)
+icer <- (ai_total_costs - soc_total_costs) / (ai_total_qaly - soc_total_qaly) # Isaac: at this moment, I don't think this ICER is representative of the actual results.
 
-
-
-
-
+# Isaac: My overall suggestion would be to re-program (in fact it is a matter of moving some code around, not an actual re-programming) the decision tree and Markov model in this file so that they are run for 
+# one age cohort only, which the user can choose at the beginning. Then the models calculate the results for that specific cohort.
+# To calculate the overall population results, the model will be run separately for each cohort and a weighted average of the results will be calculated. This should not be complicated since the age cohort is already an input of the decision tree and Markov model functions. You can do this I suppose with either a for loop or with lapply() as you have done above.
