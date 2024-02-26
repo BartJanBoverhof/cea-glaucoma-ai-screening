@@ -34,10 +34,11 @@ getMarkovTrace <- function(scenario, # scenario
   n_states <- length(v_names_states)   # number of health states 
   sequence <- seq(from = interval, by = interval, length.out = max_repititions) # generate sequence of number on which repeated screening is conducted
   
-  # drop age categories before initial age
+  # drop age categories before and after initial age
   v_mortality <- df_mortality[(age_init-49):(age_max-50)]
-  v_incidences <- incidences[(age_init-49):(age_max-50)]
-  
+  v_incidences_of <- incidences$v_incidence_of[(age_init-49):(age_max-50)]
+  v_incidences_screening <- incidences$v_incidence_screening[(age_init-49):(age_max-50)]
+
   # transition probabilities
   p_healthy_obs <- p_transition$healthy_obs
   p_obs_healthy <- p_transition$obs_healthy
@@ -85,8 +86,8 @@ getMarkovTrace <- function(scenario, # scenario
 
   # fill array with transition probabilities
   # from healthy
-  a_matrices["No glaucoma", "No glaucoma", ]          <- 1 - (((1-v_mortality) * v_incidences) + ((1-v_mortality) * p_healthy_obs) + v_mortality)
-  a_matrices["No glaucoma", "Mild untreated", ]             <-     (1-v_mortality) * v_incidences #This is not right. It shoul be changed later.
+  a_matrices["No glaucoma", "No glaucoma", ]          <- 1 - (((1-v_mortality) * v_incidences_screening) + ((1-v_mortality) * p_healthy_obs) + v_mortality)
+  a_matrices["No glaucoma", "Mild untreated", ]             <-     (1-v_mortality) * v_incidences_screening 
   a_matrices["No glaucoma", "Observation", ]      <-     (1-v_mortality) * p_healthy_obs
   a_matrices["No glaucoma", "Death", ]            <-     v_mortality
 
@@ -106,27 +107,27 @@ getMarkovTrace <- function(scenario, # scenario
   a_matrices["Severe treated", "Death", ]             <- v_mortality
 
    # from mild untreated
-  a_matrices["Mild untreated", "Mild untreated", ]                <- 1 - ((1-v_mortality) * p_mild_mod_untreated + (1-v_mortality) * v_incidences + v_mortality)
+  a_matrices["Mild untreated", "Mild untreated", ]                <- 1 - ((1-v_mortality) * p_mild_mod_untreated + (1-v_mortality) * v_incidences_of + v_mortality)
   a_matrices["Mild untreated", "Moderate untreated", ]            <- (1-v_mortality) * p_mild_mod_untreated
-  a_matrices["Mild untreated", "Mild treated", ]               <- (1-v_mortality) * v_incidences
+  a_matrices["Mild untreated", "Mild treated", ]               <- (1-v_mortality) * v_incidences_of
   a_matrices["Mild untreated", "Death", ]               <- v_mortality
   
   # from moderate untreated
-  a_matrices["Moderate untreated", "Moderate untreated", ]        <- 1 - ((1-v_mortality) * p_mod_sev_untreated + (1-v_mortality) * v_incidences + v_mortality)
+  a_matrices["Moderate untreated", "Moderate untreated", ]        <- 1 - ((1-v_mortality) * p_mod_sev_untreated + (1-v_mortality) * v_incidences_of + v_mortality)
   a_matrices["Moderate untreated", "Severe untreated", ]          <- (1-v_mortality) * p_mod_sev_untreated
-  a_matrices["Moderate untreated", "Moderate treated", ]           <- (1-v_mortality) * v_incidences
+  a_matrices["Moderate untreated", "Moderate treated", ]           <- (1-v_mortality) * v_incidences_of
   a_matrices["Moderate untreated", "Death", ]           <- v_mortality
   
   # from severe untreated
-  a_matrices["Severe untreated", "Severe untreated", ]            <-  1 - ((1-v_mortality) * p_sev_blind_untreated + (1-v_mortality) * v_incidences + v_mortality)
+  a_matrices["Severe untreated", "Severe untreated", ]            <-  1 - ((1-v_mortality) * p_sev_blind_untreated + (1-v_mortality) * v_incidences_of + v_mortality)
   a_matrices["Severe untreated", "Blind", ]             <- (1-v_mortality) * p_sev_blind_untreated
-  a_matrices["Severe untreated", "Severe treated", ]             <- (1-v_mortality) * v_incidences
+  a_matrices["Severe untreated", "Severe treated", ]             <- (1-v_mortality) * v_incidences_of
   a_matrices["Severe untreated", "Death", ]             <- v_mortality
 
   # from observation
-  a_matrices["Observation", "Observation", ]  <- 1 - (((1-v_mortality) * v_incidences) + ((1-v_mortality) * p_obs_healthy) + v_mortality)
+  a_matrices["Observation", "Observation", ]  <- 1 - (((1-v_mortality) * v_incidences_screening) + ((1-v_mortality) * p_obs_healthy) + v_mortality)
   a_matrices["Observation", "No glaucoma", ]      <- (1-v_mortality) * p_obs_healthy
-  a_matrices["Observation", "Mild treated", ]         <- (1-v_mortality) * v_incidences
+  a_matrices["Observation", "Mild treated", ]         <- (1-v_mortality) * v_incidences_screening
   a_matrices["Observation", "Death", ]        <- v_mortality
   
   # from blind
@@ -144,6 +145,7 @@ getMarkovTrace <- function(scenario, # scenario
     # fill in cohort trace
     m_trace[t + 1, ]   <- m_trace[t, ]   %*% a_matrices[, , t]
 
+    # modeling repeated screening
     if (t %in% sequence && scenario == "ai"){ # patients that are undiagnosed move to the diagnosed ones 
       m_trace[t + 1, "Mild treated"] <- m_trace[t + 1, "Mild treated"] + (m_trace[t + 1, "Mild untreated"] * screening_detection_rate)
       m_trace[t + 1, "Moderate treated"] <- m_trace[t + 1, "Moderate treated"] + (m_trace[t + 1, "Moderate untreated"] * screening_detection_rate)

@@ -26,7 +26,9 @@ load("data/3a_p_severity_undiagnosed.RData")
 load("data/4_p_transition.RData")
 load("data/5a_v_utilities.RData")
 load("data/5b_v_utilities_age_decrement.RData")
-load("data/6_v_incidences.RData")
+load("data/6a_v_incidences_of.RData")
+load("data/6b_v_incidences_screening.RData")
+load("data/6c_v_prevalence.RData")
 load("data/7a_df_utilisation_medicine.RData")
 load("data/8a_v_cost_dt.RData")
 load("data/8b_v_cost_medicine.RData")
@@ -66,18 +68,25 @@ r_male_female <- getMaleFemaleRatio(df_mortality = df_mortality) ### (function r
 #------------------------------------------------------------------------------#
 ####                       1 Decision Tree                            ####
 #------------------------------------------------------------------------------#
-df_incidence_clean <- calculateIncidence(v_incidences, age_start = 50, age_max = 100) ### (function returns incidence per age year)
-df_mortality_clean <- calculateMortality(df_mortality, age_start = 50, age_max = 100) ### (function returns mortality per age year)
+v_incidence_of <- calculateIncidence(incidences = v_incidences_of, age_start = 50, age_max = 100) ### (function returns incidence per age year)
+v_incidence_screening <- calculateIncidence(incidences = v_incidences_screening, age_start = 50, age_max = 100) ### (function returns incidence per age year)
+incidences <- list(v_incidence_of = v_incidence_of, v_incidence_screening = v_incidence_screening)
+v_mortality <- calculateMortality(df_mortality = df_mortality, age_start = 50, age_max = 100) ### (function returns mortality per age year)
 
 ################## AI STRATEGY
-### functions return probability of patients in each health state, separately for each arm of the decision tree
-p_dt_ai_soc <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "soc", visualize = F, model_compliance = FALSE) # soc arm #Isaac: this is all 0. Please check
-p_dt_ai_low_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "low_risk", visualize = F, model_compliance = FALSE) # low risk arm
-p_dt_ai_high_risk <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "high_risk", visualize = F, model_compliance = FALSE) # high risk arm #Isaac: this is all 0 too
-p_dt_ai_compliant <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = "compliant", visualize = F, model_compliance = FALSE) # compliant arm
+### functions return probability of patients in each health state, seperately for each arm of the decision tree
+strategies <- c("soc", "low_risk", "high_risk", "compliant")
+p_dt_ai <- list()
 
-p_dt_ai <- CombineDT(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) ### function combines all arms of the decision tree into single starting distribution per health state #Isaac: as above: why are these not age-dependent?
-p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE) ### function returns list of probabilities related to each screening arm (for later use) # Isaac: please clarify how these are going to be used later. Please not as mentioned above that there are 0's here.
+for (strategy in strategies) {
+  p_dt_ai[[strategy]] <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = strategy, visualize = F, model_compliance = FALSE)
+}
+
+p_dt_ai <- CombineDT(traces = p_dt_ai) ### function combines all arms of the decision tree into single starting distribution per health state
+
+
+p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE) ### function returns list of probabilities related to each screening arm (for later use)
+
 
 v_cohort_ai_50_55 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["50 to 55 years"]) * 1000)) # re-scale to cohort of 1000 patients
 v_cohort_ai_55_60 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["55 to 60 years"]) * 1000)) # re-scale to cohort of 1000 patients
@@ -114,50 +123,50 @@ age_inits <- c(52, 57, 62, 67, 72) # initial age for each age category
 a_trace_ai_5055 <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
                                   cohort = v_cohort_ai_50_55,
                                   screening_detection_rate = p_screening$p_fully_compliant, 
-                                  df_mortality = df_mortality_clean, 
+                                  df_mortality = v_mortality, 
                                   p_transition =  p_transition , 
                                   age_init = age_inits[1],
-                                  incidences = df_incidence_clean,
+                                  incidences = incidences,
                                   interval = 5, 
                                   max_repititions = 4)  
 
 a_trace_ai_5560 <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 55-60 years)
                                   cohort = v_cohort_ai_55_60,
                                   screening_detection_rate = p_screening$p_fully_compliant, 
-                                  df_mortality = df_mortality_clean, 
+                                  df_mortality = v_mortality, 
                                   p_transition =  p_transition , 
                                   age_init = age_inits[2],
-                                  incidences = df_incidence_clean,
+                                  incidences = incidences,
                                   interval = 5, 
                                   max_repititions = 3)
 
 a_trace_ai_6065 <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 60-65 years)
                                   cohort = v_cohort_ai_60_65,
                                   screening_detection_rate = p_screening$p_fully_compliant, 
-                                  df_mortality = df_mortality_clean, 
+                                  df_mortality = v_mortality, 
                                   p_transition =  p_transition , 
                                   age_init = age_inits[3],
-                                  incidences = df_incidence_clean,
+                                  incidences = incidences,
                                   interval = 5, 
                                   max_repititions = 2)
 
 a_trace_ai_6570 <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 65-70 years)
                                   cohort = v_cohort_ai_65_70,
                                   screening_detection_rate = p_screening$p_fully_compliant, 
-                                  df_mortality = df_mortality_clean, 
+                                  df_mortality = v_mortality, 
                                   p_transition =  p_transition , 
                                   age_init = age_inits[4],
-                                  incidences = df_incidence_clean,
+                                  incidences = incidences,
                                   interval = 5, 
                                   max_repititions = 1)
 
 a_trace_ai_7075 <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 70-75 years) 
                                   cohort = v_cohort_ai_70_75,
                                   screening_detection_rate = p_screening$p_fully_compliant, 
-                                  df_mortality = df_mortality_clean, 
+                                  df_mortality = v_mortality, 
                                   p_transition =  p_transition , 
                                   age_init = age_inits[5],
-                                  incidences = df_incidence_clean,
+                                  incidences = incidences,
                                   interval = 5, 
                                   max_repititions = 0)           
 # create summed traces
@@ -192,50 +201,50 @@ list_traces_ai_costs <- list(a_trace_5055 = a_trace_ai_5055$trace_cost, a_trace_
 a_trace_soc_5055 <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
                                    cohort = v_cohort_soc_50_55,
                                    screening_detection_rate = 0, 
-                                   df_mortality = df_mortality_clean, 
+                                   df_mortality = v_mortality, 
                                    p_transition =  p_transition , 
                                    age_init = age_inits[1],
-                                   incidences = df_incidence_clean,
+                                   incidences = incidences,
                                    interval = 0, 
                                    max_repititions = 0)                         
 
 a_trace_soc_5560 <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 55-60 years)
                                     cohort = v_cohort_soc_55_60,
                                     screening_detection_rate = 0, 
-                                    df_mortality = df_mortality_clean, 
+                                    df_mortality = v_mortality, 
                                     p_transition =  p_transition , 
                                     age_init = age_inits[2],
-                                    incidences = df_incidence_clean,
+                                    incidences = incidences,
                                     interval = 0, 
                                     max_repititions = 0)
 
 a_trace_soc_6065 <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 60-65 years)
                                     cohort = v_cohort_soc_60_65,
                                     screening_detection_rate = 0, 
-                                    df_mortality = df_mortality_clean, 
+                                    df_mortality = v_mortality, 
                                     p_transition =  p_transition , 
                                     age_init = age_inits[3],
-                                    incidences = df_incidence_clean,
+                                    incidences = incidences,
                                     interval = 0, 
                                     max_repititions = 0)
 
 a_trace_soc_6570 <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 65-70 years)
                                     cohort = v_cohort_soc_65_70,
                                     screening_detection_rate = 0, 
-                                    df_mortality = df_mortality_clean, 
+                                    df_mortality = v_mortality, 
                                     p_transition =  p_transition , 
                                     age_init = age_inits[4],
-                                    incidences = df_incidence_clean,
+                                    incidences = incidences,
                                     interval = 0, 
                                     max_repititions = 0)
 
 a_trace_soc_7075 <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 70-75 years)
                                     cohort = v_cohort_soc_70_75,
                                     screening_detection_rate = 0, 
-                                    df_mortality = df_mortality_clean, 
+                                    df_mortality = v_mortality, 
                                     p_transition =  p_transition , 
                                     age_init = age_inits[5],
-                                    incidences = df_incidence_clean,
+                                    incidences = incidences,
                                     interval = 0, 
                                     max_repititions = 0)                                  
 
@@ -264,25 +273,31 @@ list_traces_soc_costs <- list(a_trace_5055 = a_trace_soc_5055$trace_cost, a_trac
 sum(a_trace_ai_5055$trace[1,]) + sum(a_trace_ai_5560$trace[1,]) + sum(a_trace_ai_6065$trace[1,]) + sum(a_trace_ai_6570$trace[1,]) + sum(a_trace_ai_7075$trace[1,]) # check whether the traces sum up to 1000
 sum(a_trace_soc_5055$trace[1,]) + sum(a_trace_soc_5560$trace[1,]) + sum(a_trace_soc_6065$trace[1,]) + sum(a_trace_soc_6570$trace[1,]) + sum(a_trace_soc_7075$trace[1,]) # check whether the traces sum up to 1000
 
+################################################################
+########################### RESTULTS ###########################
+################################################################
+ai_time_spent <- getTimeSpent(a_trace = a_trace_ai_uncorrected) ### (function returns time spent in each health state))
+soc_time_spent <- getTimeSpent(a_trace = a_trace_soc_uncorrected) ### (function returns time spent in each health state))
+blindness_prevented <- getBlindnessPrevented(a_trace_ai = a_trace_ai_uncorrected, a_trace_soc = a_trace_soc_uncorrected) ### (function returns blindness prevented)
+ai_screening_descriptives <- getScreenignDescriptives(trace = a_trace_ai_uncorrected, ### function returns screening costs per screening repition
+                                                     screening_probabilities = p_screening,
+                                                     screening_cost = v_cost_dt, # obtain screening costs
+                                                     interval = 5, 
+                                                     max_repititions = 4,
+                                                     total_cohort = t_total_cohort) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model
+
 #------------------------------------------------------------------------------#
 ####                       3 Utilities                           ####
 #------------------------------------------------------------------------------#
-
 # Isaac: these two functions are based on the objects above where you combined traces of different lengths.
 # As discussed before, I'm not sure why that step is needed. To validate the results, it'd be easier to calculate
 # total QALYs for each cohort separately and then take the weighted average.
 # It could also be a good exercise to check whether these calculations are correct, since they should be equal I suppose.
 # I've also noticed that changing age_init does not change the results of ai_total_qaly or soc_total_qaly. Is that correct?
+                             
+ai_total_qaly <- getQALYs(a_trace = a_trace_ai_utillity, v_utilities = v_utilities) ### (function returns average QALY per patient)
+soc_total_qaly <- getQALYs(a_trace = a_trace_soc_utillity, v_utilities = v_utilities) ### (returns average QALY per patient)
 
-ai_total_qaly <- getQALYs(a_trace = a_trace_ai_utillity, ### (function returns average QALY per patient)
-                     v_utilities = v_utilities, 
-                     n_cycle_length = 1,
-                     age_init = 52) 
-
-soc_total_qaly <- getQALYs(a_trace = a_trace_soc_utillity, ### (returns average QALY per patient)
-                      v_utilities = v_utilities, 
-                      n_cycle_length = 1,
-                      age_init = 52)
 
 #------------------------------------------------------------------------------#
 ####                   4a Costs decision tree screening costs                    ####
@@ -299,8 +314,9 @@ ai_screening_costs <- getScreeningCosts(trace = a_trace_ai_cost, ### function re
                                         screening_probabilities = p_screening,
                                         screening_cost = v_cost_dt, # obtain screening costs
                                         interval = 5, 
+                                        max_repititions = 4,
+                                        total_cohort = t_total_cohort) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model 
                                         max_repititions = 4) # screening repetition reflects the amount of repetitions IN ADDITION to the screening before the markov model 
-
 
 #------------------------------------------------------------------------------#
 ####                   4b Costs medicine                    ####
@@ -364,17 +380,8 @@ soc_productivity <- getProductivityCosts(costs = v_cost_burden_disease, traces =
 #------------------------------------------------------------------------------#
 ####                         4f Total costs                                 ####
 #------------------------------------------------------------------------------#
-
-# Isaac: costs associated to visually impaired and blind patients have not been defined yet
-# > ai_visually_impaired
-# Error: object 'ai_visually_impaired' not found
-# > soc_total_costs <- soc_medicine_costs + soc_diagnostic_costs + soc_intervention_costs + soc_visually_impaired + soc_blind
-# Error: object 'soc_visually_impaired' not found
-
-# I've commented these costs in lines below to continue running the code. Also, productivity costs not included yet.
-
-ai_total_costs <- ai_screening_costs + ai_medicine_costs + ai_diagnostic_costs + ai_intervention_costs + ai_burden$total + ai_productivity$total #+ ai_visually_impaired + ai_blind
-soc_total_costs <- soc_medicine_costs + soc_diagnostic_costs + soc_intervention_costs + soc_burden$total + soc_productivity$total #+ soc_visually_impaired + soc_blind
+ai_total_costs <- ai_screening_costs$cost_pp + ai_medicine_costs$cost_pp + ai_diagnostic_costs$cost_pp + ai_intervention_costs$price_pp + ai_burden$price_pp + ai_productivity$price_pp
+soc_total_costs <- soc_medicine_costs$cost_pp + soc_diagnostic_costs$cost_pp + soc_intervention_costs$price_pp + soc_burden$price_pp + soc_productivity$price_pp
 
 #------------------------------------------------------------------------------#
 ####                       04 Visualization         ####

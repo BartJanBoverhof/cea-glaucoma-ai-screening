@@ -97,7 +97,7 @@ calculateIncidence <- function(incidences,
                                cycle_length =1){
 
   v_incidences_modified <- incidences %>%  
-    separate(Age, into = c("start_age", "end_age"), sep = "-", remove = FALSE) %>%
+    separate(age, into = c("start_age", "end_age"), sep = "-", remove = FALSE) %>%
     mutate(
           start_age = as.numeric(gsub("[^0-9]", "", start_age)),
           end_age = as.numeric(gsub("[^0-9]", "", end_age))
@@ -105,14 +105,14 @@ calculateIncidence <- function(incidences,
         rowwise() %>%
         mutate(year = list(seq(from = start_age, to = end_age ))) %>%
         unnest(year) %>%
-        select(year, Incidence)
+        select(year, incidence)
 
   # remove rows that are lower than start_age and higher than end_age
   v_incidences_modified_by_age <- v_incidences_modified %>%
     filter(year >= age_start & year <= age_max)
 
   # age-specific transition rates to the dead state for all cycles 
-  v_incidences_modified_by_age  <- rep(v_incidences_modified_by_age$Incidence, each = 1/cycle_length)  
+  v_incidences_modified_by_age  <- rep(v_incidences_modified_by_age$incidence, each = 1/cycle_length)  
   
   # generate a sequence of ages 
   v_age <- seq(from = age_start, to = age_max-1, by = 1/cycle_length)
