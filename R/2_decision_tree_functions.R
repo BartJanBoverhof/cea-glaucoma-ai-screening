@@ -177,9 +177,9 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   return(results)
 }
 
-CombineDT <- function(p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant) {
+CombineDT <- function(traces) {
   
-  starting_probabilities <- mapply(sum, p_dt_ai_soc, p_dt_ai_low_risk, p_dt_ai_high_risk, p_dt_ai_compliant, SIMPLIFY = FALSE)
+  starting_probabilities <- mapply(sum, traces$soc , traces$low_risk , traces$high_risk, traces$compliant, SIMPLIFY = FALSE)
   total_sum <- sum(unlist(starting_probabilities))
 
   print(paste("The decision tree arms sum to a total of", total_sum))

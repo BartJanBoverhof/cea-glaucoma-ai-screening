@@ -49,11 +49,25 @@ v_utilities_age_decrement  <- read_excel(file.init) #loading csv
 save(v_utilities_age_decrement, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/5b_v_utilities_age_decrement.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
 #------------------------------------------------------------------------------#
-####                    06 incidences                         ####
+####                    06a incidences of                         ####
 #------------------------------------------------------------------------------#
-file.init <- "data-raw/6_incidences.csv" #Init statement
-v_incidences  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = ".")) 
-save(v_incidences, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/6_v_incidences.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+file.init <- "data-raw/6a_incidences_of.csv" #Init statement
+v_incidences_of  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
+save(v_incidences_of, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/6a_v_incidences_of.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
+#------------------------------------------------------------------------------#
+####                    06b incidences screening                         ####
+#------------------------------------------------------------------------------#
+file.init <- "data-raw/6b_incidences_screening.csv" #Init statement
+v_incidences_screening  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
+save(v_incidences_screening, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/6b_v_incidences_screening.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
+#------------------------------------------------------------------------------#
+####                    06c prevelance                         ####
+#------------------------------------------------------------------------------#
+file.init <- "data-raw/6c_prevalence.csv" #Init statement
+v_prevalence  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
+save(v_prevalence, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/6c_v_prevalence.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
 #------------------------------------------------------------------------------#
 ####                    07 utilisation                         ####
@@ -84,4 +98,6 @@ save(v_cost_utilisation_intervention, file = "~/Documents/GitHub/cea-glaucoma-ai
 file.init <- "data-raw/8f_cost_burden_disease.xlsx" #Init statement
 v_cost_burden_disease  <- read_excel(file.init)
 save(v_cost_burden_disease, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/8f_v_cost_burden_disease.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
+
 
