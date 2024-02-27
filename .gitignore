@@ -50,3 +50,7 @@ data/.DS_Store
 data/.DS_Store
 data-raw/.DS_Store
 data-raw/.DS_Store
+data/8c_v_cost_utilisation_diagnostics.RData
+data/8d_v_cost_utilisation_intervention.RData
+data-raw/8d_cost_utilisation_intervention.xlsx
+data-raw/8c_cost_utilisation_diagnostics.xlsx
