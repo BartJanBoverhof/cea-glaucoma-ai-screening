@@ -311,6 +311,7 @@ ai_screening_costs <- getScreeningCosts(trace = a_trace_ai_cost, ### function re
                                         interval = 5, 
                                         max_repititions = 4,
                                         total_cohort = t_total_cohort) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model 
+                                      #Isaac: this line was giving an error  #max_repititions = 4) # screening repetition reflects the amount of repetitions IN ADDITION to the screening before the markov model 
 
 #------------------------------------------------------------------------------#
 ####                   4b Costs medicine                    ####
