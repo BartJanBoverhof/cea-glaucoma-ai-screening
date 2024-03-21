@@ -167,14 +167,14 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
     p_path_mod_undiagnosed = p_path_mod_undiagnosed,
     p_path_severe_undiagnosed = p_path_severe_undiagnosed,
     p_path_blind = p_path_blind
-  )
+    )
   
   # Conditionally append the graph object to the return list
   if (visualize) {
     results$graph <- graph
   }
   
-  return(results)
+  return(p_dt = results)
 }
 
 CombineDT <- function(traces) {

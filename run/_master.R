@@ -16,7 +16,8 @@ source("R/1_model_pipeline_functions.R", echo = TRUE) #Load cohort model input f
 source("R/2_decision_tree_functions.R", echo = TRUE) #Load decision model functions
 source("R/3_markov_model_functions.R", echo = TRUE) #Load decision model functions
 source("R/4_costs_and_utilities_functions.R", echo = TRUE) #Load utility functions
-source("R/5_visualisation_functions.R", echo = TRUE) #Load visualization functions
+source("R/5_sensitivity_and_scenario.R", echo = TRUE) #Load visualization functions
+source("R/6_visualisation_functions.R", echo = TRUE) #Load visualization functions
 
 
 # loading all required data objects
@@ -42,7 +43,6 @@ p_severity_undiagnosed <- p_severity_undiagnosed # Isaac: 'same' as p_dt but sin
 p_transition <- p_transition # Isaac: we need to check this one carefully to avoid illogical values when considering all transitions together
 v_utilities <- v_utilities # Isaac: unclear why healthy and obs get a value = 1. Maybe this is corrected later in the code, but it should be equivalent to the general population utility. # Then each utility will be sampled independently from a beta distribution: we may need to check for illogical values here too. 
 v_utilities_age_decrement <- v_utilities_age_decrement
-
 
 #------------------------------------------------------------------------------#
 ####                       0 Obtain Cohort                            ####
@@ -83,10 +83,7 @@ for (strategy in strategies) {
 }
 
 p_dt_ai <- CombineDT(traces = p_dt_ai) ### function combines all arms of the decision tree into single starting distribution per health state
-
-
-p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE) ### function returns list of probabilities related to each screening arm (for later use)
-
+p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE, v_prevalence = v_prevalence) ### function returns list of probabilities related to each screening arm (for later use)
 
 v_cohort_ai_50_55 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["50 to 55 years"]) * 1000)) # re-scale to cohort of 1000 patients
 v_cohort_ai_55_60 <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort["55 to 60 years"]) * 1000)) # re-scale to cohort of 1000 patients
@@ -293,8 +290,7 @@ ai_screening_descriptives <- getScreenignDescriptives(trace = a_trace_ai_uncorre
 # As discussed before, I'm not sure why that step is needed. To validate the results, it'd be easier to calculate
 # total QALYs for each cohort separately and then take the weighted average.
 # It could also be a good exercise to check whether these calculations are correct, since they should be equal I suppose.
-# I've also noticed that changing age_init does not change the results of ai_total_qaly or soc_total_qaly. Is that correct?
-                             
+# I've also noticed that changing age_init does not change the results of ai_total_qaly or soc_total_qaly. Is that correct?                        
 ai_total_qaly <- getQALYs(a_trace = a_trace_ai_utillity, v_utilities = v_utilities) ### (function returns average QALY per patient)
 soc_total_qaly <- getQALYs(a_trace = a_trace_soc_utillity, v_utilities = v_utilities) ### (returns average QALY per patient)
 
@@ -309,14 +305,12 @@ soc_total_qaly <- getQALYs(a_trace = a_trace_soc_utillity, v_utilities = v_utili
 # are 3 AI screenings per patient per lifetime. Do we consider that a valid result? My point is that we need to link that with the 
 # average age of the patient population. If this is 67 years, then 3 AI screenings do not seem correct. However, in the model now
 # I suppose the average age should be a bit above 60 years then. We need to consider whether that's valid or not.
-
 ai_screening_costs <- getScreeningCosts(trace = a_trace_ai_cost, ### function returns screening costs per screening repetition
                                         screening_probabilities = p_screening,
                                         screening_cost = v_cost_dt, # obtain screening costs
                                         interval = 5, 
                                         max_repititions = 4,
                                         total_cohort = t_total_cohort) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model 
-                                        max_repititions = 4) # screening repetition reflects the amount of repetitions IN ADDITION to the screening before the markov model 
 
 #------------------------------------------------------------------------------#
 ####                   4b Costs medicine                    ####
@@ -338,7 +332,6 @@ soc_medicine_costs <- getMedicineCosts(a_trace = a_trace_soc_cost, # cohort trac
 #------------------------------------------------------------------------------
 
 # Isaac: please briefly define what these costs are
-
 ai_diagnostic_costs <- getDiagnosticCosts(trace = a_trace_ai_cost, # cohort trace of the patients non-compliant with AI screening
                                           diagnostics_cost = v_cost_utilisation_diagnostics) # obtain diagnostic costs
 
@@ -350,7 +343,6 @@ soc_diagnostic_costs <- getDiagnosticCosts(trace = a_trace_soc_cost, # cohort tr
 #------------------------------------------------------------------------------
 
 # Isaac: please briefly define what these costs are
-
 ai_intervention_costs <- getInterventionCosts(trace = a_trace_ai_cost, # cohort trace of the patients non-compliant with AI screening
                                              intervention_cost = v_cost_utilisation_intervention) # obtain intervention costs
 
@@ -369,7 +361,6 @@ soc_intervention_costs <- getInterventionCosts(trace = a_trace_soc_cost, # cohor
 # traces of different length confusing and difficult to validate. I'd propose to use something like list_traces_ai_costs all the time
 # and have results separated per cohort (we will need to present these anyway!) and then take the weighted average for the total cohort results.
 # Also noticed that productivity costs change significantly if age_inits is changed as well.
-
 ai_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, trace = a_trace_ai_cost, societal_perspective = TRUE)
 ai_productivity <- getProductivityCosts(costs = v_cost_burden_disease, traces = list_traces_ai_costs, age_inits = age_inits)
 
@@ -405,3 +396,19 @@ icer <- (ai_total_costs - soc_total_costs) / (ai_total_qaly - soc_total_qaly) # 
 # Isaac: My overall suggestion would be to re-program (in fact it is a matter of moving some code around, not an actual re-programming) the decision tree and Markov model in this file so that they are run for 
 # one age cohort only, which the user can choose at the beginning. Then the models calculate the results for that specific cohort.
 # To calculate the overall population results, the model will be run separately for each cohort and a weighted average of the results will be calculated. This should not be complicated since the age cohort is already an input of the decision tree and Markov model functions. You can do this I suppose with either a for loop or with lapply() as you have done above.
+
+#------------------------------------------------------------------------------#
+####                       06 Deterministic sensitivity analysis         ####
+#------------------------------------------------------------------------------# 
+# parameters to vary in sensitivity analysis
+parameters <-  list(ai_screening_costs = ai_screening_costs$cost_pp, 
+                    ai_medicine_costs = ai_medicine_costs$cost_pp, 
+                    ai_diagnostic_costs = ai_diagnostic_costs$cost_pp, 
+                    ai_intervention_costs = ai_intervention_costs$price_pp, 
+                    ai_burden = ai_burden$price_pp, 
+                    ai_productivity = ai_productivity$price_pp)
+
+
+tornadoPlot(parameters = parameters, titleName = "Tornado diagram", outcomeName = "")
+
+

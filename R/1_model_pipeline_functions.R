@@ -151,7 +151,8 @@ getMeanAge <- function(df_mortality, # mortality data
   return(mean_age)
 }
 
-getScreeningProbabilities <- function(probabilities, model_compliance){
+
+getScreeningProbabilities <- function(probabilities, model_compliance, v_prevalence){
 
   if (model_compliance == FALSE){
     p_screen_compliance <-  1     # screening compliance
@@ -166,10 +167,21 @@ p_low_risk <- p_screen_compliance * (1-probabilities$ai_sens)
 p_high_risk <- p_screen_compliance * probabilities$ai_sens * (1-p_referral_compliance)
 p_fully_compliant <- p_screen_compliance * probabilities$ai_sens * p_referral_compliance 
 
-# check if they sum up to 1
-#p_soc + p_low_risk + p_high_risk +p_fully_compliant
+# calculate required probabilities
+ai_tp <- p_dt$ai_sens * p_dt$prevalence  # true positives
+ai_fp <- (1-p_dt$ai_spec) * (1-p_dt$prevalence) # false positives
+ai_tn <- p_dt$ai_spec * (1-p_dt$prevalence) # true negatives
+ai_fn <- (1-p_dt$ai_sens) * p_dt$prevalence # false negatives
 
-return(list(p_soc = p_soc, p_low_risk = p_low_risk, p_high_risk = p_high_risk, p_fully_compliant = p_fully_compliant))
+ai_positive <- ai_tp + ai_fp # positive test result
+ai_negative <- ai_tn + ai_fn # negative test result
+
+ai_ppv <- ai_tp / ai_positive # positive predictive value
+ai_npv <- ai_tn / ai_negative # negative predictive value
+
+p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv
+
+return(list(p_soc = p_soc, p_low_risk = p_low_risk, p_high_risk = p_high_risk, p_fully_compliant = p_fully_compliant, p_fully_screened = p_path_no_glaucoma))
 }
 
 padArray <- function(pad, pad_to) {
