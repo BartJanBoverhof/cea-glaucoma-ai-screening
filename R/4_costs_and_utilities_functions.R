@@ -15,6 +15,8 @@ getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
   return(list(blind_prevented = blind_prevented, blind_prevented_pp = blind_prevented/1000))
 }
 
+
+
 getQALYs <- function(a_trace, # cohort trace
                       v_utilities){ # vector of utilities
 
@@ -67,7 +69,7 @@ getScreenignDescriptives <- function(trace,
        patients <- patients * total_cohort_cumulative[i] # multiply with those patients that have actually been screened
     }                
     
-    # determining  costs
+    # determining screens
     screened_patients[i] <- (patients * p_fully_compliant)
     }
   
@@ -278,12 +280,12 @@ getInterventionCosts <- function(trace, intervention_cost){
 getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
   
   # filter on visually impaired (vf) costs 
-  costs_vi <- costs %>%
-    filter(str_detect(type, "vi$")) 
+  costs_vi_mod <- costs %>%
+    filter(str_detect(type, "vi_mod$")) 
   
   # filter on blind (blind) costs
-  costs_blind <- costs %>%
-    filter(str_detect(type, "blind$"))
+  costs_vi_sev <- costs %>%
+    filter(str_detect(type, "vi_sev$"))
   
   if (societal_perspective == FALSE) {
     # set all costs to 0
@@ -295,14 +297,14 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
   }
   
   # direct medical costs
-  direct_med_vi <- costs_vi$general_practitioner + costs_vi$other + costs_vi$inpatient_services + costs_vi$physician + costs_vi$mobility_training + costs_vi$practical_skills + costs_vi$blind_aids + costs_vi$communication_aids + costs_vi$vision_aids + costs_vi$measuring_devices # direct medical costs visually impaired
+  direct_med_vi_mod <- costs_vi_mod$general_practitioner + costs_vi_mod$other + costs_vi_mod$inpatient_services + costs_vi_mod$physician + costs_vi_mod$mobility_training + costs_vi_mod$practical_skills + costs_vi_mod$blind_aids + costs_vi_mod$communication_aids + costs_vi_mod$vision_aids + costs_vi_mod$measuring_devices # direct medical costs visually impaired
   
-  direct_med_blind <- costs_blind$general_practitioner + costs_vi$other + costs_blind$inpatient_services + costs_blind$physician + costs_blind$mobility_training + costs_blind$practical_skills + costs_blind$blind_aids + costs_blind$communication_aids + costs_blind$vision_aids + costs_blind$measuring_devices # direct medical costs blind
+  direct_med_vi_sev <- costs_vi_sev$general_practitioner + costs_vi_sev$other + costs_vi_sev$inpatient_services + costs_vi_sev$physician + costs_vi_sev$mobility_training + costs_vi_sev$practical_skills + costs_vi_sev$blind_aids + costs_vi_sev$communication_aids + costs_vi_sev$vision_aids + costs_vi_sev$measuring_devices # direct medical costs blind
 
   # direct non-medical costs
-  direct_nonmed_vi <- costs_vi$transportation + costs_vi$home_care_household + costs_vi$home_care_household + costs_vi$home_care_personal + costs_vi$informal_care_household + costs_vi$informal_care_personal + costs_vi$informal_care_communication + costs_vi$informal_care_companionship # direct non-medical costs visually impaired
+  direct_nonmed_vi_mod <- costs_vi_mod$transportation + costs_vi_mod$home_care_household + costs_vi_mod$home_care_household + costs_vi_mod$home_care_personal + costs_vi_mod$informal_care_household + costs_vi_mod$informal_care_personal + costs_vi_mod$informal_care_communication + costs_vi_mod$informal_care_companionship # direct non-medical costs visually impaired
   
-  direct_nonmed_blind <- costs_blind$transportation + costs_blind$home_care_household + costs_blind$home_care_household + costs_blind$home_care_personal + costs_blind$informal_care_household + costs_blind$informal_care_personal + costs_blind$informal_care_communication + costs_blind$informal_care_companionship # direct non-medical costs blind
+  direct_nonmed_vi_sev <- costs_vi_sev$transportation + costs_vi_sev$home_care_household + costs_vi_sev$home_care_household + costs_vi_sev$home_care_personal + costs_vi_sev$informal_care_household + costs_vi_sev$informal_care_personal + costs_vi_sev$informal_care_communication + costs_vi_sev$informal_care_companionship # direct non-medical costs blind
   
   # total number of patients
   patients_severe_treated <- sum(trace[,"Severe treated"]) 
@@ -310,9 +312,9 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
   patients_blind <- sum(trace[,"Blind"])
   
   # total costs
-  costs_severe_treated <- ((direct_med_vi + direct_nonmed_vi) * patients_severe_treated) / 1000
-  costs_severe_untreated <- ((direct_med_vi + direct_nonmed_vi) * patients_severe_untreated) / 1000
-  costs_blind <- ((direct_med_blind + direct_nonmed_blind ) * patients_blind) / 1000
+  costs_severe_treated <- ((direct_med_vi_mod + direct_nonmed_vi_mod) * patients_severe_treated) / 1000
+  costs_severe_untreated <- ((direct_med_vi_mod + direct_nonmed_vi_mod) * patients_severe_untreated) / 1000
+  costs_blind <- ((direct_med_vi_sev + direct_nonmed_vi_sev) * patients_blind) / 1000
   total <- sum(costs_severe_treated, costs_severe_untreated, costs_blind)
   
   # Return the result
@@ -322,12 +324,12 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
 getProductivityCosts <- function(costs, traces, age_inits) {
   
   # filter on visually impaired (vf) costs 
-  costs_vi <- costs %>%
-    filter(str_detect(type, "vi$")) 
+  costs_vi_mod <- costs %>%
+    filter(str_detect(type, "vi_mod$")) 
   
   # filter on blind (blind) costs
-  costs_blind <- costs %>%
-    filter(str_detect(type, "blind$"))
+  costs_vi_sev <- costs %>%
+    filter(str_detect(type, "vi_sev$"))
   
   # initialize variables  
   pension_age <- 67 # dutch pension age
@@ -345,9 +347,9 @@ getProductivityCosts <- function(costs, traces, age_inits) {
   }
   
   # total costs
-  costs_severe_treated <- ((costs_vi$productivity_absent + costs_vi$productivity_disability) * sum(patients_severe_treated)) / 1000 
-  costs_severe_untreated <- ((costs_vi$productivity_absent + costs_vi$productivity_disability) * sum(patients_severe_untreated)) / 1000
-  costs_blind <- ((costs_blind$productivity_absent + costs_blind$productivity_disability) * sum(patients_blind)) / 1000
+  costs_severe_treated <- ((costs_vi_mod$productivity_absent + costs_vi_mod$productivity_disability) * sum(patients_severe_treated)) / 1000 
+  costs_severe_untreated <- ((costs_vi_mod$productivity_absent + costs_vi_mod$productivity_disability) * sum(patients_severe_untreated)) / 1000
+  costs_blind <- ((costs_vi_sev$productivity_absent + costs_vi_sev$productivity_disability) * sum(patients_blind)) / 1000
   total <- sum(costs_severe_treated, costs_severe_untreated, costs_blind)
   
   return(list(price_pp = total))

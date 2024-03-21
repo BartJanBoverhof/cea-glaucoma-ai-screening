@@ -176,4 +176,3 @@ getMarkovTrace <- function(scenario, # scenario
   
   return(list(trace = m_trace, patients = patients, trace_utility = trace_utility, trace_cost = trace_cost))
 }
-
