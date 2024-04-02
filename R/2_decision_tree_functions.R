@@ -1,8 +1,7 @@
 # decision tree AI scenario 
-getStartDistAI <- function(probabilities, severity_distribution, strategy, visualize = TRUE, model_compliance){
+getStartDistAI <- function(probabilities, severity_distribution, strategy, visualize = TRUE, model_compliance, p_prevalence, cohort){
   
   # read in fixed probabilities
-  p_prevalence <- probabilities$prevalence 
   p_screen_compliance <-  probabilities$screen_comp      # screening compliance
   p_screen_sensitivity <- probabilities$ai_sens       # screening sensitivity 
   p_screen_specificity <- probabilities$ai_spec       # screening specificity 
@@ -22,11 +21,12 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
     referral_compliance <- probabilities$ref_comp   # referral compliance
   }
 
+
   # calculate required probabilities
-  ai_tp <- p_dt$ai_sens * p_dt$prevalence  # true positives
-  ai_fp <- (1-p_dt$ai_spec) * (1-p_dt$prevalence) # false positives
-  ai_tn <- p_dt$ai_spec * (1-p_dt$prevalence) # true negatives
-  ai_fn <- (1-p_dt$ai_sens) * p_dt$prevalence # false negatives
+  ai_tp <- p_dt$ai_sens * p_prevalence  # true positives
+  ai_fp <- (1-p_dt$ai_spec) * (1-p_prevalence) # false positives
+  ai_tn <- p_dt$ai_spec * (1-p_prevalence) # true negatives
+  ai_fn <- (1-p_dt$ai_sens) * p_prevalence # false negatives
 
   ai_positive <- ai_tp + ai_fp # positive test result
   ai_negative <- ai_tn + ai_fn # negative test result
@@ -188,10 +188,8 @@ CombineDT <- function(traces) {
 }
 
 # function to obtain DT probabilities SoC
-getStartDistSoc <- function(probabilities, severity_distribution, strategy, visualize = TRUE){
+getStartDistSoc <- function(probabilities, severity_distribution, strategy, visualize = TRUE, p_prevalence, cohort){
 
-  # read in fixed probabilities
-  p_prevalence <- probabilities$prevalence
   p_severity_mild <- severity_distribution$mild
   p_severity_mod <- severity_distribution$moderate
   p_severity_severe <- severity_distribution$severe
