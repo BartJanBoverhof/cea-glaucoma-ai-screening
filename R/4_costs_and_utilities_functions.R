@@ -1,8 +1,7 @@
 getTimeSpent <- function(a_trace){
   # get the time spent in each state
   time_spent <- colSums(a_trace)
-  time_spent <- time_spent / 1000
-  return(list(time_spent_pp = time_spent))
+  return(time_spent)
 }
 
 getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
@@ -12,7 +11,7 @@ getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
   blind_soc <- sum(a_trace_soc[,"Blind"])
   blind_prevented <- blind_soc - blind_ai
 
-  return(list(blind_prevented = blind_prevented, blind_prevented_pp = blind_prevented/1000))
+  return(blind_prevented)
 }
 
 
@@ -36,16 +35,15 @@ getQALYs <- function(a_trace, # cohort trace
 
   v_qaly <- a_trace %*% v_u # multiply utilities with cohort trace
 
-  #return qaly's (per patient)
-  return(sum(v_qaly)/1000)
+  #return qaly's 
+  return(sum(v_qaly))
 }
 
 getScreenignDescriptives <- function(trace,
                                     screening_probabilities, # probabilities to end up in the different DT arms
                                     screening_cost, # screening cost
                                     interval, # screening interval (years)
-                                    max_repititions, # maximum number of screening repititions
-                                    total_cohort
+                                    max_repititions # maximum number of screening repititions
                                     ){
                                     
   row_indices <- seq(from = 1, by = interval, length.out = max_repititions+1)  
@@ -53,20 +51,13 @@ getScreenignDescriptives <- function(trace,
   screened_patients <- list() # create an empty list
   p_fully_compliant <- screening_probabilities$p_fully_compliant
 
-  # prepare list of cumulative proportions of the cohort
-  reversed <- rev(total_cohort) # Reverse the vector
-  cumulative <- cumsum(reversed) # Calculate the cumulative sum
-  total_cohort_cumulative <- rev(cumulative)   # Reverse the cumulative sum to get it in the original order
-
   for (i in seq_along(row_indices)) {
     
     if (row_indices[i] == 1){ # if dealing with the first row
       patients <- sum(trace[i,]) # if the first cycle, take the first rowsum
-      patients <- patients * total_cohort_cumulative[i] # multiply with those patients that have actually been screened
 
     } else {
        patients <- sum(trace[row_indices[i], column_names]) # for other cycles, only screen non-diagnosed patients
-       patients <- patients * total_cohort_cumulative[i] # multiply with those patients that have actually been screened
     }                
     
     # determining screens
@@ -75,9 +66,8 @@ getScreenignDescriptives <- function(trace,
   
   # screening summary
   total_screens <- (sum(unlist(screened_patients)))
-  average_screen <- (sum(unlist(screened_patients))) / 1000
 
-  return(list(total_screens = total_screens, average_screenings = average_screen))
+  return(total_screens)
 }
  
                                                 
@@ -85,8 +75,7 @@ getScreeningCosts <- function(trace,
                               screening_probabilities, # probabilities to end up in the different DT arms
                               screening_cost, # screening cost
                               interval, # screening interval (years)
-                              max_repititions, # maximum number of screening repititions
-                              total_cohort
+                              max_repititions # maximum number of screening repititions
                               ){
   # save objects
   screening_invitation <- screening_cost$screening_invitation
@@ -99,12 +88,6 @@ getScreeningCosts <- function(trace,
   p_high_risk <- screening_probabilities$p_high_risk
   p_fully_compliant <- screening_probabilities$p_fully_compliant
 
-  # prepare list of cumulative proportions of the cohort
-  reversed <- rev(total_cohort) # Reverse the vector
-  cumulative <- cumsum(reversed) # Calculate the cumulative sum
-  total_cohort_cumulative <- rev(cumulative)   # Reverse the cumulative sum to get it in the original order
-
-
   # creating indices for calculating screening costs
   row_indices <- seq(from = 1, by = interval, length.out = max_repititions+1)  
   column_names <- c("No glaucoma", "Mild untreated", "Moderate untreated", "Severe untreated", "Observation") # people to sum in the 
@@ -114,11 +97,8 @@ getScreeningCosts <- function(trace,
     
     if (row_indices[i] == 1){ # if dealing with the first row
       patients <- sum(trace[i,]) # if the first cycle, take the first rowsum
-      patients <- patients * total_cohort_cumulative[i] # multiply with those patients that have actually been screened
-
     } else {
        patients <- sum(trace[row_indices[i], column_names]) # for other cycles, only screen non-diagnosed patients
-       patients <- patients * total_cohort_cumulative[i] # multiply with those patients that have actually been screened
     }
 
     # determining  costs
@@ -129,11 +109,10 @@ getScreeningCosts <- function(trace,
     screening_cost[i] <- cost_soc + cost_low_risk + cost_high_risk + cost_compliant # add cost to the list
   }
 
-  cost_pp <- sum(unlist(screening_cost)) / 1000
-
+  cost <- unlist(screening_cost)
 
   # return costs per patient 
-  return(list(cost_pp = cost_pp))
+  return(sum(cost))
 }
  
 
@@ -183,7 +162,7 @@ getMedicineCosts <- function(a_trace, # cohort trace
   costs <- cost_latanopros + cost_timolol + cost_dorzolamide + cost_brimonidine + cost_pilocarpine + cost_mannitol + cost_diamox
   
   # return costs
-  return(list(cost_pp = sum(costs) / 1000))
+  return(sum(costs))
 }
 
 getDiagnosticCosts <- function(trace, diagnostics_cost) {
@@ -225,11 +204,9 @@ getDiagnosticCosts <- function(trace, diagnostics_cost) {
     filter(str_detect(item, "_blind$")) %>%
     transmute(real_price = as.numeric(average_best) * price) %>%
     transmute(weighted_price = real_price * patients_blind)     
-
-  diagnostic_costs <- sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind)/1000
   
   # Return the result
-  return(list(cost_pp = diagnostic_costs))
+  return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
 }
 
 getInterventionCosts <- function(trace, intervention_cost){
@@ -272,9 +249,7 @@ getInterventionCosts <- function(trace, intervention_cost){
       transmute(real_price = as.numeric(average_best) * price) %>%
       transmute(weighted_price = real_price * patients_blind)
 
-    intervention_costs <- sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind)/1000 # sum all costs and divide by 1000 to get costs per patient
-
-    return(list(price_pp = intervention_costs))
+    return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
   }
 
 getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
@@ -312,17 +287,19 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
   patients_blind <- sum(trace[,"Blind"])
   
   # total costs
-  costs_severe_treated <- ((direct_med_vi_mod + direct_nonmed_vi_mod) * patients_severe_treated) / 1000
-  costs_severe_untreated <- ((direct_med_vi_mod + direct_nonmed_vi_mod) * patients_severe_untreated) / 1000
-  costs_blind <- ((direct_med_vi_sev + direct_nonmed_vi_sev) * patients_blind) / 1000
-  total <- sum(costs_severe_treated, costs_severe_untreated, costs_blind)
+  costs_severe_treated <- ((direct_med_vi_mod + direct_nonmed_vi_mod) * patients_severe_treated) 
+  costs_severe_untreated <- ((direct_med_vi_mod + direct_nonmed_vi_mod) * patients_severe_untreated) 
+  costs_blind <- ((direct_med_vi_sev + direct_nonmed_vi_sev) * patients_blind)
   
   # Return the result
-  return(list(price_pp = total))
+  return(sum(costs_severe_treated, costs_severe_untreated, costs_blind))
 }
 
-getProductivityCosts <- function(costs, traces, age_inits) {
+getProductivityCosts <- function(costs, trace, age_init) {
   
+  pension_age <- 67 #rounded
+  average_age <- age_init + 2
+
   # filter on visually impaired (vf) costs 
   costs_vi_mod <- costs %>%
     filter(str_detect(type, "vi_mod$")) 
@@ -330,27 +307,16 @@ getProductivityCosts <- function(costs, traces, age_inits) {
   # filter on blind (blind) costs
   costs_vi_sev <- costs %>%
     filter(str_detect(type, "vi_sev$"))
-  
-  # initialize variables  
-  pension_age <- 67 # dutch pension age
-  age_inits <- age_inits[age_inits < pension_age] # removing ages from the list that are higher than pension age
-  patients_severe_treated <- rep(0, length(age_inits))
-  patients_severe_untreated <- rep(0, length(age_inits))
-  patients_blind <- rep(0, length(age_inits))
 
-  # calculate total number of patients for each entry in traces
-  for (i in 1:length(age_inits)) {
-    trace <- traces[[i]]
-    patients_severe_treated[i] <- sum(trace[,"Severe treated"][1: (pension_age - age_inits[i])])
-    patients_severe_untreated[i] <- sum(trace[,"Severe untreated"][1: (pension_age - age_inits[i])])
-    patients_blind[i] <- sum(trace[,"Blind"][1: (pension_age - age_inits[i])])
-  }
+  # calculate total number of patients for each entry in trace
+  patients_severe_treated <- sum(trace[,"Severe treated"][1: (pension_age - average_age)])
+  patients_severe_untreated <- sum(trace[,"Severe untreated"][1: (pension_age - average_age)])
+  patients_blind <- sum(trace[,"Blind"][1: (pension_age - average_age)])  
   
   # total costs
-  costs_severe_treated <- ((costs_vi_mod$productivity_absent + costs_vi_mod$productivity_disability) * sum(patients_severe_treated)) / 1000 
-  costs_severe_untreated <- ((costs_vi_mod$productivity_absent + costs_vi_mod$productivity_disability) * sum(patients_severe_untreated)) / 1000
-  costs_blind <- ((costs_vi_sev$productivity_absent + costs_vi_sev$productivity_disability) * sum(patients_blind)) / 1000
-  total <- sum(costs_severe_treated, costs_severe_untreated, costs_blind)
+  costs_severe_treated <- ((costs_vi_mod$productivity_absent + costs_vi_mod$productivity_disability) * sum(patients_severe_treated))
+  costs_severe_untreated <- ((costs_vi_mod$productivity_absent + costs_vi_mod$productivity_disability) * sum(patients_severe_untreated)) 
+  costs_blind <- ((costs_vi_sev$productivity_absent + costs_vi_sev$productivity_disability) * sum(patients_blind)) 
   
-  return(list(price_pp = total))
+  return(sum(costs_severe_treated, costs_severe_untreated, costs_blind))
 }

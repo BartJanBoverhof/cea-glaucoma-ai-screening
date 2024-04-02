@@ -152,7 +152,7 @@ getMeanAge <- function(df_mortality, # mortality data
 }
 
 
-getScreeningProbabilities <- function(probabilities, model_compliance, v_prevalence){
+getScreeningProbabilities <- function(probabilities, model_compliance, p_prevalence){
 
   if (model_compliance == FALSE){
     p_screen_compliance <-  1     # screening compliance
@@ -168,10 +168,10 @@ p_high_risk <- p_screen_compliance * probabilities$ai_sens * (1-p_referral_compl
 p_fully_compliant <- p_screen_compliance * probabilities$ai_sens * p_referral_compliance 
 
 # calculate required probabilities
-ai_tp <- p_dt$ai_sens * p_dt$prevalence  # true positives
-ai_fp <- (1-p_dt$ai_spec) * (1-p_dt$prevalence) # false positives
-ai_tn <- p_dt$ai_spec * (1-p_dt$prevalence) # true negatives
-ai_fn <- (1-p_dt$ai_sens) * p_dt$prevalence # false negatives
+ai_tp <- p_dt$ai_sens * p_prevalence  # true positives
+ai_fp <- (1-p_dt$ai_spec) * p_prevalence # false positives
+ai_tn <- p_dt$ai_spec * p_prevalence # true negatives
+ai_fn <- (1-p_dt$ai_sens) * p_prevalence # false negatives
 
 ai_positive <- ai_tp + ai_fp # positive test result
 ai_negative <- ai_tn + ai_fn # negative test result

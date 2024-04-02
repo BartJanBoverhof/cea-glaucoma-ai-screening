@@ -1,2 +1,2 @@
-healthy_obs,obs_healthy,p_mild_mod_treated,p_mod_sev_treated,p_sev_blind_treated,p_mild_mod_untreated,p_mod_sev_untreated,p_sev_blind_untreated
-0.02,0.6,0.2,0.07,0.06,0.25,0.11,0.1
+prevalence,healthy_obs,obs_healthy,p_mild_mod_treated,p_mod_sev_treated,p_sev_blind_treated,p_mild_mod_untreated,p_mod_sev_untreated,p_sev_blind_untreated
+0.016435354,0.02,0.6,0.04100411,0.036666667,0.03625,0.25,0.11,0.1

@@ -42,11 +42,11 @@ tornadoPlot <-function(parameters, titleName, outcomeName){
     print(
         ggplot(Tor[Tor$Level=="Low",], aes(x=Parameter2,y=value, fill=level)) +
         geom_bar(stat="identity", fill="blue") +
-        ggtitle("Tornado diagram B", subtitle = outcomeName) +
+        ggtitle("Tornado diagram", subtitle = outcomeName) +
         scale_fill_discrete("Parameter Level: ", l=50)+
         scale_y_continuous(name="ICER (1000???/QALY)", trans=offset_trans(offset=ymean)) +
         scale_x_discrete(name="Parameter") +
-        geom_bar(data=Tor[Tor$Level=="High",], aes(x=Parameter2,y=value, fill=level), stat="identity", fill="red", alpha=0.5) +
+        geom_bar(data=Tor[Tor$Level=="High",], aes(x=Parameter2,y=value, fill=level), stat="identity", fill="#d91b1b", alpha=0.5) +
         geom_hline(yintercept = ymean, linetype = "dotted", size=0.5) +
         theme_bw(base_size = 14) +
         coord_flip() +
