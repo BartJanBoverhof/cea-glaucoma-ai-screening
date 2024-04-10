@@ -14,8 +14,6 @@ getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
   return(blind_prevented)
 }
 
-
-
 getQALYs <- function(a_trace, # cohort trace
                       v_utilities){ # vector of utilities
 
@@ -23,12 +21,12 @@ getQALYs <- function(a_trace, # cohort trace
 
   # vector of utilities
   v_u <- c(no_glaucoma = v_utilities$healthy, 
-            mild_diagnosed = v_utilities$mild,
-            moderate_diagnosed = v_utilities$mod,
-            severe_diagnosed = v_utilities$severe,
-            mild_undiagnosed = v_utilities$mild,
-            moderate_undiagnosed = v_utilities$mod,
-            severe_undiagnosed = v_utilities$severe,
+            mild_diagnosed = v_utilities$mild_treated,
+            moderate_diagnosed = v_utilities$mod_treated,
+            severe_diagnosed = v_utilities$severe_treated,
+            mild_undiagnosed = v_utilities$mild_untreated,
+            moderate_undiagnosed = v_utilities$mod_untreated,
+            severe_undiagnosed = v_utilities$severe_untreated,
             blind = v_utilities$blind,
             observation = v_utilities$obs,
             death = v_utilities$death) * n_cycle_length
@@ -69,7 +67,6 @@ getScreenignDescriptives <- function(trace,
 
   return(total_screens)
 }
- 
                                                 
 getScreeningCosts <- function(trace, 
                               screening_probabilities, # probabilities to end up in the different DT arms
@@ -111,11 +108,10 @@ getScreeningCosts <- function(trace,
 
   cost <- unlist(screening_cost)
 
-  # return costs per patient 
+  # return costs
   return(sum(cost))
 }
  
-
 getMedicineCosts <- function(a_trace, # cohort trace
                              medicine_costs, # medicine costs
                              medicine_utilisation){ # medicine utilisation

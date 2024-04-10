@@ -1,2 +1,2 @@
-healthy,mild,mod,severe,blind,obs,death
-1,0.8015,0.7471,0.7113,0.535,1,0
+healthy,mild_untreated,mild_treated,mod_untreated,mod_treated,severe_untreated,severe_treated,blind,obs,death,utilities_dev
+1,0.8015,0.8015,0.7471,0.7471,0.7113,0.7113,0.535,1,0,0.1

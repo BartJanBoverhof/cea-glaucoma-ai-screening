@@ -1,5 +1,5 @@
 # decision tree AI scenario 
-getStartDistAI <- function(probabilities, severity_distribution, strategy, visualize = TRUE, model_compliance, p_prevalence, cohort){
+getStartDistAI <- function(probabilities, severity_distribution, arm, visualize = TRUE, model_compliance, p_prevalence, cohort){
   
   # read in fixed probabilities
   p_screen_compliance <-  probabilities$screen_comp      # screening compliance
@@ -21,12 +21,11 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
     referral_compliance <- probabilities$ref_comp   # referral compliance
   }
 
-
   # calculate required probabilities
-  ai_tp <- p_dt$ai_sens * p_prevalence  # true positives
-  ai_fp <- (1-p_dt$ai_spec) * (1-p_prevalence) # false positives
-  ai_tn <- p_dt$ai_spec * (1-p_prevalence) # true negatives
-  ai_fn <- (1-p_dt$ai_sens) * p_prevalence # false negatives
+  ai_tp <- p_screen_sensitivity* p_prevalence  # true positives
+  ai_fp <- (1-p_screen_specificity) * (1-p_prevalence) # false positives
+  ai_tn <- p_screen_specificity * (1-p_prevalence) # true negatives
+  ai_fn <- (1-p_screen_sensitivity) * p_prevalence # false negatives
 
   ai_positive <- ai_tp + ai_fp # positive test result
   ai_negative <- ai_tn + ai_fn # negative test result
@@ -35,7 +34,7 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   ai_npv <- ai_tn / ai_negative # negative predictive value
   
   # for the non-compliant to screening cohort (similair to soc)
-  if(strategy == "soc"){
+  if(arm == "soc"){
     
     # decision tree path probabilities
     p_path_no_glaucoma <- (1 - p_screen_compliance) * (1-p_prevalence)  # path no glaucoma
@@ -52,7 +51,7 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   }
 
   # for the compliant, but negative and not referred (low risk)
-  else if (strategy == "low_risk"){
+  else if (arm == "low_risk"){
     
     # decision tree path probabilities
     p_path_no_glaucoma <- p_screen_compliance * ai_negative * ai_npv # path healthy (false positives)
@@ -69,7 +68,7 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   }
 
   # for the non-compliant to referral cohort
-  else if(strategy == "high_risk"){
+  else if(arm == "high_risk"){
     
     # decision tree path probabilities
     p_path_no_glaucoma <- p_screen_compliance * ai_positive * (1-p_referral_compliance) * (1-ai_ppv) # path healthy (false positives)
@@ -86,7 +85,7 @@ getStartDistAI <- function(probabilities, severity_distribution, strategy, visua
   }
 
   # for the compliant cohort
-  if(strategy == "compliant"){
+  if(arm == "compliant"){
     
     # decision tree path probabilities
     p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv) # path healthy (false positives)
@@ -182,13 +181,13 @@ CombineDT <- function(traces) {
   starting_probabilities <- mapply(sum, traces$soc , traces$low_risk , traces$high_risk, traces$compliant, SIMPLIFY = FALSE)
   total_sum <- sum(unlist(starting_probabilities))
 
-  print(paste("The decision tree arms sum to a total of", total_sum))
+  #print(paste("The decision tree arms sum to a total of", total_sum))
 
   return(starting_probabilities) 
 }
 
 # function to obtain DT probabilities SoC
-getStartDistSoc <- function(probabilities, severity_distribution, strategy, visualize = TRUE, p_prevalence, cohort){
+getStartDistSoc <- function(probabilities, severity_distribution, visualize = TRUE, p_prevalence, cohort){
 
   p_severity_mild <- severity_distribution$mild
   p_severity_mod <- severity_distribution$moderate
