@@ -1,3 +1,106 @@
+runModel <- function(){
+  
+  # inherit local variables from previous function (for dsa, if applicable)
+  strategy <- get("strategy", envir = parent.frame())
+
+  if (strategy == "dsa"){ # only inherit variables if stategy is dsa
+
+    parameter  <- get("parameter", envir = parent.frame())
+
+    if (parameter == "transition_untreated"){
+      p_transition <- get("p_transition", envir = parent.frame())
+    } else if (parameter == "transition_treated"){
+      p_transition <- get("p_transition", envir = parent.frame())
+    } else if (parameter == "sensitivity"){
+      p_dt <- get("p_dt", envir = parent.frame())
+    } else if (parameter == "specificity"){
+      p_dt <- get("p_dt", envir = parent.frame())
+    } else if (parameter == "prevalence"){
+      v_prevalence <- get("v_prevalence", envir = parent.frame())
+    } else if (parameter == "incidences_of"){
+      v_incidences_of <- get("v_incidences_of", envir = parent.frame())
+    } else if (parameter == "incidences_screening"){
+      v_incidences_screening <- get("v_incidences_screening", envir = parent.frame())
+    } else if (parameter == "utilities_untreated"){
+      v_utilities <- get("v_utilities", envir = parent.frame())
+    } else if (parameter == "utilities_treated"){
+      v_utilities <- get("v_utilities", envir = parent.frame())
+    } else if (parameter == "costs_screening" || parameter == "costs_medicine" || parameter == "costs_diagnostics" || parameter == "costs_intervention" || parameter == "costs_burden_disease" || parameter == "costs_productivity"){
+      cost_multiplier <- get("cost_multiplier", envir = parent.frame())
+    }
+  }
+
+  age50_55 <- run(cohort = age_categories[1])
+  age55_60 <- run(cohort = age_categories[2])
+  age60_65 <- run(cohort = age_categories[3])
+  age65_70 <- run(cohort = age_categories[4])
+  age70_75 <- run(cohort = age_categories[5])
+
+  # inspect trace
+  a_trace_soc_uncorrected <- age50_55$ai_trace + ### uncorrected trace (for reference)
+      padArray(pad = age55_60$ai_trace, pad_to = age50_55$ai_trace) + 
+      padArray(pad = age60_65$ai_trace, pad_to = age50_55$ai_trace) +
+      padArray(pad = age65_70$ai_trace, pad_to = age50_55$ai_trace) +
+      padArray(pad = age70_75$ai_trace, pad_to = age50_55$ai_trace)
+
+  # ai costs per patient
+  ai_screening_pp <-  (age50_55$ai_costs$ai_screening_costs + age55_60$ai_costs$ai_screening_costs + age60_65$ai_costs$ai_screening_costs + age65_70$ai_costs$ai_screening_costs + age70_75$ai_costs$ai_screening_costs) /1000
+  ai_medicine_pp <- (age50_55$ai_costs$ai_medicine_costs + age55_60$ai_costs$ai_medicine_costs + age60_65$ai_costs$ai_medicine_costs + age65_70$ai_costs$ai_medicine_costs + age70_75$ai_costs$ai_medicine_costs) / 1000
+  ai_diagnostic_pp <- (age50_55$ai_costs$ai_diagnostic_costs + age55_60$ai_costs$ai_diagnostic_costs + age60_65$ai_costs$ai_diagnostic_costs + age65_70$ai_costs$ai_diagnostic_costs + age70_75$ai_costs$ai_diagnostic_costs) / 1000
+  ai_intervention_pp <- (age50_55$ai_costs$ai_intervention_costs + age55_60$ai_costs$ai_intervention_costs + age60_65$ai_costs$ai_intervention_costs + age65_70$ai_costs$ai_intervention_costs + age70_75$ai_costs$ai_intervention_costs) / 1000
+  ai_burden_pp <- (age50_55$ai_costs$ai_burden + age55_60$ai_costs$ai_burden + age60_65$ai_costs$ai_burden + age65_70$ai_costs$ai_burden + age70_75$ai_costs$ai_burden) / 1000
+  ai_productivity_pp <- (age50_55$ai_costs$ai_productivity + age55_60$ai_costs$ai_productivity + age60_65$ai_costs$ai_productivity + age65_70$ai_costs$ai_productivity + age70_75$ai_costs$ai_productivity) / 1000
+
+  # soc costs per patient 
+  soc_medicine_pp <- (age50_55$soc_costs$soc_medicine_costs + age55_60$soc_costs$soc_medicine_costs + age60_65$soc_costs$soc_medicine_costs + age65_70$soc_costs$soc_medicine_costs + age70_75$soc_costs$soc_medicine_costs) / 1000
+  soc_diagnostic_pp <- (age50_55$soc_costs$soc_diagnostic_costs + age55_60$soc_costs$soc_diagnostic_costs + age60_65$soc_costs$soc_diagnostic_costs + age65_70$soc_costs$soc_diagnostic_costs + age70_75$soc_costs$soc_diagnostic_costs) / 1000
+  soc_intervention_pp <- (age50_55$soc_costs$soc_intervention_costs + age55_60$soc_costs$soc_intervention_costs + age60_65$soc_costs$soc_intervention_costs + age65_70$soc_costs$soc_intervention_costs + age70_75$soc_costs$soc_intervention_costs) / 1000
+  soc_burden_pp <- (age50_55$soc_costs$soc_burden + age55_60$soc_costs$soc_burden + age60_65$soc_costs$soc_burden + age65_70$soc_costs$soc_burden + age70_75$soc_costs$soc_burden) / 1000
+  soc_productivity_pp <- (age50_55$soc_costs$soc_productivity + age55_60$soc_costs$soc_productivity + age60_65$soc_costs$soc_productivity + age65_70$soc_costs$soc_productivity + age70_75$soc_costs$soc_productivity) / 1000
+
+  if (strategy == "dsa"){ # if strategy is dsa, multiply respective costs with the multiplier
+    if (parameter == "costs_screening"){
+      ai_screening_pp <- ai_screening_pp * cost_multiplier
+    } else if (parameter == "costs_medicine"){
+      ai_medicine_pp <- ai_medicine_pp * cost_multiplier
+      soc_medicine_pp <- soc_medicine_pp * cost_multiplier
+    } else if (parameter == "costs_diagnostics"){
+      ai_diagnostic_pp <- ai_diagnostic_pp * cost_multiplier
+      soc_diagnostic_pp <- soc_diagnostic_pp * cost_multiplier
+    } else if (parameter == "costs_intervention"){
+      ai_intervention_pp <- ai_intervention_pp * cost_multiplier
+      soc_intervention_pp <- soc_intervention_pp * cost_multiplier
+    } else if (parameter == "costs_burden_disease"){
+      ai_burden_pp <- ai_burden_pp * cost_multiplier
+      soc_burden_pp <- soc_burden_pp * cost_multiplier
+    } else if (parameter == "costs_productivity"){
+      ai_productivity_pp <- ai_productivity_pp * cost_multiplier
+      soc_productivity_pp <- soc_productivity_pp * cost_multiplier
+    } 
+  }
+
+  # total costs per patient
+  ai_costs_pp <- ai_screening_pp + ai_medicine_pp + ai_diagnostic_pp + ai_intervention_pp + ai_burden_pp + ai_productivity_pp
+  soc_costs_pp <- soc_medicine_pp + soc_diagnostic_pp + soc_intervention_pp + soc_burden_pp + soc_productivity_pp
+
+  # qaly per patient
+  ai_qaly_pp <- (age50_55$ai_qaly + age55_60$ai_qaly + age60_65$ai_qaly + age65_70$ai_qaly + age70_75$ai_qaly) / 1000
+  soc_qaly_pp <- (age50_55$soc_qaly + age55_60$soc_qaly + age60_65$soc_qaly + age65_70$soc_qaly + age70_75$soc_qaly) / 1000
+  
+  icer <- (ai_costs_pp - soc_costs_pp) / (ai_qaly_pp - soc_qaly_pp) 
+
+  # print messag to console
+  # if parameter variable doesnt exist, set it to NA
+  if (!exists("parameter")){
+    parameter <- NULL
+  }
+  
+  print(paste("Strategy:", strategy, parameter,"Incremental costs", ai_costs_pp - soc_costs_pp, "Incremental QALY", ai_qaly_pp - soc_qaly_pp))
+
+  return(icer) 
+}
+
+
 run <- function(cohort = age_categories[1]){
   # Isaac: I understand why you prefer to run age-dependent cohorts separately. 
   # However, this approach has several issues associated as discussed.
@@ -8,7 +111,34 @@ run <- function(cohort = age_categories[1]){
   # The reason I insist on this issue is because I believe it might be criticised by some reviewers. It's totally fine to have
   # different age cohorts, but then each cohort parameters' should be cohort specific (in theory) and I wonder whether that's
   # actually the case. Clear justification has to be provided for the assumptins made. 
+  
+  # inherit local variables from previous function (for dsa, if applicable)
+  strategy <- get("strategy", envir = parent.frame())
 
+  if (strategy == "dsa"){ # only inherit variables if stategy is dsa
+
+    parameter  <- get("parameter", envir = parent.frame())
+
+    if (parameter == "transition_untreated"){
+      p_transition <- get("p_transition", envir = parent.frame())
+    } else if (parameter == "transition_treated"){
+      p_transition <- get("p_transition", envir = parent.frame())
+    } else if (parameter == "sensitivity"){
+      p_dt <- get("p_dt", envir = parent.frame())
+    } else if (parameter == "specificity"){
+      p_dt <- get("p_dt", envir = parent.frame())
+    } else if (parameter == "prevalence"){
+      v_prevalence <- get("v_prevalence", envir = parent.frame())
+    } else if (parameter == "incidences_of"){
+      v_incidences_of <- get("v_incidences_of", envir = parent.frame())
+    } else if (parameter == "incidences_screening"){
+      v_incidences_screening <- get("v_incidences_screening", envir = parent.frame())
+    } else if (parameter == "utilities_untreated"){
+      v_utilities <- get("v_utilities", envir = parent.frame())
+    } else if (parameter == "utilities_treated"){
+      v_utilities <- get("v_utilities", envir = parent.frame())
+    }
+  }
   #------------------------------------------------------------------------------#
   ####                       1 Decision Tree                            ####
   #------------------------------------------------------------------------------#
@@ -27,19 +157,19 @@ run <- function(cohort = age_categories[1]){
 
   ################## AI STRATEGY
   ### functions return probability of patients in each health state, seperately for each arm of the decision tree
-  strategies <- c("soc", "low_risk", "high_risk", "compliant")
+  arms <- c("soc", "low_risk", "high_risk", "compliant")
   p_dt_ai <- list()
 
-  for (strategy in strategies) {
-    p_dt_ai[[strategy]] <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, strategy = strategy, visualize = F, model_compliance = FALSE, p_prevalence = p_prevalence, cohort = cohort)
+  for (arm in arms) {
+    p_dt_ai[[arm]] <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, arm = arm, visualize = F, model_compliance = FALSE, p_prevalence = p_prevalence, cohort = cohort)
   }
-p_dt_ai <- CombineDT(traces = p_dt_ai) ### function combines all arms of the decision tree into single starting distribution per health state
-p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE, p_prevalence = p_prevalence) ### function returns list of probabilities related to each screening arm (for later use)
-v_cohort_ai <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort[cohort]) * 1000)) # re-scale to cohort of 1000 patients
+  p_dt_ai <- CombineDT(traces = p_dt_ai) ### function combines all arms of the decision tree into single starting distribution per health state
+  p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE, p_prevalence = p_prevalence) ### function returns list of probabilities related to each screening arm (for later use)
+  v_cohort_ai <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort[cohort]) * 1000)) # re-scale to cohort of 1000 patients
 
-################## SOC STRATEGY
-p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, visualize = F, p_prevalence = p_prevalence, cohort = cohort) # obtain severity distribution 
-v_cohort_soc <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort[cohort]) * 1000)) # re-scale to cohort of 1000 patients
+  ################## SOC STRATEGY
+  p_dt_soc <- getStartDistSoc(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, visualize = F, p_prevalence = p_prevalence, cohort = cohort) # obtain severity distribution 
+  v_cohort_soc <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort[cohort]) * 1000)) # re-scale to cohort of 1000 patients
 
 
   # Isaac:  same as above: what we do here is to re-scale the cohorts based on the age distribution, but I'm not sure if that's correct.
@@ -202,3 +332,4 @@ v_cohort_soc <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort[cohort]) *
 
   return(list(ai_costs = ai_costs, soc_costs = soc_costs, ai_qaly = ai_total_qaly, soc_qaly = soc_total_qaly, ai_trace = a_trace_ai$trace, soc_trace = a_trace_soc$trace))
 }
+

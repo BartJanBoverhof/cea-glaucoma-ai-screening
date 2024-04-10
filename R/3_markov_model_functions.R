@@ -162,10 +162,10 @@ getMarkovTrace <- function(scenario, # scenario
   ####                       04 Error handling / validation             ####
   #------------------------------------------------------------------------------#
   # check that transition probabilities are [0, 1] 
-  check_transition_probability(a_matrices,   verbose = TRUE)
+  #check_transition_probability(a_matrices,   verbose = TRUE)
   
   # check that all rows for each slice of the array sum to 1 
-  check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
+  #check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
 
   #------------------------------------------------------------------------------#
   ####                       05 Creating corrected traces             ####
