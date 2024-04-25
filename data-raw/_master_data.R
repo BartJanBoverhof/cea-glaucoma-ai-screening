@@ -2,6 +2,7 @@ rm(list = ls()) # to clean the workspace
 # loading packages
 library(tidyverse)
 library(readxl)
+getwd()
 
 #------------------------------------------------------------------------------#
 ####                       01 All Cause Mortality                           ####
@@ -98,6 +99,12 @@ save(v_cost_utilisation_intervention, file = "~/Documents/GitHub/cea-glaucoma-ai
 file.init <- "data-raw/8f_cost_burden_disease.xlsx" #Init statement
 v_cost_burden_disease  <- read_excel(file.init)
 save(v_cost_burden_disease, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/8f_v_cost_burden_disease.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
+
+
+
+
+
 
 
 

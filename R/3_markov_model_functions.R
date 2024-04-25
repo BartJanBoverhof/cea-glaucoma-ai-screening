@@ -25,6 +25,7 @@ getMarkovTrace <- function(scenario, # scenario
 
   age_max <- 100 # time horizon               
   cycle_length <- 1 #cycle length
+
   n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
   
   v_age_names  <- paste(rep(age_init:(age_max-1), each = 1/cycle_length),   # labels of age vectors

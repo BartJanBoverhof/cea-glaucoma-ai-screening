@@ -57,7 +57,7 @@ v_utilities_age_decrement <- v_utilities_age_decrement
 strategy <- "base"
 base <- runModel()
 
-strategy <- "dsa"
+#strategy <- "dsa"
 
 # deterministic sensitivity analysis
 if (strategy == "dsa") {
@@ -94,8 +94,8 @@ if (strategy == "dsa") {
 #------------------------------------------------------------------------------#
 ####                       06 Deterministic sensitivity analysis         ####
 #------------------------------------------------------------------------------#
-paramNames <-  c(   "Transision probabilities untreated [-/+ 20%]",
-                    "Transision probabilities treated [-/+ 20%]",
+paramNames <-  c(   "Transition probabilities untreated [-/+ 20%]",
+                    "Transition probabilities treated [-/+ 20%]",
                     "AI sensitivity [-/+ 5% points]",
                     "AI specificity [-/+ 5% points]",
                     "Prevalence [-/+ 20%]",
@@ -135,7 +135,12 @@ titleName = "Tornado diagram"
 
 library(ggplot2)
 
-tornadoPlot(Parms = paramNames, Outcomes = data, titleName = "Tornado diagram", outcomeName = "")
+#save plot
+ggsave("figures/tornado_plot.png", tornadoPlot(Parms = paramNames, Outcomes = data, titleName = "Tornado diagram", outcomeName = ""), width = 20, height = 15, units = "cm")
+
+
+
+getScreenignDescriptives()
 
 
 
@@ -147,98 +152,6 @@ tornadoPlot(Parms = paramNames, Outcomes = data, titleName = "Tornado diagram", 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Calculating transition probabilities, toy example.
-
-# Defining functions 
-
-### FUNCTION BASELINE ###
-# Define the function f - uniform distribution
-f <- function(x) {
-    if (x < -6 || x > 0) {
-        return(0)
-    } else {
-        return(1)
-    }
-}
-
-# Visualize the function f
-x <- seq(-7, 1, by = 0.1)
-y <- sapply(x, f)
-
-plot(x, y, type = "l", xlab = "x", ylab = "f(x)", main = "Visualization of Function f")
-
-
-### FUNCTION PROGRESSION ###
-# Define the function g(x) - 
-seq_x <- seq(1.5, -3.5, by = -0.5) 
-seq_y <- c(0.016829783272161336,
-           0.17805011219855515,
-           1.6785519285211556,
-           14.942362134644581,
-           3.585785342544874,
-           1.090716713639619,
-           0.3144636719699321,
-           0.23010172037784926,
-           0.056501677455194965,
-           0.061472499518700374,
-           0)
-seq_y <- seq_y / 100
-
-# Create a probability density function from seq_x and seq_y
-g <- function(x) {
-    ifelse(x < min(seq_x) | x > max(seq_x), 0, approx(seq_x, seq_y, xout = x)$y)
-}
-
-# Visualize the function g
-x_test <- seq(-3.5, 1.5, by = 0.1)
-y_test <- g(x_test)
-
-plot(x_test, y_test, type = "l", xlab = "x", ylab = "PDF(x)", main = "Probability Density Function")
-
-
-
-
-
-# Define the function h(x, y) using f(x) and g(x)
-h <- function(x, y) {
-        f_x <- f(x)
-        g_x <- g(y)
-        h_xy <- f_x * g_x
-        return(h_xy)
-}
-
-# Calculate the integral for x = [-6, ∞] and y = [-∞, -6-x]
-result <- integrate(function(x) {
-    integrate(function(y) {
-        h(x, y)
-    }, -Inf, -6 - x)$value
-}, -6, Inf)
-
-integral_value <- result$value
-integral_error <- result$abs.error
-
-
-# Visualize the function h
-image(x_test, y_test, h_values, xlab = "x", ylab = "y", main = "Distribution of h(x, y)")
 
 
 
