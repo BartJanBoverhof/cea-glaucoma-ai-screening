@@ -152,6 +152,11 @@ run <- function(cohort = age_categories[1]){
   cohort_min <- as.numeric(cohort_age[1])  # Extract the minimum age from the cohort
   cohort_max <- as.numeric(cohort_age[3])  # Extract the maximum age from the cohort
   
+  # calculate amount of screening repetitions
+  interval <- 5
+  last_screen_age <- as.numeric(strsplit(age_categories[length(age_categories)], " ")[[1]][1])  # Split the cohort string by space and take the first element
+  max_repititions <- (last_screen_age - cohort_min) / interval
+
   prevalence <- filter(v_prevalence, age >= cohort_min & age <= cohort_max)  # Filter prevalence based on cohort age range
   p_prevalence <- prevalence$prevalence  # Extract the prevalence value  p_severity_mild <- severity_distribution$mild
 
@@ -179,10 +184,7 @@ run <- function(cohort = age_categories[1]){
   #------------------------------------------------------------------------------#
   ####                       2 Markov model                            ####
   #------------------------------------------------------------------------------#
-  # prerequisites
-  age_inits <- c(52, 57, 62, 67, 72) # initial age for each age category 
-  # Isaac: I understand you have chosen the middle point of each category, right? I think it's OK to start with 50 (not in the middle).
-
+  
   ################## AI STRATEGY
   #Isaac: we need to explain the input parameters of these functions (low priority right now)
   # We should also add what the function is returning. I see the traces (LYs, costs and utilities and total patients)
@@ -192,10 +194,10 @@ run <- function(cohort = age_categories[1]){
                                     screening_detection_rate = p_screening$p_fully_compliant, 
                                     df_mortality = v_mortality, 
                                     p_transition =  p_transition , 
-                                    age_init = age_inits[1],
+                                    age_init = cohort_min,
                                     incidences = incidences,
-                                    interval = 5, 
-                                    max_repititions = 4)  
+                                    interval = interval, 
+                                    max_repititions = max_repititions)  
 
   # Isaac: why is this called uncorrected? Have you checked that all rows sum to 1000 or that does not need to happen?
   # Also, unclear why we need to sum all these when traces will be of different length for each cohort.
@@ -213,7 +215,7 @@ run <- function(cohort = age_categories[1]){
                                     screening_detection_rate = 0, 
                                     df_mortality = v_mortality, 
                                     p_transition =  p_transition , 
-                                    age_init = age_inits[1],
+                                    age_init = cohort_min,
                                     incidences = incidences,
                                     interval = 0, 
                                     max_repititions = 0)                         
@@ -287,10 +289,18 @@ run <- function(cohort = age_categories[1]){
 
   # Isaac: please briefly define what these costs are
   ai_intervention_costs <- getInterventionCosts(trace = a_trace_ai$trace_cost, # cohort trace of the patients non-compliant with AI screening
-                                              intervention_cost = v_cost_utilisation_intervention) # obtain intervention costs
+                                                intervention_cost = v_cost_utilisation_intervention,
+                                                p_transition = p_transition,
+                                                v_incidence_of = v_incidence_of,
+                                                v_incidence_screening = v_incidence_screening,
+                                                age_init = cohort_min) # obtain intervention costs
 
   soc_intervention_costs <- getInterventionCosts(trace = a_trace_soc$trace_cost, # cohort trace of the patients non-compliant with AI screening
-                                                intervention_cost = v_cost_utilisation_intervention) # obtain intervention costs
+                                                intervention_cost = v_cost_utilisation_intervention,
+                                                p_transition = p_transition,
+                                                v_incidence_of = v_incidence_of,
+                                                v_incidence_screening = v_incidence_screening,
+                                                age_init = cohort_min) # obtain intervention costs
 
   #------------------------------------------------------------------------------#
   ####                 4e Costs burden of disease visually impaired & blind   ####

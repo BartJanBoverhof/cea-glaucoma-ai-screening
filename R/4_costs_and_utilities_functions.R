@@ -205,47 +205,32 @@ getDiagnosticCosts <- function(trace, diagnostics_cost) {
   return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
 }
 
-getInterventionCosts <- function(trace, intervention_cost){
+getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incidence_of, v_incidence_screening, age_init){
     
-    # total patients
-    patients_observation <- sum(trace[,"Observation"]) #observation state
-    patients_mild <- sum(trace[,"Mild treated"]) 
-    patients_moderate <- sum(trace[,"Moderate treated"])
-    patients_severe <- sum(trace[,"Severe treated"])
-    patients_blind <- sum(trace[,"Blind"])
+    age_max <- 100
     
-    # calculating weighted price
-    # observation state
-    costs_obs <- intervention_cost %>%
-      filter(str_detect(item, "_obs$")) %>%
-      transmute(real_price = as.numeric(average_best) * price) %>%
-      transmute(weighted_price = real_price * patients_observation)
+    # drop age categories before and after initial age
+    v_incidences_of <- v_incidence_of[(age_init-49):(age_max-50)]
+    v_incidences_screening <- v_incidence_screening[(age_init-49):(age_max-50)]
 
-    # mild state
-    costs_mild <- intervention_cost %>%
-      filter(str_detect(item, "_mild")) %>%
-      transmute(real_price = as.numeric(average_best) * price) %>%
-      transmute(weighted_price = real_price * patients_mild)
+    # calculating patient offsets 
+    # mild patients
+    mild_obs <- sum(trace[c(2:nrow(trace)),"Observation"] * v_incidence_screening)
+    mild_untreated <- sum(trace[c(2:nrow(trace)),"Mild untreated"] * v_incidence_of)
+    #mild_ screened <- trace[]
+    #death_rate <- trace[c(2:nrow(trace)),"Death"] / trace[,colnames(trace) != "Death"]
+    
+  
 
-    # moderate state
-    costs_mod <- intervention_cost %>%
-      filter(str_detect(item, "_mod")) %>%
-      transmute(real_price = as.numeric(average_best) * price) %>%
-      transmute(weighted_price = real_price * patients_moderate)
+    # laser
+    #laser <- intervention_cost %>%
+    #  filter(str_detect(item, "laser_")) %>%
+    #  transmute(real_price = as.numeric(average_best) * price) %>%
+    #  transmute(weighted_price = real_price * patients_observation)
+    cost <- 0
 
-    # severe state
-    costs_sev <- intervention_cost %>%
-      filter(str_detect(item, "_sev")) %>%
-      transmute(real_price = as.numeric(average_best) * price) %>%
-      transmute(weighted_price = real_price * patients_severe)
 
-    # blind state
-    costs_blind <- intervention_cost %>%
-      filter(str_detect(item, "_blind")) %>%
-      transmute(real_price = as.numeric(average_best) * price) %>%
-      transmute(weighted_price = real_price * patients_blind)
-
-    return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
+    return(sum(cost))
   }
 
 getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {

@@ -277,7 +277,7 @@ tornadoPlot <-function(Parms, Outcomes, titleName, outcomeName){
   print(
     ggplot(Tor[Tor$Level=="Low",], aes(x=Parameter2, y=value, fill=level)) +
       geom_bar(stat="identity", fill="blue") +
-      ggtitle("Tornado diagram B", subtitle = outcomeName) +
+      ggtitle("Tornado diagram", subtitle = outcomeName) +
       scale_fill_discrete("Parameter Level: ", l=50) +
       scale_y_continuous(name="ICER", trans=offset_trans(offset=ymean), labels = function(x) ifelse(x == ymean, paste(x, " (ymean)", sep = ""), x)) +
       scale_x_discrete(name="Parameter") +
