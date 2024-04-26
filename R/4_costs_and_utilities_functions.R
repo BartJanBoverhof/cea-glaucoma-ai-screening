@@ -205,32 +205,93 @@ getDiagnosticCosts <- function(trace, diagnostics_cost) {
   return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
 }
 
-getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incidence_of, v_incidence_screening, age_init){
+getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incidence_of, v_incidence_screening, age_init, interval, max_repititions, strategy){
     
+
+    ### DETERMINE PATIENTS THAT RECEIVE TREATMENT ###
     age_max <- 100
     
     # drop age categories before and after initial age
-    v_incidences_of <- v_incidence_of[(age_init-49):(age_max-50)]
-    v_incidences_screening <- v_incidence_screening[(age_init-49):(age_max-50)]
+    v_incidence_of <- v_incidence_of[(age_init-49):(age_max-50)]
+    v_incidence_screening <- v_incidence_screening[(age_init-49):(age_max-50)]
 
-    # calculating patient offsets 
     # mild patients
     mild_obs <- sum(trace[c(2:nrow(trace)),"Observation"] * v_incidence_screening)
     mild_untreated <- sum(trace[c(2:nrow(trace)),"Mild untreated"] * v_incidence_of)
-    #mild_ screened <- trace[]
-    #death_rate <- trace[c(2:nrow(trace)),"Death"] / trace[,colnames(trace) != "Death"]
+    mild_treated <- list()
     
-  
+    if (strategy == "ai") # if strategy is ai, also include the screened participants
+      for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become untreated after screening
+        mild_treated[rep] <- trace[(rep*interval),"Mild untreated"] - trace[(rep*interval)+1,"Mild untreated"]
+      }
+    
+    # calculate all mild patients that receive treatment
+    mild_patients <- sum(mild_obs, mild_untreated, unlist(mild_treated), trace[1,"Mild treated"])
 
-    # laser
-    #laser <- intervention_cost %>%
-    #  filter(str_detect(item, "laser_")) %>%
-    #  transmute(real_price = as.numeric(average_best) * price) %>%
-    #  transmute(weighted_price = real_price * patients_observation)
-    cost <- 0
+    
+    # moderate patients 
+    mod_mild_treated <- sum(trace[c(2:nrow(trace)),"Mild treated"] * p_transition$p_mild_mod_treated)
+    mod_mod_untreated <- sum(trace[c(2:nrow(trace)),"Moderate untreated"] * v_incidence_of)
+    mod_treated <- list()
 
+    if (strategy == "ai") # if strategy is ai, also include the screened participants
+      for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become untreated after screening
+        mod_treated[rep] <- trace[(rep*interval),"Moderate untreated"] - trace[(rep*interval)+1,"Moderate untreated"]
+      }
 
-    return(sum(cost))
+    # calculate all moderate patients that receive treatment
+    mod_patients <- sum(mod_mild_treated, mod_mod_untreated, unlist(mod_treated), trace[1,"Moderate treated"])
+    
+    
+    # severe patients
+    sev_mod_treated <- sum(trace[c(2:nrow(trace)),"Moderate treated"] * p_transition$p_mod_sev_treated)
+    sev_sev_untreated <- sum(trace[c(2:nrow(trace)),"Severe untreated"] * v_incidence_of)
+    sev_treated <- list()
+
+    if (strategy == "ai") # if strategy is ai, also include the screened participants
+      for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become untreated after screening
+        sev_treated[rep] <- trace[(rep*interval),"Severe untreated"] - trace[(rep*interval)+1,"Severe untreated"]
+      }
+    
+    # calculate all severe patients that receive treatment
+    sev_patients <- sum(sev_mod_treated, sev_sev_untreated, unlist(sev_treated), trace[1,"Severe treated"])
+
+    # blind patients
+    blind_sev_treated <- sum(trace[c(2:nrow(trace)),"Severe treated"] * p_transition$p_sev_blind_treated)
+    blind_blind_untreated <- sum(trace[c(2:nrow(trace)),"Blind"] * v_incidence_of)
+
+    # calculate all blind patients that receive treatment
+    blind_patients <- sum(blind_sev_treated, blind_blind_untreated, trace[1,"Blind"])
+    
+    # determine the share of patients that receive laser treatment 
+    share_laser_mild <- intervention_cost %>%filter(str_detect(item, "laser_mild$")) %>% transmute(average_best) %>% as.numeric() * mild_patients
+    share_laser_mod <- intervention_cost %>%filter(str_detect(item, "laser_mod$")) %>% transmute(average_best) %>% as.numeric() * mod_patients
+    share_laser_sev <- intervention_cost %>%filter(str_detect(item, "laser_sev$")) %>% transmute(average_best) %>% as.numeric() * sev_patients
+    share_laser_blind <- intervention_cost %>%filter(str_detect(item, "laser_vi$")) %>% transmute(average_best) %>% as.numeric() * blind_patients
+
+    # determine the share of patients that receive surgery
+    share_surgery_mild <- intervention_cost %>%filter(str_detect(item, "surgery_mild$")) %>% transmute(average_best) %>% as.numeric() * mild_patients
+    share_surgery_mod <- intervention_cost %>%filter(str_detect(item, "surgery_mod$")) %>% transmute(average_best) %>% as.numeric() * mod_patients
+    share_surgery_sev <- intervention_cost %>%filter(str_detect(item, "surgery_sev$")) %>% transmute(average_best) %>% as.numeric() * sev_patients
+    share_surgery_blind <- intervention_cost %>%filter(str_detect(item, "surgery_vi$")) %>% transmute(average_best) %>% as.numeric() * blind_patients
+
+    ### DETERMINE COSTS
+    # determine the costs of laser treatment
+    costs_laser_mild <- intervention_cost %>% filter(str_detect(item, "laser_treatment")) %>% transmute(price) * share_laser_mild
+    costs_laser_mod <- intervention_cost %>% filter(str_detect(item, "laser_treatment")) %>% transmute(price) * share_laser_mod
+    costs_laser_sev <- intervention_cost %>% filter(str_detect(item, "laser_treatment")) %>% transmute(price) * share_laser_sev
+    costs_laser_blind <- intervention_cost %>% filter(str_detect(item, "laser_treatment")) %>% transmute(price) * share_laser_blind
+
+    # determine the costs of surgery
+    costs_surgery_mild <- intervention_cost %>% filter(str_detect(item, "surgery_treatment")) %>% transmute(price) * share_surgery_mild
+    costs_surgery_mod <- intervention_cost %>% filter(str_detect(item, "surgery_treatment")) %>% transmute(price) * share_surgery_mod
+    costs_surgery_sev <- intervention_cost %>% filter(str_detect(item, "surgery_treatment")) %>% transmute(price) * share_surgery_sev
+    costs_surgery_blind <- intervention_cost %>% filter(str_detect(item, "surgery_treatment")) %>% transmute(price) * share_surgery_blind
+
+    total_laser <- sum(costs_laser_mild, costs_laser_mod, costs_laser_sev, costs_laser_blind)
+    total_surgery <- sum(costs_surgery_mild, costs_surgery_mod, costs_surgery_sev, costs_surgery_blind)
+
+    return(sum(total_laser, total_surgery))
   }
 
 getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
