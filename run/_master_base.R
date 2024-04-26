@@ -57,7 +57,7 @@ v_utilities_age_decrement <- v_utilities_age_decrement
 strategy <- "base"
 base <- runModel()
 
-#strategy <- "dsa"
+strategy <- "dsa"
 
 # deterministic sensitivity analysis
 if (strategy == "dsa") {
@@ -106,7 +106,7 @@ paramNames <-  c(   "Transition probabilities untreated [-/+ 20%]",
                     "Screening costs [-/+ 20%]",
                     "Medicine costs [-/+ 20%]",
                     "Diagnostics costs [-/+ 20%]",
-                    "Intervention costs [-/+ 20%]",
+                    "Laser and surgery costs [-/+ 20%]",
                     "Burden of disease costs [-/+ 20%]",
                     "Productivity costs [-/+ 20%]"
                     )
@@ -138,9 +138,6 @@ library(ggplot2)
 #save plot
 ggsave("figures/tornado_plot.png", tornadoPlot(Parms = paramNames, Outcomes = data, titleName = "Tornado diagram", outcomeName = ""), width = 20, height = 15, units = "cm")
 
-
-
-getScreenignDescriptives()
 
 
 

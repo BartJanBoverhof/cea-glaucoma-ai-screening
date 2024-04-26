@@ -256,7 +256,7 @@ run <- function(cohort = age_categories[1]){
   ai_screening_costs <- getScreeningCosts(trace = a_trace_ai$trace_cost, ### function returns screening costs per screening repetition
                                           screening_probabilities = p_screening,
                                           screening_cost = v_cost_dt, # obtain screening costs
-                                          interval = 5, 
+                                          interval = interval, 
                                           max_repititions = 4) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model 
 
   #------------------------------------------------------------------------------#
@@ -293,14 +293,20 @@ run <- function(cohort = age_categories[1]){
                                                 p_transition = p_transition,
                                                 v_incidence_of = v_incidence_of,
                                                 v_incidence_screening = v_incidence_screening,
-                                                age_init = cohort_min) # obtain intervention costs
+                                                age_init = cohort_min,
+                                                interval = interval,
+                                                max_repititions = max_repititions,
+                                                strategy = "ai") # obtain intervention costs
 
   soc_intervention_costs <- getInterventionCosts(trace = a_trace_soc$trace_cost, # cohort trace of the patients non-compliant with AI screening
                                                 intervention_cost = v_cost_utilisation_intervention,
                                                 p_transition = p_transition,
                                                 v_incidence_of = v_incidence_of,
                                                 v_incidence_screening = v_incidence_screening,
-                                                age_init = cohort_min) # obtain intervention costs
+                                                age_init = cohort_min,
+                                                interval = interval,
+                                                max_repititions = max_repititions,
+                                                strategy = "soc") # obtain intervention costs
 
   #------------------------------------------------------------------------------#
   ####                 4e Costs burden of disease visually impaired & blind   ####
