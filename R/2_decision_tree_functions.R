@@ -88,17 +88,17 @@ getStartDistAI <- function(probabilities, severity_distribution, arm, visualize 
   if(arm == "compliant"){
     
     # decision tree path probabilities
-    p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv) # path healthy (false positives)
-    p_path_obs <- 0 # path observation
+    p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv - p_observation) # path healthy (false positives)
+    p_path_obs <- p_screen_compliance * ai_positive * p_referral_compliance * p_observation # path observation
     
     p_path_mild_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mild # path mild
     p_path_mod_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv  * p_severity_mod # path moderate
     p_path_severe_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_severe # path severe
-    
+    p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind # path blind
+
     p_path_mild_undiagnosed <- 0 # path mild undiagnosed
     p_path_mod_undiagnosed <- 0 # path moderate undiagnosed
     p_path_severe_undiagnosed <- 0 # path severe undiagnosed
-    p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind # path blind
   }
 
   # plot decision tree

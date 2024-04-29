@@ -55,7 +55,7 @@ v_utilities_age_decrement <- v_utilities_age_decrement
 
 # run base case
 strategy <- "base"
-base <- runModel()
+base <- callModel(descriptives = TRUE)
 
 strategy <- "dsa"
 
@@ -132,8 +132,6 @@ data <- matrix(c(base, dsa$transition_untreated[1], dsa$transition_untreated[2],
 Parms = paramNames
 Outcomes = data
 titleName = "Tornado diagram"
-
-library(ggplot2)
 
 #save plot
 ggsave("figures/tornado_plot.png", tornadoPlot(Parms = paramNames, Outcomes = data, titleName = "Tornado diagram", outcomeName = ""), width = 20, height = 15, units = "cm")

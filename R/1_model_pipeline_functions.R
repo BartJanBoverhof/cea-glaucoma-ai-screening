@@ -162,11 +162,6 @@ getScreeningProbabilities <- function(probabilities, model_compliance, p_prevale
     p_referral_compliance <- probabilities$ref_comp   # referral compliance
   }
 
-p_soc <- (1-p_screen_compliance)
-p_low_risk <- p_screen_compliance * (1-probabilities$ai_sens)
-p_high_risk <- p_screen_compliance * probabilities$ai_sens * (1-p_referral_compliance)
-p_fully_compliant <- p_screen_compliance * probabilities$ai_sens * p_referral_compliance 
-
 # calculate required probabilities
 ai_tp <- p_dt$ai_sens * p_prevalence  # true positives
 ai_fp <- (1-p_dt$ai_spec) * p_prevalence # false positives
@@ -179,9 +174,15 @@ ai_negative <- ai_tn + ai_fn # negative test result
 ai_ppv <- ai_tp / ai_positive # positive predictive value
 ai_npv <- ai_tn / ai_negative # negative predictive value
 
-p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv
+p_invited <- 1 # everyone is invited to screening
+p_ai_screened <- p_screen_compliance * p_invited # probability of being screened
+p_followed_up <- p_screen_compliance * p_referral_compliance * ai_positive
 
-return(list(p_soc = p_soc, p_low_risk = p_low_risk, p_high_risk = p_high_risk, p_fully_compliant = p_fully_compliant, p_fully_screened = p_path_no_glaucoma))
+detection_rate_flat <- p_screen_compliance * p_referral_compliance * p_dt$ai_sens
+detection_rate_missed <- p_screen_compliance * p_referral_compliance * (1- p_dt$ai_sens) * ai_tp # detection rate in the population that are previously missed (used in markov model)
+#p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv
+
+return(list(p_invited = p_invited, p_ai_screened = p_ai_screened, p_followed_up = p_followed_up, detection_rate_flat = detection_rate_flat, detection_rate_missed = detection_rate_missed))
 }
 
 padArray <- function(pad, pad_to) {
