@@ -1,4 +1,4 @@
-runModel <- function(){
+callModel <- function(descriptives = FALSE){
   
   # inherit local variables from previous function (for dsa, if applicable)
   strategy <- get("strategy", envir = parent.frame())
@@ -30,11 +30,11 @@ runModel <- function(){
     }
   }
 
-  age50_55 <- run(cohort = age_categories[1])
-  age55_60 <- run(cohort = age_categories[2])
-  age60_65 <- run(cohort = age_categories[3])
-  age65_70 <- run(cohort = age_categories[4])
-  age70_75 <- run(cohort = age_categories[5])
+  age50_55 <- runModel(cohort = age_categories[1])
+  age55_60 <- runModel(cohort = age_categories[2])
+  age60_65 <- runModel(cohort = age_categories[3])
+  age65_70 <- runModel(cohort = age_categories[4])
+  age70_75 <- runModel(cohort = age_categories[5])
 
   # inspect trace
   a_trace_soc_uncorrected <- age50_55$ai_trace + ### uncorrected trace (for reference)
@@ -95,13 +95,22 @@ runModel <- function(){
     parameter <- NULL
   }
   
-  print(paste("Strategy:", strategy, parameter,"Incremental costs", ai_costs_pp - soc_costs_pp, "Incremental QALY", ai_qaly_pp - soc_qaly_pp))
-
+  if (descriptives == TRUE){ # if descriptives is true, print all information
+    print(paste("screening cost pp AI:", round(ai_screening_pp, 2), "screening cost pp SOC:", round(0, 2)))
+    print(paste("medicine cost pp AI:", round(ai_medicine_pp, 2), "medicine cost pp SOC:", round(soc_medicine_pp, 2)))
+    print(paste("diagnostic cost pp AI:", round(ai_diagnostic_pp, 2), "diagnostic cost pp SOC:", round(soc_diagnostic_pp, 2)))
+    print(paste("surgery & laser cost pp AI:", round(ai_intervention_pp, 2), "surgery & laser cost pp SOC:", round(soc_intervention_pp, 2)))
+    print(paste("burden cost pp AI:", round(ai_burden_pp, 2), "burden cost pp SOC:", round(soc_burden_pp, 2)))
+    print(paste("productivity cost pp AI:", round(ai_productivity_pp, 2), "productivity cost pp SOC:", round(soc_productivity_pp, 2)))
+    print(paste("total cost pp AI:", round(ai_costs_pp, 2), "total cost pp SOC:", round(soc_costs_pp, 2)))
+    print(paste("QALY pp AI:", round(ai_qaly_pp, 2), "QALY pp SOC:", round(soc_qaly_pp, 2)))
+    print(paste("ICER:", round(icer, 2)))
+  }
   return(icer) 
 }
 
 
-run <- function(cohort = age_categories[1]){
+runModel <- function(cohort = age_categories[1]){
   # Isaac: I understand why you prefer to run age-dependent cohorts separately. 
   # However, this approach has several issues associated as discussed.
   # I wonder for example if the proportion of patients that are male should also be age-dependent. In fact, the same could be said about 
@@ -191,11 +200,12 @@ run <- function(cohort = age_categories[1]){
   # Question here: are these results discounted? I cannot see the option of discounting by the way and I think this was implemented in aprevious version of the code.
   a_trace_ai <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
                                     cohort = v_cohort_ai,
-                                    screening_detection_rate = p_screening$p_fully_compliant, 
+                                    p_screening = p_screening, 
                                     df_mortality = v_mortality, 
                                     p_transition =  p_transition , 
                                     age_init = cohort_min,
                                     incidences = incidences,
+                                    severity = p_severity_undiagnosed,
                                     interval = interval, 
                                     max_repititions = max_repititions)  
 
@@ -212,9 +222,8 @@ run <- function(cohort = age_categories[1]){
   ################## SOC STRATEGY
   a_trace_soc <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
                                     cohort = v_cohort_soc,
-                                    screening_detection_rate = 0, 
                                     df_mortality = v_mortality, 
-                                    p_transition =  p_transition , 
+                                    p_transition =  p_transition, 
                                     age_init = cohort_min,
                                     incidences = incidences,
                                     interval = 0, 

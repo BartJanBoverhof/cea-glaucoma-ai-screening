@@ -12,7 +12,7 @@ runDSA <- function(parameter){
         p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 - p_transition$untreated_dev)
         p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 - p_transition$untreated_dev)
 
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_transition <- get("p_transition", envir =globalenv())
@@ -22,7 +22,7 @@ runDSA <- function(parameter){
         p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 + p_transition$untreated_dev)
         p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 + p_transition$untreated_dev)
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
 
     } else if (parameter == "transition_treated"){
             
@@ -34,7 +34,7 @@ runDSA <- function(parameter){
         p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 - p_transition$treated_dev)
         p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 - p_transition$treated_dev)
 
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_transition <- get("p_transition", envir =globalenv())
@@ -44,7 +44,7 @@ runDSA <- function(parameter){
         p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 + p_transition$treated_dev)
         p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 + p_transition$treated_dev)
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
     
     } else if (parameter == "sensitivity"){
         
@@ -53,7 +53,7 @@ runDSA <- function(parameter){
         # transform parameters to lower bound
         p_dt$ai_sens <- p_dt$ai_sens - p_dt$ai_sens_dev
 
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_dt <- get("p_dt", envir =globalenv())
@@ -61,7 +61,7 @@ runDSA <- function(parameter){
         # transform parameters to upper bound
         p_dt$ai_sens <- p_dt$ai_sens + p_dt$ai_sens_dev
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
     
     } else if (parameter == "specificity"){
     
@@ -70,7 +70,7 @@ runDSA <- function(parameter){
         # transform parameters to lower bound
         p_dt$ai_spec <- p_dt$ai_spec - p_dt$ai_spec_dev
 
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_dt <- get("p_dt", envir =globalenv())
@@ -78,7 +78,7 @@ runDSA <- function(parameter){
         # transform parameters to upper bound
         p_dt$ai_spec <- p_dt$ai_spec + p_dt$ai_spec_dev
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
 
     } else if (parameter == "prevalence"){
     
@@ -87,7 +87,7 @@ runDSA <- function(parameter){
         # transform parameters to lower bound
         v_prevalence$prevalence <- v_prevalence$prevalence * (1 - v_prevalence$prevalence_dev)
 
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_prevalence <- get("v_prevalence", envir =globalenv())
@@ -95,7 +95,7 @@ runDSA <- function(parameter){
         # transform parameters to upper bound
         v_prevalence$prevalence <- v_prevalence$prevalence * (1 + v_prevalence$prevalence_dev)
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
 
     } else if (parameter == "incidences_of"){
 
@@ -104,7 +104,7 @@ runDSA <- function(parameter){
         # transform parameters to lower bound
         v_incidences_of$incidence <- v_incidences_of$incidence * (1 - v_incidences_of$incidence_dev)
         
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_incidences_of <- get("v_incidences_of", envir =globalenv())
@@ -112,7 +112,7 @@ runDSA <- function(parameter){
         # transform parameters to upper bound
         v_incidences_of$incidence <- v_incidences_of$incidence * (1 + v_incidences_of$incidence_dev)
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
 
     } else if (parameter == "incidences_screening"){
     
@@ -121,7 +121,7 @@ runDSA <- function(parameter){
         # transform parameters to lower bound
         v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 - v_incidences_screening$incidence_dev)
         
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_incidences_screening <- get("v_incidences_screening", envir =globalenv())
@@ -129,7 +129,7 @@ runDSA <- function(parameter){
         # transform parameters to upper bound
         v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 + v_incidences_screening$incidence_dev)
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
 
     } else if (parameter == "utilities_untreated"){
     
@@ -141,7 +141,7 @@ runDSA <- function(parameter){
         v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 - v_utilities$utilities_dev)
         v_utilities$blind <- v_utilities$blind * (1 - v_utilities$utilities_dev)
 
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_utilities <- get("v_utilities", envir =globalenv())
@@ -152,7 +152,7 @@ runDSA <- function(parameter){
         v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 + v_utilities$utilities_dev)
         v_utilities$blind <- v_utilities$blind * (1 + v_utilities$utilities_dev)
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
 
     } else if (parameter == "utilities_treated"){
 
@@ -164,7 +164,7 @@ runDSA <- function(parameter){
         v_utilities$severe_treated <- v_utilities$severe_treated * (1 - v_utilities$utilities_dev)
         v_utilities$blind <- v_utilities$blind * (1 - v_utilities$utilities_dev)
 
-        lower <- runModel() # lower bound
+        lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_utilities <- get("v_utilities", envir =globalenv())
@@ -175,55 +175,55 @@ runDSA <- function(parameter){
         v_utilities$severe_treated <- v_utilities$severe_treated * (1 + v_utilities$utilities_dev)
         v_utilities$blind <- v_utilities$blind * (1 + v_utilities$utilities_dev)
 
-        upper <- runModel() # lower bound
+        upper <- callModel() # lower bound
 
     } else if (parameter == "costs_screening"){
 
       cost_multiplier <- 0.8 # local save
-      lower <- runModel() # lower bound
+      lower <- callModel() # lower bound
 
       cost_multiplier <- 1.2 # local save
-      upper <- runModel() # lower bound
+      upper <- callModel() # lower bound
 
     } else if (parameter == "costs_medicine"){
     
       cost_multiplier <- 0.8 # local save
-      lower <- runModel() # lower bound
+      lower <- callModel() # lower bound
 
       cost_multiplier <- 1.2 # local save
-      upper <- runModel() # lower bound
+      upper <- callModel() # lower bound
 
     } else if (parameter == "costs_diagnostics"){
     
       cost_multiplier <- 0.8 # local save
-      lower <- runModel() # lower bound
+      lower <- callModel() # lower bound
 
       cost_multiplier <- 1.2 # local save
-      upper <- runModel() # lower bound
+      upper <- callModel() # lower bound
 
     } else if (parameter == "costs_intervention"){
     
       cost_multiplier <- 0.8 # local save
-      lower <- runModel() # lower bound
+      lower <- callModel() # lower bound
 
       cost_multiplier <- 1.2 # local save
-      upper <- runModel() # lower bound
+      upper <- callModel() # lower bound
 
     } else if (parameter == "costs_burden_disease"){
     
       cost_multiplier <- 0.8 # local save
-      lower <- runModel() # lower bound
+      lower <- callModel() # lower bound
 
       cost_multiplier <- 1.2 # local save
-      upper <- runModel() # lower bound
+      upper <- callModel() # lower bound
 
     } else if (parameter == "costs_productivity"){
     
       cost_multiplier <- 0.8 # local save
-      lower <- runModel() # lower bound
+      lower <- callModel() # lower bound
 
       cost_multiplier <- 1.2 # local save
-      upper <- runModel() # lower bound
+      upper <- callModel() # lower bound
 
     } else {
         print("Error: parameter not found")

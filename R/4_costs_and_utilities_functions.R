@@ -80,30 +80,28 @@ getScreeningCosts <- function(trace,
   ai_costs <- screening_cost$ai_costs
   ophthalmologist <- screening_cost$ophthalmologist
 
-  p_soc <- screening_probabilities$p_soc
-  p_low_risk <- screening_probabilities$p_low_risk
-  p_high_risk <- screening_probabilities$p_high_risk
-  p_fully_compliant <- screening_probabilities$p_fully_compliant
+  p_invited <- screening_probabilities$p_invited
+  p_ai_screened <- screening_probabilities$p_ai_screened
+  p_followed_up <- screening_probabilities$p_followed_up
 
   # creating indices for calculating screening costs
   row_indices <- seq(from = 1, by = interval, length.out = max_repititions+1)  
-  column_names <- c("No glaucoma", "Mild untreated", "Moderate untreated", "Severe untreated", "Observation") # people to sum in the 
+  column_names <- c("No glaucoma", "Mild untreated", "Moderate untreated", "Severe untreated", "Observation", "Blind") # people to sum in the 
   screening_cost <- list() # create an empty list
 
   for (i in seq_along(row_indices)) {
     
-    if (row_indices[i] == 1){ # if dealing with the first row
-      patients <- sum(trace[i,]) # if the first cycle, take the first rowsum
+    if (row_indices[i] == 1){ # if the first cycle, take the first rowsum
+      patients <- sum(trace[i,])
     } else {
        patients <- sum(trace[row_indices[i], column_names]) # for other cycles, only screen non-diagnosed patients
     }
 
     # determining  costs
-    cost_soc <- (patients * p_soc) * screening_invitation 
-    cost_low_risk <- (patients * p_low_risk) * (screening_invitation + fundus_photo + ai_costs)
-    cost_high_risk <- (patients * p_high_risk) * (screening_invitation + fundus_photo + ai_costs)
-    cost_compliant <- (patients * p_fully_compliant) * (screening_invitation + fundus_photo + ai_costs + ophthalmologist)
-    screening_cost[i] <- cost_soc + cost_low_risk + cost_high_risk + cost_compliant # add cost to the list
+    cost_invitation <- (patients * p_invited) * screening_invitation 
+    cost_ai_screened <- (patients * p_ai_screened) * (fundus_photo + ai_costs)
+    cost_followed_up <- (patients * p_followed_up) * ophthalmologist
+    screening_cost[i] <- cost_invitation + cost_ai_screened + cost_followed_up # add cost to the list
   }
 
   cost <- unlist(screening_cost)
