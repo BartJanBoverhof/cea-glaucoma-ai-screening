@@ -1,41 +1,52 @@
+## Isaac: as previously mentioned, this code lacks comments. I propose using a standardized approach. I've used ChatGPT for example to provide comments using the following format. Please feel free to adjust.
+
+# Name of the function: getTimeSpent
+# Purpose: Calculate the total time spent in each state
+# Inputs:  a_trace - a matrix or data frame with the proportion of time spent in each health state
+# Outputs: A vector with the sum of each column of the matrix or data frame
 getTimeSpent <- function(a_trace){
-  # get the time spent in each state
   time_spent <- colSums(a_trace)
   return(time_spent)
-}
+  }
 
+# Name of the function: getBlindnessPrevented
+# Purpose of the code: Calculate the number of blindness cases prevented by AI compared to SoC
+# Inputs: a_trace_ai - AI intervention trace, a_trace_soc - standard of care trace
+# Outputs: Number of blindness cases prevented
 getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
-  
-  # get the number of blindness prevented
-  blind_ai <- sum(a_trace_ai[,"Blind"])
+  blind_ai <- sum(a_trace_ai[,"Blind"]) # Isaac: we already got this from getTimeSpent. Maybe we dont need to input the trace and get the sum again. Seems faster, but not sure how much time it can save. Low priority.
   blind_soc <- sum(a_trace_soc[,"Blind"])
   blind_prevented <- blind_soc - blind_ai
-
   return(blind_prevented)
-}
+  }
 
-getQALYs <- function(a_trace, # cohort trace
-                      v_utilities){ # vector of utilities
+# Name of the function: getQALYs
+# Purpose of the code: Calculate the total QALYs (Quality-Adjusted Life Years) for a given Markov trace
+# Inputs: a_trace - cohort trace matrix, v_utilities - vector of utility values for different health states (we need to explaiun why these are vectors and not single values: age effect already included?)
+# Outputs: Total QALYs (consider returning QALYs per health state as well - I think htat would be v_qaly)
+getQALYs <- function(a_trace, v_utilities){ 
 
-  n_cycle_length <- 1
+  # Isaac: could we explain the purpose of this parameter? If it's hardcoded (in theory we should never do this) and = 1 why do we need it?
+  n_cycle_length <- 1 
 
-  # vector of utilities
-  v_u <- c(no_glaucoma = v_utilities$healthy, 
-            mild_diagnosed = v_utilities$mild_treated,
-            moderate_diagnosed = v_utilities$mod_treated,
-            severe_diagnosed = v_utilities$severe_treated,
-            mild_undiagnosed = v_utilities$mild_untreated,
-            moderate_undiagnosed = v_utilities$mod_untreated,
-            severe_undiagnosed = v_utilities$severe_untreated,
-            blind = v_utilities$blind,
-            observation = v_utilities$obs,
-            death = v_utilities$death) * n_cycle_length
+  # Vector of utilities (is it a vector or a matrix?)
+  v_u <- c(no_glaucoma          = v_utilities$healthy, 
+           mild_diagnosed       = v_utilities$mild_treated,
+           moderate_diagnosed   = v_utilities$mod_treated,
+           severe_diagnosed     = v_utilities$severe_treated,
+           mild_undiagnosed     = v_utilities$mild_untreated,
+           moderate_undiagnosed = v_utilities$mod_untreated,
+           severe_undiagnosed   = v_utilities$severe_untreated,
+           blind                = v_utilities$blind,
+           observation          = v_utilities$obs,
+           death                = v_utilities$death) * n_cycle_length
 
-  v_qaly <- a_trace %*% v_u # multiply utilities with cohort trace
+  # multiply utilities with cohort trace
+  v_qaly <- a_trace %*% v_u 
 
-  #return qaly's 
+  # return total qaly's 
   return(sum(v_qaly))
-}
+  }
 
 getScreenignDescriptives <- function(trace,
                                     screening_probabilities, # probabilities to end up in the different DT arms
