@@ -1,3 +1,10 @@
+## Isaac: we should add some guidance about how to get the model to run.
+## I've been trying for some time and I'm not able to do it. I assumed this could be done from this script, but I'm not getting any results. 
+## The idea is to have a model that is as user friendly as possible.
+## Without being able to run the model, it's very difficult to validate the code. I'll give it a try in any case.
+## In general, please note there is a lack of code description, which again makes it difficult for other users to understand what the code is doing. I understand that commenting your code could be tedious, but it is necessary and a good practice. You can try using ChatGPT to assist you with that. It can be a good exercise to see if it actually understands the code as it should be.    
+
+
 callModel <- function(descriptives = FALSE){
   
   # inherit local variables from previous function (for dsa, if applicable)
