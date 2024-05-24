@@ -230,7 +230,7 @@ runModel <- function(cohort = age_categories[1]){
                                     max_repititions = 0)                         
 
   ################################################################
-  ########################### RESTULTS ###########################
+  ########################### RESULTS ###########################
   ################################################################
   ai_time_spent <- getTimeSpent(a_trace = a_trace_ai$trace) ### (function returns time spent in each health state))
   soc_time_spent <- getTimeSpent(a_trace = a_trace_soc$trace) ### (function returns time spent in each health state))
