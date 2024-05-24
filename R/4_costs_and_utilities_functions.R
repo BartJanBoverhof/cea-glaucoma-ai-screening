@@ -48,6 +48,7 @@ getQALYs <- function(a_trace, v_utilities){
   return(sum(v_qaly))
   }
 
+# Isaac: I stopped here since these functions are more complex
 getScreenignDescriptives <- function(trace,
                                     screening_probabilities, # probabilities to end up in the different DT arms
                                     screening_cost, # screening cost
