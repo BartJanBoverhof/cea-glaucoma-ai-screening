@@ -1,4 +1,12 @@
+
 callModel <- function(descriptives = FALSE, perspective){
+
+## Isaac: we should add some guidance about how to get the model to run.
+## I've been trying for some time and I'm not able to do it. I assumed this could be done from this script, but I'm not getting any results. 
+## The idea is to have a model that is as user friendly as possible.
+## Without being able to run the model, it's very difficult to validate the code. I'll give it a try in any case.
+## In general, please note there is a lack of code description, which again makes it difficult for other users to understand what the code is doing. I understand that commenting your code could be tedious, but it is necessary and a good practice. You can try using ChatGPT to assist you with that. It can be a good exercise to see if it actually understands the code as it should be.    
+
   
   # inherit local variables from previous function (for dsa, if applicable)
   strategy <- get("strategy", envir = parent.frame())
@@ -249,7 +257,7 @@ runModel <- function(cohort = age_categories[1]){
                                     max_repititions = 0)                         
 
   ################################################################
-  ########################### RESTULTS ###########################
+  ########################### RESULTS ###########################
   ################################################################
   ai_time_spent <- getTimeSpent(a_trace = a_trace_ai$trace) ### (function returns time spent in each health state))
   soc_time_spent <- getTimeSpent(a_trace = a_trace_soc$trace) ### (function returns time spent in each health state))
