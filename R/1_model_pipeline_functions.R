@@ -163,10 +163,10 @@ getScreeningProbabilities <- function(probabilities, model_compliance, p_prevale
   }
 
 # calculate required probabilities
-ai_tp <- p_dt$ai_sens * p_prevalence  # true positives
-ai_fp <- (1-p_dt$ai_spec) * p_prevalence # false positives
-ai_tn <- p_dt$ai_spec * p_prevalence # true negatives
-ai_fn <- (1-p_dt$ai_sens) * p_prevalence # false negatives
+ai_tp <- probabilities$ai_sens * p_prevalence  # true positives
+ai_fp <- (1-probabilities$ai_spec) * p_prevalence # false positives
+ai_tn <- probabilities$ai_spec * p_prevalence # true negatives
+ai_fn <- (1-probabilities$ai_sens) * p_prevalence # false negatives
 
 ai_positive <- ai_tp + ai_fp # positive test result
 ai_negative <- ai_tn + ai_fn # negative test result
@@ -178,8 +178,8 @@ p_invited <- 1 # everyone is invited to screening
 p_ai_screened <- p_screen_compliance * p_invited # probability of being screened
 p_followed_up <- p_screen_compliance * p_referral_compliance * ai_positive
 
-detection_rate_flat <- p_screen_compliance * p_referral_compliance * p_dt$ai_sens
-detection_rate_missed <- p_screen_compliance * p_referral_compliance * (1- p_dt$ai_sens) * ai_tp # detection rate in the population that are previously missed (used in markov model)
+detection_rate_flat <- p_screen_compliance * p_referral_compliance * probabilities$ai_sens
+detection_rate_missed <- p_screen_compliance * p_referral_compliance * (1- probabilities$ai_sens) * ai_tp # detection rate in the population that are previously missed (used in markov model)
 #p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv
 
 return(list(p_invited = p_invited, p_ai_screened = p_ai_screened, p_followed_up = p_followed_up, detection_rate_flat = detection_rate_flat, detection_rate_missed = detection_rate_missed))
@@ -194,17 +194,28 @@ padArray <- function(pad, pad_to) {
   return(pad)
 }
 
-traceCorrectionUtil <- function(a_trace, age_decrement, age_init) { #makes age utility decrement and discounting correction
+traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities) { #makes age utility decrement and discounting correction
+
+  # Age correction
+  # max age
+  age_max <- nrow(a_trace) + age_init -1
+  
+  #select categories age age_init to age_max
+  age_correction <- subset(utility_gp, age >= age_init & age <= age_max) %>% select(utility)
+
+  # multiply each collumn in the trace with the age correction collumn
+  a_trace_corrected <- sweep(a_trace, 1, age_correction$utility, "*")   # age correction
+
+  # drop last element of list utilities
+  utilities <- utilities[1:(length(utilities)-1)]
+
+  # multiply each collumn in the trace with each item in the list utilities
+  a_trace_corrected <- sweep(a_trace_corrected, 2, as.numeric(utilities), "*") # discounting
 
   # discounting
-  exponents <- seq(from = 0, to = -(nrow(a_trace)-1), length.out = nrow(a_trace))
+  exponents <- seq(from = 0, to = -(nrow(a_trace_corrected)-1), length.out = nrow(a_trace_corrected))
   sequence <- (1 + 0.015) ^ exponents
-  a_trace_corrected <-  a_trace * sequence
-
-  # age correction
-  age_decrement_vector <- subset(age_decrement, age >= age_init & age <= 100)
-  age_decrement_vector <- as.vector(age_decrement_vector[,"dutch_utility_decrement"]) # vector of age utility decrements 50-100 
-  a_trace_corrected <- sweep(a_trace_corrected, 1, age_decrement_vector$dutch_utility_decrement, "*")   # age correction
+  a_trace_corrected <-  a_trace_corrected * sequence
 
   return(a_trace_corrected)
 }

@@ -1,4 +1,4 @@
-callModel <- function(descriptives = FALSE){
+callModel <- function(descriptives = FALSE, perspective){
   
   # inherit local variables from previous function (for dsa, if applicable)
   strategy <- get("strategy", envir = parent.frame())
@@ -36,13 +36,20 @@ callModel <- function(descriptives = FALSE){
   age65_70 <- runModel(cohort = age_categories[4])
   age70_75 <- runModel(cohort = age_categories[5])
 
-  # inspect trace
+  # create combined trace ai 
   a_trace_soc_uncorrected <- age50_55$ai_trace + ### uncorrected trace (for reference)
       padArray(pad = age55_60$ai_trace, pad_to = age50_55$ai_trace) + 
       padArray(pad = age60_65$ai_trace, pad_to = age50_55$ai_trace) +
       padArray(pad = age65_70$ai_trace, pad_to = age50_55$ai_trace) +
       padArray(pad = age70_75$ai_trace, pad_to = age50_55$ai_trace)
 
+  # create combined trace soc
+  a_trace_soc_uncorrected <- age50_55$soc_trace + ### uncorrected trace (for reference)
+      padArray(pad = age55_60$soc_trace, pad_to = age50_55$soc_trace) + 
+      padArray(pad = age60_65$soc_trace, pad_to = age50_55$soc_trace) +
+      padArray(pad = age65_70$soc_trace, pad_to = age50_55$soc_trace) +
+      padArray(pad = age70_75$soc_trace, pad_to = age50_55$soc_trace)
+      
   # ai costs per patient
   ai_screening_pp <-  (age50_55$ai_costs$ai_screening_costs + age55_60$ai_costs$ai_screening_costs + age60_65$ai_costs$ai_screening_costs + age65_70$ai_costs$ai_screening_costs + age70_75$ai_costs$ai_screening_costs) /1000
   ai_medicine_pp <- (age50_55$ai_costs$ai_medicine_costs + age55_60$ai_costs$ai_medicine_costs + age60_65$ai_costs$ai_medicine_costs + age65_70$ai_costs$ai_medicine_costs + age70_75$ai_costs$ai_medicine_costs) / 1000
@@ -78,6 +85,10 @@ callModel <- function(descriptives = FALSE){
       soc_productivity_pp <- soc_productivity_pp * cost_multiplier
     } 
   }
+  if (perspective == "healthcare"){
+    ai_productivity_pp <- 0
+    soc_productivity_pp <- 0
+  }
 
   # total costs per patient
   ai_costs_pp <- ai_screening_pp + ai_medicine_pp + ai_diagnostic_pp + ai_intervention_pp + ai_burden_pp + ai_productivity_pp
@@ -95,7 +106,15 @@ callModel <- function(descriptives = FALSE){
     parameter <- NULL
   }
   
-  if (descriptives == TRUE){ # if descriptives is true, print all information
+  if (descriptives == TRUE){ # if descriptives is true, print all information & calculate additional descriptives
+
+    ai_time <- (age50_55$ai_time_spent + age55_60$ai_time_spent + age60_65$ai_time_spent + age65_70$ai_time_spent + age70_75$ai_time_spent) / 1000
+    soc_time <- (age50_55$soc_time_spent + age55_60$soc_time_spent + age60_65$soc_time_spent + age65_70$soc_time_spent + age70_75$soc_time_spent) / 1000
+    vi_prevented <- (age50_55$vi_prevented + age55_60$vi_prevented + age60_65$vi_prevented + age65_70$vi_prevented + age70_75$vi_prevented) / 1000
+
+    print(ai_time) 
+    print(soc_time)
+    print(paste("years of visual impairment prevented:", vi_prevented))
     print(paste("screening cost pp AI:", round(ai_screening_pp, 2), "screening cost pp SOC:", round(0, 2)))
     print(paste("medicine cost pp AI:", round(ai_medicine_pp, 2), "medicine cost pp SOC:", round(soc_medicine_pp, 2)))
     print(paste("diagnostic cost pp AI:", round(ai_diagnostic_pp, 2), "diagnostic cost pp SOC:", round(soc_diagnostic_pp, 2)))
@@ -234,12 +253,12 @@ runModel <- function(cohort = age_categories[1]){
   ################################################################
   ai_time_spent <- getTimeSpent(a_trace = a_trace_ai$trace) ### (function returns time spent in each health state))
   soc_time_spent <- getTimeSpent(a_trace = a_trace_soc$trace) ### (function returns time spent in each health state))
-  blindness_prevented <- getBlindnessPrevented(a_trace_ai = a_trace_ai$trace, a_trace_soc = a_trace_soc$trace) ### (function returns amount of years blindness prevented)
+  vi_prevented <- getBlindnessPrevented(a_trace_ai = a_trace_ai$trace, a_trace_soc = a_trace_soc$trace) ### (function returns amount of years blindness prevented)
   #ai_screening_descriptives <- getScreenignDescriptives(trace = a_trace_ai$trace, ### function returns total amount of fully screenings performed (fully compliant)
-   #                                                   screening_probabilities = p_screening,
-   #                                                   screening_cost = v_cost_dt, # obtain screening costs
-    #                                                  interval = 5, 
-   #                                                   max_repititions = 4) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model
+  #                                                    screening_probabilities = p_screening,
+  #                                                    screening_cost = v_cost_dt, # obtain screening costs
+  #                                                    interval = 5, 
+  #                                                    max_repititions = 4) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model
 
   #------------------------------------------------------------------------------#
   ####                       3 Utilities                           ####
@@ -249,8 +268,8 @@ runModel <- function(cohort = age_categories[1]){
   # total QALYs for each cohort separately and then take the weighted average.
   # It could also be a good exercise to check whether these calculations are correct, since they should be equal I suppose.
   # I've also noticed that changing age_init does not change the results of ai_total_qaly or soc_total_qaly. Is that correct?                        
-  ai_total_qaly <- getQALYs(a_trace = a_trace_ai$trace_utility, v_utilities = v_utilities) ### (function returns total amount of QALY'S gained
-  soc_total_qaly <- getQALYs(a_trace = a_trace_soc$trace_utility, v_utilities = v_utilities) ### (function returns total amount of QALY'S gained
+  ai_total_qaly <- getQALYs(a_trace = a_trace_ai$trace_utility) ### (function returns total amount of QALY'S gained
+  soc_total_qaly <- getQALYs(a_trace = a_trace_soc$trace_utility) ### (function returns total amount of QALY'S gained
 
   #------------------------------------------------------------------------------#
   ####                   4a Costs decision tree screening costs                    ####
@@ -355,6 +374,15 @@ runModel <- function(cohort = age_categories[1]){
   ai_costs <- list(ai_screening_costs = ai_screening_costs, ai_medicine_costs = ai_medicine_costs, ai_diagnostic_costs = ai_diagnostic_costs, ai_intervention_costs = ai_intervention_costs, ai_burden = ai_burden, ai_productivity = ai_productivity)
   soc_costs <- list(soc_medicine_costs = soc_medicine_costs, soc_diagnostic_costs = soc_diagnostic_costs, soc_intervention_costs = soc_intervention_costs, soc_burden = soc_burden, soc_productivity = soc_productivity)
 
-  return(list(ai_costs = ai_costs, soc_costs = soc_costs, ai_qaly = ai_total_qaly, soc_qaly = soc_total_qaly, ai_trace = a_trace_ai$trace, soc_trace = a_trace_soc$trace))
+  return(list(ai_costs = ai_costs, 
+              soc_costs = soc_costs, 
+              ai_qaly = ai_total_qaly, 
+              soc_qaly = soc_total_qaly, 
+              ai_trace = a_trace_ai$trace, 
+              soc_trace = a_trace_soc$trace,
+              ai_time_spent = ai_time_spent,
+              soc_time_spent = soc_time_spent,
+              vi_prevented = vi_prevented
+              ))
 }
 

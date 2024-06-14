@@ -3,9 +3,8 @@ rm(list = ls()) # to clean the workspace
 options(digits = 8)
 require(pracma)
 
-g_mild_data <- read.csv("transition-calculations/normal group.csv")
-g_moderate_data <- read.csv("transition-calculations/moderate group.csv")
-baseline <- read.csv("transition-calculations/baseline.csv")
+g_data <- read.csv("transition-calculations/heijl untreated.csv")
+baseline <- read.csv("transition-calculations/crabb - baseline.csv")
 
 #------------------------------------------------------------------------------#
 ####                        1. Baseline functions                            ####
@@ -82,56 +81,47 @@ integrate(f_sev, lower = -Inf, upper = Inf)$value
 ####                       PROGRESSION FUNCTIONS                           ####
 #------------------------------------------------------------------------------#
 ### FUNCTION PROGRESSION ---- MILD ###
-x_axis_mild <- g_mild_data$x
-y_axis_mild <- g_mild_data$y
+x_axis_mild <- g_data$x
+y_axis_mild <- g_data$y
 
 # Define gfoo for normalisation
-g_mild <- function(x) {
+g <- function(x) {
     ifelse(x < min(x_axis_mild) | x > max(x_axis_mild), 0, approx(x_axis_mild, y_axis_mild, xout = x)$y) 
 }
 
 # normalize object save 
-normalizer_g_mild <- integrate(g_mild, lower = -Inf, upper = Inf, subdivisions = 1000)$value
+normalizer_g_mild <- integrate(g, lower = -Inf, upper = Inf, subdivisions = 1000)$value
 
-g_mild <- function(y) {
+g <- function(y) {
     ifelse(y < min(x_axis_mild) | y > max(x_axis_mild), 0, approx(x_axis_mild, y_axis_mild, xout = y)$y) / normalizer_g_mild
 }
 
 # check if integral of g sums to 1
-integrate(g_mild, lower = -Inf, upper = Inf, subdivisions = 1000)$value
+integrate(g, lower = -Inf, upper = Inf, subdivisions = 1000)$value
 
-integrate(g_mild, lower = -Inf, upper = Inf, subdivisions = 1000)$value
+#plot to check distribution
+x_test <- seq(-9, 5, by = 0.1)
+y_test <- g(x_test)
 
-# Visualize the function g
-#x_test <- seq(-10, 1.5, by = 0.1)
-#y_test <- g_mild(x_test)
-#plot(x_test, y_test, type = "l", xlab = "x", ylab = "PDF(x)", main = "Probability Density Function")
+library(ggplot2)
 
+mean_g <- integrate(
+    function(x) x * g(x),
+    lower = min(x_axis_mild),
+    upper = max(x_axis_mild),
+    subdivisions = 1000
+)$value  # Extract the value of the integral
 
+# Plot the PDF
+plot <- ggplot(data.frame(x = x_test, y = y_test), aes(x = x, y = y)) +
+    geom_line() +
+    geom_vline(xintercept = mean_g, linetype = "dashed", color = "red") +
+    annotate("text", x = mean_g, y = max(y_test), label = "Mean", vjust = -1, color = "red") +
+    labs(x = "x", y = "PDF(x)", title = "PDF Heijl untreated")
 
-### FUNCTION PROGRESSION ---- MODERATE / SEVERE PORGRESSERS ###
-x_axis_mod <- g_moderate_data$x
-y_axis_mod <- g_moderate_data$y
+# Save the plot as a PNG file
+ggsave("transition-calculations/heijl_untreated.png", plot, width = 6, height = 6, dpi = 300)
 
-# Define gfoo for normalisation
-g_mod <- function(x) {
-    ifelse(x < min(x_axis_mod) | x > max(x_axis_mod), 0, approx(x_axis_mod, y_axis_mod, xout = x)$y) 
-}
-
-# normalize object save 
-normalizer_g_mod <- integrate(g_mod, lower = -Inf, upper = Inf, subdivisions = 1000)$value
-
-g_mod <- function(x) {
-    ifelse(x < min(x_axis_mod) | x > max(x_axis_mod), 0, approx(x_axis_mod, y_axis_mod, xout = x)$y) / normalizer_g_mod
-}
-
-# check if integral of g sums to 1
-integrate(g_mod, lower = -Inf, upper = Inf, subdivisions = 1000)$value
-
-# Visualize the function g 
-#x_test <- seq(-3.5, 1.5, by = 0.1)
-#y_test <- g_mod(x_test)
-#plot(x_test, y_test, type = "l", xlab = "x", ylab = "PDF(x)", main = "Probability Density Function")
 
 
 
@@ -142,7 +132,7 @@ integrate(g_mod, lower = -Inf, upper = Inf, subdivisions = 1000)$value
 h_mild <- function(x, y) {
         #integrate(f_mild, )
         f_x <- f_mild(x)
-        g_y <- g_mild(y)
+        g_y <- g(y)
         
         h_xy <- f_x * g_y
 
@@ -153,12 +143,12 @@ h_mild <- function(x, y) {
 y_max_mild <- function(x) -6-x
 
 #integral2(h_mild, xmin = -50, xmax = 50, ymin = -50, ymax = 50, reltol = 0.00000000000000000001, maxlist = 30000)$Q # validation to check to be 1. 
-p_mild <- integral2(h_mild, xmin = -6, xmax = 5, ymin = -5, ymax = y_max_mild, reltol = 0.000000000001)$Q # probability
+p_mild <- integral2(h_mild, xmin = -6, xmax = 20, ymin = -10, ymax = y_max_mild, reltol = 0.00000000000000000001, maxlist = 30000, abstol = 0.0000000000000000001)$Q # probability
 
 # MODERATE PROGRESSION 
 h_mod <- function(x, y) {
         f_x <- f_mod(x)
-        g_y <- g_mod(y)
+        g_y <- g(y)
         
         h_xy <- f_x * g_y
 
@@ -168,18 +158,18 @@ h_mod <- function(x, y) {
 # boundary 
 y_max_mod <- function(x) -12-x
 
-#integral2(h_mod, -50, 50, -50, 50, reltol = 0.0000000000000000001, abstol = 0.0000000000000000001, maxlist = 100000) #check to be 1. 
+#integral2(h_mod, -20, 20, -20, 20, reltol = 0.0000000000000000001, abstol = 0.0000000000000000001, maxlist = 100000) #check to be 1. 
 
 ############### VRAAG: HIER OOK NORMALISEREN? 
 ############### VRAAG: OVER WELKE BOUNDARIES INTEGREREN WE? 
-p_mod <- integral2(h_mod, xmin = -12, xmax = -6, ymin = -5, ymax = y_max_mod, reltol = 0.0000000000000000001, abstol = 0.0000000000000000001, maxlist = 100000)$Q
+p_mod <- integral2(h_mod, xmin = -12, xmax = -6, ymin = -10, ymax = y_max_mod, reltol = 0.0000000000000000001, abstol = 0.0000000000000000001, maxlist = 100000)$Q
 #ymax kan ook -inf zijn.
 
 
 # SEVERE PROGRESSION 
 h_sev <- function(x, y) {
         f_x <- f_sev(x)
-        g_y <- g_mod(y)
+        g_y <- g(y)
         
         h_xy <- f_x * g_y
 
@@ -191,7 +181,7 @@ y_max_sev <- function(x) -20-x
 
 # Validation to check if the integral of h is 1. Moet 1 uitkomen aangezien die al genormaliseerd is.
 #integral2(h_sev, -20, 20, -20, 20, reltol = 0.0000000000000000001, abstol = 0.0000000000000000001, maxlist =  100000)$Q
-p_sev <- integral2(h_sev, -20, -12, -5, y_max_sev, reltol = 0.0000000000000000001, abstol = 0.0000000000000000001, maxlist =  100000)$Q
+p_sev <- integral2(h_sev, -20, -12, -10, y_max_sev, reltol = 0.0000000000000000001, abstol = 0.0000000000000000001, maxlist =  100000)$Q
 
 print(p_mild)
 print(p_mod)

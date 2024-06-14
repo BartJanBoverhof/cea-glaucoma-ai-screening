@@ -181,7 +181,7 @@ CombineDT <- function(traces) {
   starting_probabilities <- mapply(sum, traces$soc , traces$low_risk , traces$high_risk, traces$compliant, SIMPLIFY = FALSE)
   total_sum <- sum(unlist(starting_probabilities))
 
-  #print(paste("The decision tree arms sum to a total of", total_sum))
+  print(paste("The decision tree arms sum to a total of", total_sum))
 
   return(starting_probabilities) 
 }

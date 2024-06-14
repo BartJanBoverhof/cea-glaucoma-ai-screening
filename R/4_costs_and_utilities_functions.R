@@ -14,27 +14,10 @@ getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
   return(blind_prevented)
 }
 
-getQALYs <- function(a_trace, # cohort trace
-                      v_utilities){ # vector of utilities
-
-  n_cycle_length <- 1
-
-  # vector of utilities
-  v_u <- c(no_glaucoma = v_utilities$healthy, 
-            mild_diagnosed = v_utilities$mild_treated,
-            moderate_diagnosed = v_utilities$mod_treated,
-            severe_diagnosed = v_utilities$severe_treated,
-            mild_undiagnosed = v_utilities$mild_untreated,
-            moderate_undiagnosed = v_utilities$mod_untreated,
-            severe_undiagnosed = v_utilities$severe_untreated,
-            blind = v_utilities$blind,
-            observation = v_utilities$obs,
-            death = v_utilities$death) * n_cycle_length
-
-  v_qaly <- a_trace %*% v_u # multiply utilities with cohort trace
+getQALYs <- function(a_trace){ # vector of utilities
 
   #return qaly's 
-  return(sum(v_qaly))
+  return(sum(a_trace))
 }
 
 getScreenignDescriptives <- function(trace,

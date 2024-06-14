@@ -45,9 +45,9 @@ save(v_utilities, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/5a_v
 #------------------------------------------------------------------------------#
 ####                    05b utilities age decrement                         ####
 #------------------------------------------------------------------------------#
-file.init <- "data-raw/5b_utilities_age_decrement.xls" #Init statement
-v_utilities_age_decrement  <- read_excel(file.init) #loading csv
-save(v_utilities_age_decrement, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/5b_v_utilities_age_decrement.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+file.init <- "data-raw/5b_utilities_gp.xls" #Init statement
+v_utilities_gp  <- read_excel(file.init) #loading csv
+save(v_utilities_gp, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/5b_v_utilities_gp.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
 #------------------------------------------------------------------------------#
 ####                    06a incidences of                         ####
@@ -99,6 +99,17 @@ save(v_cost_utilisation_intervention, file = "~/Documents/GitHub/cea-glaucoma-ai
 file.init <- "data-raw/8f_cost_burden_disease.xlsx" #Init statement
 v_cost_burden_disease  <- read_excel(file.init)
 save(v_cost_burden_disease, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/8f_v_cost_burden_disease.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+
+
+
+
+
+
+
+
+
+
+
 
 
 

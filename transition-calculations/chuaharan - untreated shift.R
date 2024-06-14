@@ -1,12 +1,15 @@
 # Calculating transition probabilities, toy example.
 rm(list = ls()) # to clean the workspace
 options(digits = 8)
-setwd("/Users/bart-janb/Documents/GitHub/cea-glaucoma-ai-screening/transition-calculations")
 require(pracma)
 
-g_mild_data <- read.csv("normal group.csv")
-g_moderate_data <- read.csv("moderate group.csv")
-baseline <- read.csv("baseline.csv")
+# get current wd
+getwd()
+
+
+g_mild_data <- read.csv("transition-calculations/chuaharan normal group.csv")
+g_moderate_data <- read.csv("transition-calculations/chuaharan moderate group.csv")
+baseline <- read.csv("transition-calculations/chuaharan baseline.csv")
 
 #------------------------------------------------------------------------------#
 ####                        1. Baseline functions                            ####
@@ -105,30 +108,35 @@ mean_g_mild <- integrate(
     upper = max(x_axis_mild)
 )$value  # Extract the value of the integral
 
-# rescale x
-x_axis_mild  <- g_mild_data$x * abs((0.6/mean_g_mild)) 
-
-g_mild <- function(y) {
-    ifelse(y < min(x_axis_mild) | y > max(x_axis_mild), 0, approx(x_axis_mild, y_axis_mild, xout = y)$y)
-}
-
-# normalize again
-normalizer_g_mild <- integrate(g_mild, lower = -Inf, upper = Inf, subdivisions = 1000)$value
+x_axis_mild  <- g_mild_data$x - (0.6+mean_g_mild) # shift x to the left
 
 g_mild <- function(y) {
     ifelse(y < min(x_axis_mild) | y > max(x_axis_mild), 0, approx(x_axis_mild, y_axis_mild, xout = y)$y) / normalizer_g_mild
 }
 
 # check if integral of g sums to 1
-#integrate(g_mild, lower = -Inf, upper = Inf, subdivisions = 1000)$value
-
-# take mean to check if equal to -0.6
-#integrate(function(x) x * g_mild(x),lower = min(x_axis_mild),upper = max(x_axis_mild),subdivisions = 1000)$value  # Extract the value of the integral
+integrate(g_mild, lower = -Inf, upper = Inf, subdivisions = 1000)$value
 
 #plot to check distribution
-#x_test <- seq(-15, 6, by = 0.1)
-#y_test <- g_mild(x_test)
-#plot(x_test, y_test, type = "l", xlab = "x", ylab = "PDF(x)", main = "Probability Density Function")
+x_test <- seq(-15, 5, by = 0.1)
+y_test <- g_mild(x_test)
+
+library(ggplot2)
+
+# Plot the PDF
+plot <- ggplot(data.frame(x = x_test, y = y_test), aes(x = x, y = y)) +
+    geom_line() +
+    labs(x = "x", y = "PDF(x)", title = "PDF Chuaharan untreated (shifted)")
+
+# Save the plot as a PNG file
+ggsave("transition-calculations/chuaharan_untreated.png", plot, width = 6, height = 4, dpi = 300)
+
+# check the mean of the new g distriubtion
+mean_g_mild <- integrate(
+    function(x) x * g_mild(x),
+    lower = min(x_axis_mild),
+    upper = max(x_axis_mild)
+    , subdivisions = 1000 )$value  # Extract the value of the integral
 
 
 
@@ -156,34 +164,34 @@ mean_g_mod <- integrate(
 )$value  # Extract the value of the integral
 
 # check if integral of g sums to 1
-#integrate(g_mod, lower = -Inf, upper = Inf, subdivisions = 1000)$value
+integrate(g_mod, lower = -Inf, upper = Inf, subdivisions = 1000)$value
 
-# rescale x
-x_axis_mod  <- g_moderate_data$x * abs((0.6/mean_g_mod)) 
+# Visualize the function g 
+#x_test <- seq(-3.5, 1.5, by = 0.1)
+#y_test <- g_mod(x_test)
+#plot(x_test, y_test, type = "l", xlab = "x", ylab = "PDF(x)", main = "Probability Density Function")
 
-g_mod <- function(y) {
-    ifelse(y < min(x_axis_mod) | y > max(x_axis_mod), 0, approx(x_axis_mod, y_axis_mod, xout = y)$y)
-}
-
-# normalize again
-normalizer_g_mod <- integrate(g_mod, lower = -Inf, upper = Inf, subdivisions = 1000)$value
+# redefine the g function to shift the distribution to the left
+x_axis_mod  <- g_moderate_data$x - (0.6+mean_g_mod) # shift x to the left
 
 g_mod <- function(y) {
     ifelse(y < min(x_axis_mod) | y > max(x_axis_mod), 0, approx(x_axis_mod, y_axis_mod, xout = y)$y) / normalizer_g_mod
 }
 
 # check if integral of g sums to 1
-#integrate(g_mod, lower = -Inf, upper = Inf, subdivisions = 1000)$value
+integrate(g_mod, lower = -Inf, upper = Inf, subdivisions = 1000)$value
 
-# take mean to check if equal to -0.6
-#integrate(function(x) x * g_mod(x),lower = min(x_axis_mod),upper = max(x_axis_mod),subdivisions = 1000)$value  # Extract the value of the integral
-
-# Visualize the function g 
-#x_test <- seq(-10, 5, by = 0.1)
+#plot to check distribution
+#x_test <- seq(-4, 1.5, by = 0.1)
 #y_test <- g_mod(x_test)
 #plot(x_test, y_test, type = "l", xlab = "x", ylab = "PDF(x)", main = "Probability Density Function")
 
-
+# Calculate the mean of g_mod to validate
+integrate(
+    function(x) x * g_mod(x),
+    lower = min(x_axis_mod),
+    upper = max(x_axis_mod)
+)$value  # Extract the value of the integral
 
 #------------------------------------------------------------------------------#
 ####                       COMBINED FUNCTIONS                           ####
