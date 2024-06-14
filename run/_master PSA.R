@@ -26,7 +26,7 @@ load("data/2_p_dt.RData")
 load("data/3a_p_severity_undiagnosed.RData")
 load("data/4_p_transition.RData")
 load("data/5a_v_utilities.RData")
-load("data/5b_v_utilities_age_decrement.RData")
+load("data/5b_v_utilities_gp.RData")
 load("data/6a_v_incidences_of.RData")
 load("data/6b_v_incidences_screening.RData")
 load("data/6c_v_prevalence.RData")
@@ -51,11 +51,11 @@ p_dt <- p_dt
 p_severity_undiagnosed <- p_severity_undiagnosed
 p_transition <- p_transition
 v_utilities <- v_utilities
-v_utilities_age_decrement <- v_utilities_age_decrement
+v_utilities_gp<- v_utilities_gp
 
 # run base case
 strategy <- "base"
-base <- callModel(descriptives = TRUE)
+base <- callModel(descriptives = TRUE, perspective= "healthcare")
 
 strategy <- "dsa"
 
@@ -96,11 +96,11 @@ if (strategy == "dsa") {
 #------------------------------------------------------------------------------#
 paramNames <-  c(   "Transition probabilities untreated [-/+ 20%]",
                     "Transition probabilities treated [-/+ 20%]",
-                    "AI sensitivity [-/+ 5% points]",
-                    "AI specificity [-/+ 5% points]",
+                    "AI sensitivity [-/+ 20% points] (max 1)",
+                    "AI specificity [-/+ 20% points] (max 1)",
                     "Prevalence [-/+ 20%]",
-                    "Incidences OF [-/+ 20%]",
-                    "Incidences Screening [-/+ 20%]",
+                    "OF detection rate [-/+ 20%]",
+                    "Incidences [-/+ 20%]",
                     #"Utilities untreated [-/+ 10%]",
                     #"Utilities treated [-/+ 10%]",
                     "Screening costs [-/+ 20%]",
@@ -119,7 +119,7 @@ data <- matrix(c(base, dsa$transition_untreated[1], dsa$transition_untreated[2],
                 base, dsa$incidences_of[1], dsa$incidences_of[2],
                 base, dsa$incidences_screening[1], dsa$incidences_screening[2],
                 #base, dsa$utilities_untreated[1], dsa$utilities_untreated[2],
-                #base, dsa$utilities_treated[1], dsa$utilities_treated[2]), 
+                #base, dsa$utilities_treated[1], dsa$utilities_treated[2], 
                 base, dsa$costs_screening[1], dsa$costs_screening[2],
                 base, dsa$costs_medicine[1], dsa$costs_medicine[2],
                 base, dsa$costs_diagnostics[1], dsa$costs_diagnostics[2],
@@ -128,13 +128,13 @@ data <- matrix(c(base, dsa$transition_untreated[1], dsa$transition_untreated[2],
                 base, dsa$costs_productivity[1], dsa$costs_productivity[2]),
                 nrow = length(paramNames), ncol = 3, byrow = TRUE)
 
-
 Parms = paramNames
 Outcomes = data
 titleName = "Tornado diagram"
 
 #save plot
 ggsave("figures/tornado_plot.png", tornadoPlot(Parms = paramNames, Outcomes = data, titleName = "Tornado diagram", outcomeName = ""), width = 20, height = 15, units = "cm")
+
 
 
 

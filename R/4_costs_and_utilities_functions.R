@@ -18,6 +18,13 @@ getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
   blind_soc <- sum(a_trace_soc[,"Blind"])
   blind_prevented <- blind_soc - blind_ai
   return(blind_prevented)
+}
+
+getQALYs <- function(a_trace){ # vector of utilities
+
+  #return qaly's 
+  return(sum(a_trace))
+}
   }
 
 # Name of the function: getQALYs

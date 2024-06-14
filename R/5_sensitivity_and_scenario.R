@@ -51,15 +51,16 @@ runDSA <- function(parameter){
         p_dt <- p_dt # local save
 
         # transform parameters to lower bound
-        p_dt$ai_sens <- p_dt$ai_sens - p_dt$ai_sens_dev
-
+        p_dt$ai_sens <- p_dt$ai_sens * (1 - p_dt$ai_sens_dev)
+        
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_dt <- get("p_dt", envir =globalenv())
 
         # transform parameters to upper bound
-        p_dt$ai_sens <- p_dt$ai_sens + p_dt$ai_sens_dev
+        p_dt$ai_sens <- p_dt$ai_sens * (1 + p_dt$ai_sens_dev)
+        if (p_dt$ai_sens > 1) {p_dt$ai_sens <- 1} # if higher than 1, make it 1
 
         upper <- callModel() # lower bound
     
@@ -68,7 +69,7 @@ runDSA <- function(parameter){
         p_dt <- p_dt # local save
 
         # transform parameters to lower bound
-        p_dt$ai_spec <- p_dt$ai_spec - p_dt$ai_spec_dev
+        p_dt$ai_spec <- p_dt$ai_spec * (1 - p_dt$ai_spec_dev)
 
         lower <- callModel() # lower bound
 
@@ -76,7 +77,8 @@ runDSA <- function(parameter){
         p_dt <- get("p_dt", envir =globalenv())
 
         # transform parameters to upper bound
-        p_dt$ai_spec <- p_dt$ai_spec + p_dt$ai_spec_dev
+        p_dt$ai_spec <- p_dt$ai_spec * (1+ p_dt$ai_spec_dev)
+        if (p_dt$ai_spec > 1) {p_dt$ai_spec <- 1} # if higher than 1, make it 1
 
         upper <- callModel() # lower bound
 

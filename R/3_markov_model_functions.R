@@ -199,7 +199,7 @@ getMarkovTrace <- function(scenario, # scenario
   ####                       05 Creating corrected traces             ####
   #------------------------------------------------------------------------------#
   patients <- sum(m_trace[1,]) # number of patients in the subcohort
-  trace_utility <- traceCorrectionUtil(m_trace, v_utilities_age_decrement, age_init = age_init) # trace corrected for utilities (discount & age)
+  trace_utility <- traceCorrectionUtil(m_trace, v_utilities_gp, age_init = age_init, utilities = v_utilities) # trace corrected for utilities (discount & age)
   trace_cost <- discountTraceCosts(m_trace) # trace corrected for cost discount
   
   return(list(trace = m_trace, patients = patients, trace_utility = trace_utility, trace_cost = trace_cost))
