@@ -20,12 +20,6 @@ getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
   return(blind_prevented)
 }
 
-getQALYs <- function(a_trace){ # vector of utilities
-
-  #return qaly's 
-  return(sum(a_trace))
-}
-  
 
 # Name of the function: getQALYs
 # Purpose of the code: Calculate the total QALYs (Quality-Adjusted Life Years) for a given Markov trace
