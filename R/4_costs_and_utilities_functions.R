@@ -25,35 +25,17 @@ getQALYs <- function(a_trace){ # vector of utilities
   #return qaly's 
   return(sum(a_trace))
 }
-  }
+  
 
 # Name of the function: getQALYs
 # Purpose of the code: Calculate the total QALYs (Quality-Adjusted Life Years) for a given Markov trace
 # Inputs: a_trace - cohort trace matrix, v_utilities - vector of utility values for different health states (we need to explaiun why these are vectors and not single values: age effect already included?)
 # Outputs: Total QALYs (consider returning QALYs per health state as well - I think htat would be v_qaly)
-getQALYs <- function(a_trace, v_utilities){ 
+getQALYs <- function(a_trace){ # vector of utilities
 
-  # Isaac: could we explain the purpose of this parameter? If it's hardcoded (in theory we should never do this) and = 1 why do we need it?
-  n_cycle_length <- 1 
-
-  # Vector of utilities (is it a vector or a matrix?)
-  v_u <- c(no_glaucoma          = v_utilities$healthy, 
-           mild_diagnosed       = v_utilities$mild_treated,
-           moderate_diagnosed   = v_utilities$mod_treated,
-           severe_diagnosed     = v_utilities$severe_treated,
-           mild_undiagnosed     = v_utilities$mild_untreated,
-           moderate_undiagnosed = v_utilities$mod_untreated,
-           severe_undiagnosed   = v_utilities$severe_untreated,
-           blind                = v_utilities$blind,
-           observation          = v_utilities$obs,
-           death                = v_utilities$death) * n_cycle_length
-
-  # multiply utilities with cohort trace
-  v_qaly <- a_trace %*% v_u 
-
-  # return total qaly's 
-  return(sum(v_qaly))
-  }
+  #return qaly's 
+  return(sum(a_trace))
+}
 
 # Isaac: I stopped here since these functions are more complex
 getScreenignDescriptives <- function(trace,
