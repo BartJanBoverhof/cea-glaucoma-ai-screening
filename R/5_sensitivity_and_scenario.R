@@ -230,16 +230,60 @@ runDSA <- function(parameter){
     } else {
         print("Error: parameter not found")
     }
-      
-
-       
-
     
-     
-
   return(c(lower, upper))
 }
 
+runPSA <- function(parameter){
+
+    strategy <- get("strategy", envir = parent.frame())
+
+    # local save for all parameters
+    v_prevalence <- get("v_prevalence", envir =globalenv())
+    v_incidences_of <- get("v_incidences_of", envir =globalenv())
+    v_incidences_screening <- get("v_incidences_screening", envir =globalenv())
+    p_dt <- get("p_dt", envir =globalenv())
+    p_transition <- get("p_transition", envir =globalenv())
+
+    # sample parameter values from distributions
+    # prevalence
+    mu_prevalence <- v_prevalence$prevalence
+    sd_prevalence <- mu_prevalence * v_psa_sd$prevalence
+    v_prevalence$prevalence <- sampleBeta(mu_prevalence, sd_prevalence)
+
+    #incidence of screening
+    mu_incidences_screening <- v_incidences_screening$incidence
+    sd_incidences_screening <- mu_incidences_screening * v_psa_sd$incidence_screening
+    v_incidences_screening$incidence <- sampleBeta(mu_incidences_screening, sd_incidences_screening)
+
+    # incidence of OF
+    mu_incidences_of <- v_incidences_of$incidence
+    sd_incidences_of <- mu_incidences_of * v_psa_sd$incidence_of
+    v_incidences_of$incidence <- sampleBeta(mu_incidences_of, sd_incidences_of)
+
+    # sensitivity AI
+    mu_sensitivity <- p_dt$ai_sens
+    sd_sensitivity <- mu_sensitivity * v_psa_sd$ai_sensitivity
+    p_dt$ai_sens <- sampleBeta(mu_sensitivity, sd_sensitivity)
+
+    # specificity AI 
+    mu_specificity <- p_dt$ai_spec
+    sd_specificity <- mu_specificity * v_psa_sd$ai_specificity
+    p_dt$ai_spec <- sampleBeta(mu_specificity, sd_specificity)
+
+    # transition probabilities
+    mu_transition  <- p_transition
+    sd_transition  <- mu_transition * v_psa_sd$transitions
+    p_transition <- sampleBeta(mu_transition$p_mild_mod_untreated, sd_transition)
+
+    # utilities (treated)
+    mu_utilities <- v_utilities
+    sd_utilities <- mu_utilities * v_psa_sd$utilities
+    v_utilities <- sampleBeta(mu_utilities$mild_treated, sd_utilities)
+
+    # utilities (untreated)
+
+}
 
 tornadoPlot <-function(Parms, Outcomes, titleName, outcomeName){
   library(ggplot2)
@@ -300,3 +344,45 @@ tornadoPlot <-function(Parms, Outcomes, titleName, outcomeName){
   )
   # ggsave(paste("results/", titleName,".png"))
 }
+
+runScenario <- function(vary, perspective){
+    strategy <- get("strategy", envir = parent.frame())
+
+    if (vary == "transition"){
+
+        print("Base case")
+        callModel(descriptives = TRUE, perspective= perspective)
+        
+        # Scenario 1 - untreated probabilities Burr (2014)
+        p_transition <- get("p_transition", envir =globalenv()) #re-obtain p_transition from global environment
+        p_transition$p_mild_mod_untreated <- 0.129
+        p_transition$p_mod_sev_untreated <- 0.048
+        p_transition$p_sev_blind_untreated <- 0.042
+        
+        print("Scenario: Untreated transition Burr 2014")
+        callModel(descriptives = TRUE, perspective= perspective)
+
+        # Scenario 2 - treated Chuahan (2014)
+        p_transition <- get("p_transition", envir =globalenv()) #re-obtain p_transition from global environment
+        p_transition$p_mild_mod_treated <- 0.020507299
+        p_transition$p_mod_sev_treated <- 0.043812862
+        p_transition$p_sev_blind_treated <- 0.018346021
+
+        print("Scenario: Untreated transition Burr 2014")
+        callModel(descriptives = TRUE, perspective= perspective)
+
+        # Scenario 3 - untreated & treated probabilities Garway (2014)
+        p_transition <- get("p_transition", envir =globalenv()) #re-obtain p_transition from global environment
+        p_transition$p_mild_mod_untreated <- 0.10037277
+        p_transition$p_mod_sev_untreated <- 0.075089004
+        p_transition$p_sev_blind_untreated <- 0.056142589
+        p_transition$p_mild_mod_treated <- 0.033819931
+        p_transition$p_mod_sev_treated <- 0.023480845
+        p_transition$p_sev_blind_treated <- 0.018810467
+
+        print("Scenaio: Untreated transition Burr 2014")
+        callModel(descriptives = TRUE, perspective= perspective)
+
+
+    } 
+  } 

@@ -179,10 +179,10 @@ p_ai_screened <- p_screen_compliance * p_invited # probability of being screened
 p_followed_up <- p_screen_compliance * p_referral_compliance * ai_positive
 
 detection_rate_flat <- p_screen_compliance * p_referral_compliance * probabilities$ai_sens
-detection_rate_missed <- p_screen_compliance * p_referral_compliance * (1- probabilities$ai_sens) * ai_tp # detection rate in the population that are previously missed (used in markov model)
+#detection_rate_missed <- p_screen_compliance * p_referral_compliance * (1- probabilities$ai_sens) * ai_tp # detection rate in the population that are previously missed (used in markov model)
 #p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv
 
-return(list(p_invited = p_invited, p_ai_screened = p_ai_screened, p_followed_up = p_followed_up, detection_rate_flat = detection_rate_flat, detection_rate_missed = detection_rate_missed))
+return(list(p_invited = p_invited, p_ai_screened = p_ai_screened, p_followed_up = p_followed_up, detection_rate_flat = detection_rate_flat))
 }
 
 padArray <- function(pad, pad_to) {
@@ -230,4 +230,16 @@ discountTraceCosts <- function(a_trace) {
   a_trace_discount <-  a_trace * sequence
 
   return(a_trace_discount)
+}
+
+sampleBeta <- function(mu, sd) {
+  
+  # defining alpha & beta 
+  alpha <- mu * ((mu * (1 - mu) / sd^2) - 1)
+  beta <- alpha * (1 - mu) / mu
+  
+  # sample from beta distribution
+  sample <- mapply(function(a, b) rbeta(1, a, b), alpha, beta)
+  
+  return(sample)
 }

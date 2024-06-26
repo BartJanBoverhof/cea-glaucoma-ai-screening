@@ -36,6 +36,7 @@ load("data/8b_v_cost_medicine.RData")
 load("data/8c_v_cost_utilisation_diagnostics.RData")
 load("data/8d_v_cost_utilisation_intervention.RData")
 load("data/8f_v_cost_burden_disease.RData")
+load("data/9b_v_psa_sd.RData")
 
 #------------------------------------------------------------------------------#
 ####                       1 Define Cohorts                            ####
@@ -54,30 +55,10 @@ v_utilities <- v_utilities
 v_utilities_gp<- v_utilities_gp
 
 # run base case
-strategy <- "base"
-base <- callModel(descriptives = TRUE, perspective= "healthcare")
+strategy <- "psa"
 
-strategy <- "dsa"
-
-# deterministic sensitivity analysis
-if (strategy == "dsa") {
-    dsa <- list()
-    dsa$transition_untreated <- runDSA(parameter = "transition_untreated")
-    dsa$transition_treated <- runDSA(parameter = "transition_treated")
-    dsa$sensitivity <- runDSA(parameter = "sensitivity")
-    dsa$specificity <- runDSA(parameter = "specificity")
-    dsa$prevalence <- runDSA(parameter = "prevalence")
-    dsa$incidences_of <- runDSA(parameter = "incidences_of")
-    dsa$incidences_screening <- runDSA(parameter = "incidences_screening")
-    #dsa$utilities_untreated <- runDSA(parameter = "utilities_untreated")
-    #dsa$utilities_treated <- runDSA(parameter = "utilities_treated")
-    dsa$costs_screening <- runDSA(parameter = "costs_screening")
-    dsa$costs_medicine <- runDSA(parameter = "costs_medicine")
-    dsa$costs_diagnostics <- runDSA(parameter = "costs_diagnostics")
-    dsa$costs_intervention <- runDSA(parameter = "costs_intervention")
-    dsa$costs_burden_disease <- runDSA(parameter = "costs_burden_disease")
-    dsa$costs_productivity <- runDSA(parameter = "costs_productivity")
-}
+# probabalistic sensitivity analysis
+runPSA()
  
 
 #------------------------------------------------------------------------------#
@@ -101,8 +82,8 @@ paramNames <-  c(   "Transition probabilities untreated [-/+ 20%]",
                     "Prevalence [-/+ 20%]",
                     "OF detection rate [-/+ 20%]",
                     "Incidences [-/+ 20%]",
-                    #"Utilities untreated [-/+ 10%]",
-                    #"Utilities treated [-/+ 10%]",
+                    "Utilities untreated [-/+ 10%]",
+                    "Utilities treated [-/+ 10%]",
                     "Screening costs [-/+ 20%]",
                     "Medicine costs [-/+ 20%]",
                     "Diagnostics costs [-/+ 20%]",
@@ -137,7 +118,7 @@ ggsave("figures/tornado_plot.png", tornadoPlot(Parms = paramNames, Outcomes = da
 
 
 
-
+s
 
 
 

@@ -1,4 +1,5 @@
-callModel <- function(descriptives = FALSE, perspective){
+callModel <- function(descriptives = FALSE, perspective = "societal"){
+  # Purpose: to call the model functions and combine all outcomes into to the ICER.
   
   # inherit local variables from previous function (for dsa, if applicable)
   strategy <- get("strategy", envir = parent.frame())
@@ -30,6 +31,22 @@ callModel <- function(descriptives = FALSE, perspective){
     }
   }
 
+  if (strategy == "scenario"){    
+    p_dt <- get("p_dt", envir = parent.frame())
+    p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
+    p_transition <- get("p_transition", envir = parent.frame())
+    v_utilities <- get("v_utilities", envir = parent.frame())
+    v_utilities_gp <- get("v_utilities_gp", envir = parent.frame())
+    v_incidences_of <- get("v_incidences_of", envir = parent.frame())
+    v_incidences_screening <- get("v_incidences_screening", envir = parent.frame())
+    v_prevalence <- get("v_prevalence", envir = parent.frame())
+    v_cost_dt <- get("v_cost_dt", envir = parent.frame())
+    v_cost_medicine <- get("v_cost_medicine", envir = parent.frame())
+    v_cost_utilisation_diagnostics <- get("v_cost_utilisation_diagnostics", envir = parent.frame())
+    v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
+    v_cost_burden_disease <- get("v_cost_burden_disease", envir = parent.frame())
+  }
+
   age50_55 <- runModel(cohort = age_categories[1])
   age55_60 <- runModel(cohort = age_categories[2])
   age60_65 <- runModel(cohort = age_categories[3])
@@ -37,7 +54,7 @@ callModel <- function(descriptives = FALSE, perspective){
   age70_75 <- runModel(cohort = age_categories[5])
 
   # create combined trace ai 
-  a_trace_soc_uncorrected <- age50_55$ai_trace + ### uncorrected trace (for reference)
+  a_trace_ai_uncorrected <- age50_55$ai_trace + ### uncorrected trace (for reference)
       padArray(pad = age55_60$ai_trace, pad_to = age50_55$ai_trace) + 
       padArray(pad = age60_65$ai_trace, pad_to = age50_55$ai_trace) +
       padArray(pad = age65_70$ai_trace, pad_to = age50_55$ai_trace) +
@@ -122,7 +139,7 @@ callModel <- function(descriptives = FALSE, perspective){
     print(paste("burden cost pp AI:", round(ai_burden_pp, 2), "burden cost pp SOC:", round(soc_burden_pp, 2)))
     print(paste("productivity cost pp AI:", round(ai_productivity_pp, 2), "productivity cost pp SOC:", round(soc_productivity_pp, 2)))
     print(paste("total cost pp AI:", round(ai_costs_pp, 2), "total cost pp SOC:", round(soc_costs_pp, 2)))
-    print(paste("QALY pp AI:", round(ai_qaly_pp, 2), "QALY pp SOC:", round(soc_qaly_pp, 2)))
+    print(paste("QALY pp AI:", round(ai_qaly_pp, 4), "QALY pp SOC:", round(soc_qaly_pp, 4)))
     print(paste("ICER:", round(icer, 2)))
   }
   return(icer) 
@@ -167,6 +184,22 @@ runModel <- function(cohort = age_categories[1]){
       v_utilities <- get("v_utilities", envir = parent.frame())
     }
   }
+
+  if (strategy == "scenario"){    
+    p_dt <- get("p_dt", envir = parent.frame())
+    p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
+    p_transition <- get("p_transition", envir = parent.frame())
+    v_utilities <- get("v_utilities", envir = parent.frame())
+    v_utilities_gp <- get("v_utilities_gp", envir = parent.frame())
+    v_incidences_of <- get("v_incidences_of", envir = parent.frame())
+    v_incidences_screening <- get("v_incidences_screening", envir = parent.frame())
+    v_prevalence <- get("v_prevalence", envir = parent.frame())
+    v_cost_dt <- get("v_cost_dt", envir = parent.frame())
+    v_cost_medicine <- get("v_cost_medicine", envir = parent.frame())
+    v_cost_utilisation_diagnostics <- get("v_cost_utilisation_diagnostics", envir = parent.frame())
+    v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
+    v_cost_burden_disease <- get("v_cost_burden_disease", envir = parent.frame())
+  }
   #------------------------------------------------------------------------------#
   ####                       1 Decision Tree                            ####
   #------------------------------------------------------------------------------#
@@ -182,7 +215,7 @@ runModel <- function(cohort = age_categories[1]){
   
   # calculate amount of screening repetitions
   interval <- 5
-  last_screen_age <- as.numeric(strsplit(age_categories[length(age_categories)], " ")[[1]][1])  # Split the cohort string by space and take the first element
+  last_screen_age <- as.numeric(strsplit(age_categories[length(age_categories)], " ")[[1]][3])  # Split the cohort string by space and take the first element
   max_repititions <- (last_screen_age - cohort_min) / interval
 
   prevalence <- filter(v_prevalence, age >= cohort_min & age <= cohort_max)  # Filter prevalence based on cohort age range
@@ -194,10 +227,10 @@ runModel <- function(cohort = age_categories[1]){
   p_dt_ai <- list()
 
   for (arm in arms) {
-    p_dt_ai[[arm]] <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, arm = arm, visualize = F, model_compliance = FALSE, p_prevalence = p_prevalence, cohort = cohort)
+    p_dt_ai[[arm]] <- getStartDistAI(probabilities = p_dt, severity_distribution = p_severity_undiagnosed, arm = arm, visualize = F, model_compliance = TRUE, p_prevalence = p_prevalence, cohort = cohort)
   }
   p_dt_ai <- CombineDT(traces = p_dt_ai) ### function combines all arms of the decision tree into single starting distribution per health state
-  p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = FALSE, p_prevalence = p_prevalence) ### function returns list of probabilities related to each screening arm (for later use)
+  p_screening <- getScreeningProbabilities(probabilities = p_dt, model_compliance = TRUE, p_prevalence = p_prevalence) ### function returns list of probabilities related to each screening arm (for later use)
   v_cohort_ai <- lapply(p_dt_ai, function(x) x*(unname(t_total_cohort[cohort]) * 1000)) # re-scale to cohort of 1000 patients
 
   ################## SOC STRATEGY
@@ -285,7 +318,7 @@ runModel <- function(cohort = age_categories[1]){
                                           screening_probabilities = p_screening,
                                           screening_cost = v_cost_dt, # obtain screening costs
                                           interval = interval, 
-                                          max_repititions = 4) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model 
+                                          max_repititions = max_repititions) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model 
 
   #------------------------------------------------------------------------------#
   ####                   4b Costs medicine                    ####

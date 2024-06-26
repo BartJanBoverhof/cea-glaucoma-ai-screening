@@ -29,9 +29,9 @@ getMarkovTrace <- function(scenario, # scenario
 
   n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
   
-  v_age_names  <- paste(rep(age_init:(age_max-1), each = 1/cycle_length),   # labels of age vectors
-                        1:(1/cycle_length), 
-                        sep = ".")  # labels of age vectors
+  #v_age_names  <- paste(rep(age_init:(age_max-1), each = 1/cycle_length),   # labels of age vectors
+  #                      1:(1/cycle_length), 
+  #                      sep = ".")  # labels of age vectors
   
   n_states <- length(v_names_states)   # number of health states 
   sequence <- seq(from = interval, by = interval, length.out = max_repititions) # generate sequence of number on which repeated screening is conducted
@@ -173,14 +173,15 @@ getMarkovTrace <- function(scenario, # scenario
       m_trace[t + 1, "Severe untreated"] <- m_trace[t + 1, "Severe untreated"] * (1 - detection_rate_flat)
 
       # re-allocate participants from the "no glaucoma" and "observation" states
-      m_trace[t + 1, "Mild treated"] <- m_trace[t + 1, "Mild treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_mild
-      m_trace[t + 1, "Moderate treated"] <- m_trace[t + 1, "Moderate treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_mod
-      m_trace[t + 1, "Severe treated"] <- m_trace[t + 1, "Severe treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_severe
-      m_trace[t + 1, "Blind"] <- m_trace[t + 1, "Blind"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_blind
+      # is this necessary??
+     #m_trace[t + 1, "Mild treated"] <- m_trace[t + 1, "Mild treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_mild
+     # m_trace[t + 1, "Moderate treated"] <- m_trace[t + 1, "Moderate treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_mod
+     # m_trace[t + 1, "Severe treated"] <- m_trace[t + 1, "Severe treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_severe
+     # m_trace[t + 1, "Blind"] <- m_trace[t + 1, "Blind"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_blind
 
       # re-allocate particiipants to the "no glaucoma" and "observation" states
-      m_trace[t + 1, "No glaucoma"] <- m_trace[t + 1, "No glaucoma"] * (1 - detection_rate_missed)
-      m_trace[t + 1, "Observation"] <- m_trace[t + 1, "Observation"] * (1 - detection_rate_missed)
+      #m_trace[t + 1, "No glaucoma"] <- m_trace[t + 1, "No glaucoma"] * (1 - detection_rate_missed)
+      #m_trace[t + 1, "Observation"] <- m_trace[t + 1, "Observation"] * (1 - detection_rate_missed)
 
 
     }
