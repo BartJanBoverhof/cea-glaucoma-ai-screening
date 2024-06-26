@@ -3,8 +3,8 @@ rm(list = ls()) # to clean the workspace
 options(digits = 8)
 require(pracma)
 
-g_data <- read.csv("transition-calculations/heijl untreated.csv")
-baseline <- read.csv("transition-calculations/crabb - baseline.csv")
+g_data <- read.csv("transition-calculations/heijl - untreated alt.csv")
+baseline <- read.csv("transition-calculations/heijl - baseline.csv")
 
 #------------------------------------------------------------------------------#
 ####                        1. Baseline functions                            ####
