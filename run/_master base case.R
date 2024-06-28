@@ -55,6 +55,7 @@ v_utilities_gp<- v_utilities_gp
 
 # run base case
 strategy <- "base"
+#base <- callModel(descriptives = TRUE, perspective= "societal")
 base <- callModel(descriptives = TRUE, perspective= "societal")
 
 
