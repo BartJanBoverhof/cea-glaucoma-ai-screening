@@ -52,6 +52,7 @@ p_severity_undiagnosed <- p_severity_undiagnosed
 p_transition <- p_transition
 v_utilities <- v_utilities
 v_utilities_gp<- v_utilities_gp
+screening_interval <- 5
 
 # run base case
 strategy <- "base"

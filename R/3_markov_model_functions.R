@@ -26,6 +26,7 @@ getMarkovTrace <- function(scenario, # scenario
 
   age_max <- 100 # time horizon               
   cycle_length <- 1 #cycle length
+  v_utilities <- get("v_utilities", envir = parent.frame())
 
   n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
   

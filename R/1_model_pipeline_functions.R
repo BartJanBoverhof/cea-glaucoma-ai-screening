@@ -195,7 +195,7 @@ padArray <- function(pad, pad_to) {
 }
 
 traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities) { #makes age utility decrement and discounting correction
-
+  
   # Age correction
   # max age
   age_max <- nrow(a_trace) + age_init -1
