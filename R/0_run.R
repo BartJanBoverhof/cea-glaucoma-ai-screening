@@ -1,4 +1,4 @@
-callModel <- function(descriptives = FALSE, perspective = "societal"){
+callModel <- function(descriptives = FALSE, perspective = "societal", total_population = FALSE, output = "icer"){
 ## Isaac: we should add some guidance about how to get the model to run.
 ## I've been trying for some time and I'm not able to do it. I assumed this could be done from this script, but I'm not getting any results. 
 ## The idea is to have a model that is as user friendly as possible.
@@ -87,6 +87,7 @@ callModel <- function(descriptives = FALSE, perspective = "societal"){
   soc_productivity_pp <- sum(sapply(age_results, function(x) x$soc_costs$soc_productivity)) / 1000
 
 
+
   if (strategy == "dsa"){ # if strategy is dsa, multiply respective costs with the multiplier
     if (parameter == "costs_screening"){
       ai_screening_pp <- ai_screening_pp * cost_multiplier
@@ -132,23 +133,62 @@ callModel <- function(descriptives = FALSE, perspective = "societal"){
 
     ai_time <- sapply(age_results, function(x) x$ai_time_spent)
     ai_time <- rowSums(sapply(age_results, function(x) x$ai_time_spent)) / 1000
-    soc_time <- sum(sapply(age_results, function(x) x$soc_time_spent)) / 1000
-    vi_prevented <- sum(sapply(age_results, function(x) x$vi_prevented)) / 1000
+    
+    soc_time <- sapply(age_results, function(x) x$soc_time_spent) / 1000
+    soc_time <- rowSums(sapply(age_results, function(x) x$soc_time_spent)) / 1000
 
-    print(ai_time) 
-    print(soc_time)
-    print(paste("years of visual impairment prevented:", vi_prevented))
-    print(paste("screening cost pp AI:", round(ai_screening_pp, 2), "screening cost pp SOC:", round(0, 2)))
-    print(paste("medicine cost pp AI:", round(ai_medicine_pp, 2), "medicine cost pp SOC:", round(soc_medicine_pp, 2)))
-    print(paste("diagnostic cost pp AI:", round(ai_diagnostic_pp, 2), "diagnostic cost pp SOC:", round(soc_diagnostic_pp, 2)))
-    print(paste("surgery & laser cost pp AI:", round(ai_intervention_pp, 2), "surgery & laser cost pp SOC:", round(soc_intervention_pp, 2)))
-    print(paste("burden cost pp AI:", round(ai_burden_pp, 2), "burden cost pp SOC:", round(soc_burden_pp, 2)))
-    print(paste("productivity cost pp AI:", round(ai_productivity_pp, 2), "productivity cost pp SOC:", round(soc_productivity_pp, 2)))
-    print(paste("total cost pp AI:", round(ai_costs_pp, 2), "total cost pp SOC:", round(soc_costs_pp, 2)))
-    print(paste("QALY pp AI:", round(ai_qaly_pp, 4), "QALY pp SOC:", round(soc_qaly_pp, 4)))
-    print(paste("ICER:", round(icer, 2)))
+    vi_prevented <- sum(sapply(age_results, function(x) x$vi_prevented)) / 1000
+    invited_people <- sum(sapply(age_results, function(x) x$ai_screen_descriptivers$invited_people)) / 1000
+    screened_people <- sum(sapply(age_results, function(x) x$ai_screen_descriptivers$screened_people)) / 1000
+    followed_up_people <- sum(sapply(age_results, function(x) x$ai_screen_descriptivers$followed_up_people)) / 1000
+
+    if (total_population == FALSE){
+      #print(ai_time) 
+      #print(soc_time)
+      print(paste("years of visual impairment prevented:", vi_prevented))
+      print(paste("months of visual impairment prevented:", vi_prevented*12))
+      print(paste("amount of screening invitation per person", invited_people))
+      print(paste("amount of AI screens per person", screened_people))
+      print(paste("amount of full screens per person", followed_up_people))
+      print(paste("Incremental cost per year of visual impairment prevented:",   (ai_costs_pp - soc_costs_pp) / vi_prevented ))
+      print(paste("screening cost pp AI:", round(ai_screening_pp, 2), "screening cost pp SOC:", round(0, 2)))
+      print(paste("medicine cost pp AI:", round(ai_medicine_pp, 2), "medicine cost pp SOC:", round(soc_medicine_pp, 2)))
+      print(paste("diagnostic cost pp AI:", round(ai_diagnostic_pp, 2), "diagnostic cost pp SOC:", round(soc_diagnostic_pp, 2)))
+      print(paste("surgery & laser cost pp AI:", round(ai_intervention_pp, 2), "surgery & laser cost pp SOC:", round(soc_intervention_pp, 2)))
+      print(paste("burden cost pp AI:", round(ai_burden_pp, 2), "burden cost pp SOC:", round(soc_burden_pp, 2)))
+      print(paste("productivity cost pp AI:", round(ai_productivity_pp, 2), "productivity cost pp SOC:", round(soc_productivity_pp, 2)))
+      print(paste("total cost pp AI:", round(ai_costs_pp, 2), "total cost pp SOC:", round(soc_costs_pp, 2)))
+      print(paste("QALY pp AI:", round(ai_qaly_pp, 4), "QALY pp SOC:", round(soc_qaly_pp, 4)))
+      print(paste("ICER:", round(icer, 2)))
+    } else if (total_population == TRUE){
+      total_population <- 5637443.821
+
+      print(paste("years of visual impairment prevented:", vi_prevented * total_population))
+      print(paste("months of visual impairment prevented:", vi_prevented*12 * total_population))
+      print(paste("amount of screening invitation per person", invited_people* total_population))
+      print(paste("amount of AI screens per person", screened_people* total_population))
+      print(paste("amount of full screens per person", followed_up_people* total_population))
+      print(paste("Incremental cost per year of visual impairment prevented:",   ((ai_costs_pp - soc_costs_pp) / vi_prevented )* total_population))
+      print(paste("screening cost pp AI:", total_population * round(ai_screening_pp, 2), "screening cost pp SOC:", total_population * total_population * round(0, 2)))
+      print(paste("medicine cost pp AI:", total_population * round(ai_medicine_pp, 2), "medicine cost pp SOC:", total_population * round(soc_medicine_pp, 2)))
+      print(paste("diagnostic cost pp AI:", total_population * round(ai_diagnostic_pp, 2), "diagnostic cost pp SOC:", total_population * round(soc_diagnostic_pp, 2)))
+      print(paste("surgery & laser cost pp AI:", total_population * round(ai_intervention_pp, 2), "surgery & laser cost pp SOC:", total_population * round(soc_intervention_pp, 2)))
+      print(paste("burden cost pp AI:", total_population * round(ai_burden_pp, 2), "burden cost pp SOC:", total_population * round(soc_burden_pp, 2)))
+      print(paste("productivity cost pp AI:", total_population * round(ai_productivity_pp, 2), "productivity cost pp SOC:", total_population * round(soc_productivity_pp, 2)))
+      print(paste("total cost pp AI:", total_population * round(ai_costs_pp, 2), "total cost pp SOC:", total_population * round(soc_costs_pp, 2)))
+      print(paste("QALY pp AI:", total_population * round(ai_qaly_pp, 4), "QALY pp SOC:", total_population * round(soc_qaly_pp, 4)))
+      print(paste("ICER:", round(icer, 2)))
+    }
   }
-  return(icer) 
+
+if (output == "icer"){
+  return_object <- icer
+} else if (output == "qaly"){
+  return_object <- ai_qaly_pp - soc_qaly_pp
+} else if (output == "costs"){
+  return_object <- ai_costs_pp - soc_costs_pp
+}
+  return(return_object) 
 }
 
 
@@ -315,6 +355,11 @@ runModel <- function(cohort){
   # are 3 AI screenings per patient per lifetime. Do we consider that a valid result? My point is that we need to link that with the 
   # average age of the patient population. If this is 67 years, then 3 AI screenings do not seem correct. However, in the model now
   # I suppose the average age should be a bit above 60 years then. We need to consider whether that's valid or not.
+  ai_screen_descriptivers <- getScreenignDescriptives(trace = a_trace_ai$trace,
+                                                      screening_probabilities = p_screening,
+                                                      interval = screening_interval, 
+                                                      max_repititions = max_repititions) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model
+  
   ai_screening_costs <- getScreeningCosts(trace = a_trace_ai$trace_cost, ### function returns screening costs per screening repetition
                                           screening_probabilities = p_screening,
                                           screening_cost = v_cost_dt, # obtain screening costs
@@ -416,7 +461,7 @@ runModel <- function(cohort){
               soc_trace = a_trace_soc$trace,
               ai_time_spent = ai_time_spent,
               soc_time_spent = soc_time_spent,
-              vi_prevented = vi_prevented
-              ))
+              vi_prevented = vi_prevented,
+              ai_screen_descriptivers = ai_screen_descriptivers))
 }
 
