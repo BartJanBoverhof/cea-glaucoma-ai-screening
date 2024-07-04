@@ -32,35 +32,44 @@ getQALYs <- function(a_trace){ # vector of utilities
 }
 
 # Isaac: I stopped here since these functions are more complex
-getScreenignDescriptives <- function(trace,
-                                    screening_probabilities, # probabilities to end up in the different DT arms
-                                    screening_cost, # screening cost
-                                    interval, # screening interval (years)
-                                    max_repititions # maximum number of screening repititions
-                                    ){
-                                    
+getScreenignDescriptives <- function(trace, 
+                              screening_probabilities, # probabilities to end up in the different DT arms
+                              interval, # screening interval (years)
+                              max_repititions # maximum number of screening repititions
+                              ){
+  # save objects
+  p_invited <- screening_probabilities$p_invited
+  p_ai_screened <- screening_probabilities$p_ai_screened
+  p_followed_up <- screening_probabilities$p_followed_up
+
+  # creating indices for calculating screening costs
   row_indices <- seq(from = 1, by = interval, length.out = max_repititions+1)  
-  column_names <- c("No glaucoma", "Mild untreated", "Moderate untreated", "Severe untreated", "Observation") # people to sum in the 
-  screened_patients <- list() # create an empty list
-  p_fully_compliant <- screening_probabilities$p_fully_compliant
+  column_names <- c("No glaucoma", "Mild untreated", "Moderate untreated", "Severe untreated", "Observation", "Blind") # people to sum in the 
+  
+  invited_people <- list() # create an empty list
+  screened_people  <- list()
+  followed_up_people  <- list()
 
   for (i in seq_along(row_indices)) {
     
-    if (row_indices[i] == 1){ # if dealing with the first row
-      patients <- sum(trace[i,]) # if the first cycle, take the first rowsum
-
+    if (row_indices[i] == 1){ # if the first cycle, take the first rowsum
+      patients <- sum(trace[i,])
     } else {
        patients <- sum(trace[row_indices[i], column_names]) # for other cycles, only screen non-diagnosed patients
-    }                
-    
-    # determining screens
-    screened_patients[i] <- (patients * p_fully_compliant)
     }
-  
-  # screening summary
-  total_screens <- (sum(unlist(screened_patients)))
 
-  return(total_screens)
+    # determining  costs
+    invited_people[i] <- (patients * p_invited)
+    screened_people[i] <- (patients * p_ai_screened)
+    followed_up_people[i] <- (patients * p_followed_up)
+  }
+
+  invited_people <- sum(unlist(invited_people))
+  screened_people <- sum(unlist(screened_people))
+  followed_up_people <- sum(unlist(followed_up_people))
+  
+  # return costs
+  return(list(invited_people = invited_people, screened_people = screened_people, followed_up_people = followed_up_people))
 }
                                                 
 getScreeningCosts <- function(trace, 

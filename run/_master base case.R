@@ -57,7 +57,7 @@ screening_interval <- 5
 # run base case
 strategy <- "base"
 #base <- callModel(descriptives = TRUE, perspective= "societal")
-base <- callModel(descriptives = TRUE, perspective= "societal")
+base <- callModel(descriptives = TRUE, perspective= "societal", total_population = FALSE)
 
 
 
