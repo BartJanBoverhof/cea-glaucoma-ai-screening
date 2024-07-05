@@ -61,69 +61,6 @@ strategy <- "psa"
 runPSA()
  
 
-#------------------------------------------------------------------------------#
-####                       04 Visualization         ####
-#------------------------------------------------------------------------------#
-# plot trace output
-#n_cycles <- nrow(a_trace_soc_uncorrected) -1
-#v_names_states <- colnames(a_trace_soc_uncorrected)
-#plot_trace(a_trace_soc_uncorrected)
-#plot_trace(a_trace_soc_uncorrected)
-
-
-
-#------------------------------------------------------------------------------#
-####                       06 Deterministic sensitivity analysis         ####
-#------------------------------------------------------------------------------#
-paramNames <-  c(   "Transition probabilities untreated [-/+ 20%]",
-                    "Transition probabilities treated [-/+ 20%]",
-                    "AI sensitivity [-/+ 20% points] (max 1)",
-                    "AI specificity [-/+ 20% points] (max 1)",
-                    "Prevalence [-/+ 20%]",
-                    "OF detection rate [-/+ 20%]",
-                    "Incidences [-/+ 20%]",
-                    "Utilities untreated [-/+ 10%]",
-                    "Utilities treated [-/+ 10%]",
-                    "Screening costs [-/+ 20%]",
-                    "Medicine costs [-/+ 20%]",
-                    "Diagnostics costs [-/+ 20%]",
-                    "Laser and surgery costs [-/+ 20%]",
-                    "Burden of disease costs [-/+ 20%]",
-                    "Productivity costs [-/+ 20%]"
-                    )
-
-data <- matrix(c(base, dsa$transition_untreated[1], dsa$transition_untreated[2],
-                base, dsa$transition_treated[1], dsa$transition_treated[2],
-                base, dsa$sensitivity[1], dsa$sensitivity[2],
-                base, dsa$specificity[1], dsa$specificity[2],
-                base, dsa$prevalence[1], dsa$prevalence[2],
-                base, dsa$incidences_of[1], dsa$incidences_of[2],
-                base, dsa$incidences_screening[1], dsa$incidences_screening[2],
-                #base, dsa$utilities_untreated[1], dsa$utilities_untreated[2],
-                #base, dsa$utilities_treated[1], dsa$utilities_treated[2], 
-                base, dsa$costs_screening[1], dsa$costs_screening[2],
-                base, dsa$costs_medicine[1], dsa$costs_medicine[2],
-                base, dsa$costs_diagnostics[1], dsa$costs_diagnostics[2],
-                base, dsa$costs_intervention[1], dsa$costs_intervention[2],
-                base, dsa$costs_burden_disease[1], dsa$costs_burden_disease[2],
-                base, dsa$costs_productivity[1], dsa$costs_productivity[2]),
-                nrow = length(paramNames), ncol = 3, byrow = TRUE)
-
-Parms = paramNames
-Outcomes = data
-titleName = "Tornado diagram"
-
-#save plot
-ggsave("figures/tornado_plot.png", tornadoPlot(Parms = paramNames, Outcomes = data, titleName = "Tornado diagram", outcomeName = ""), width = 20, height = 15, units = "cm")
-
-
-
-s
-
-
-
-
-
 
 
 
