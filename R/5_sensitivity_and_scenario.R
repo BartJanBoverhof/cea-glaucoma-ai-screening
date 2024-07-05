@@ -239,7 +239,6 @@ runPSA <- function(parameter){
     strategy <- get("strategy", envir = parent.frame())
 
     # local save for all parameters
-    v_prevalence <- get("v_prevalence", envir =globalenv())
     v_incidences_of <- get("v_incidences_of", envir =globalenv())
     v_incidences_screening <- get("v_incidences_screening", envir =globalenv())
     p_dt <- get("p_dt", envir =globalenv())
@@ -870,8 +869,8 @@ tornadoPlot <-function(Parms, Outcomes, titleName, outcomeName){
   txtsize<-12
   print(
   ggplot(Tor, aes(x=Parameter2, y=value, fill=Level)) +  # Ensure 'fill' is mapped to 'Level' within 'aes()'
-    geom_bar(data=Tor[Tor$Level=="Lower bound",], aes(x=Parameter2, y=value, fill="Lower bound"), stat="identity", alpha=0.8) +
-    geom_bar(data=Tor[Tor$Level=="Upper bound",], aes(x=Parameter2, y=value, fill="Upper bound"), stat="identity", alpha=0.8) +
+    geom_bar(data=Tor[Tor$Level=="Lower bound",], aes(x=Parameter2, y=value, fill="Lower bound"), stat="identity", alpha=0.8, stroke = 2, colour = "black") +
+    geom_bar(data=Tor[Tor$Level=="Upper bound",], aes(x=Parameter2, y=value, fill="Upper bound"), stat="identity", alpha=0.8, stroke = 2, colour = "black") +
     ggtitle("", subtitle = outcomeName) +
     scale_fill_manual(name="Parameter Level", values=c("Lower bound"="blue", "Upper bound"="red")) +  # Define colors for 'Low' and 'High'
     scale_y_continuous(name="ICER", trans=offset_trans(offset=ymean), labels = function(x) ifelse(x == ymean, paste(x, " (ymean)", sep = ""), x)) +

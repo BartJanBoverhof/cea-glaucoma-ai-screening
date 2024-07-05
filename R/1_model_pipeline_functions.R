@@ -164,8 +164,8 @@ getScreeningProbabilities <- function(probabilities, model_compliance, p_prevale
 
 # calculate required probabilities
 ai_tp <- probabilities$ai_sens * p_prevalence  # true positives
-ai_fp <- (1-probabilities$ai_spec) * p_prevalence # false positives
-ai_tn <- probabilities$ai_spec * p_prevalence # true negatives
+ai_fp <- (1-probabilities$ai_spec) * (1-p_prevalence) # false positives
+ai_tn <- probabilities$ai_spec * (1-p_prevalence) # true negatives
 ai_fn <- (1-probabilities$ai_sens) * p_prevalence # false negatives
 
 ai_positive <- ai_tp + ai_fp # positive test result
