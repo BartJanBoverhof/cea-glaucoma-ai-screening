@@ -36,7 +36,7 @@ load("data/8b_v_cost_medicine.RData")
 load("data/8c_v_cost_utilisation_diagnostics.RData")
 load("data/8d_v_cost_utilisation_intervention.RData")
 load("data/8f_v_cost_burden_disease.RData")
-load("data/9b_v_psa_sd.RData")
+load("data/9b_v_psa_se.RData")
 
 #------------------------------------------------------------------------------#
 ####                       1 Define Cohorts                            ####
@@ -53,12 +53,14 @@ p_severity_undiagnosed <- p_severity_undiagnosed
 p_transition <- p_transition
 v_utilities <- v_utilities
 v_utilities_gp<- v_utilities_gp
+v_psa_se <- v_psa_se
+screening_interval <- 5
 
 # run base case
 strategy <- "psa"
 
 # probabalistic sensitivity analysis
-runPSA()
+out <- runPSA(n_sample = 10)
  
 
 

@@ -232,8 +232,33 @@ discountTraceCosts <- function(a_trace) {
   return(a_trace_discount)
 }
 
-sampleBeta <- function(mu, sd) {
+sampleBeta <- function(mu, se) {
   
+  # defining alpha & beta 
+  alpha <- mu * ((mu * (1 - mu) / se^2) - 1)
+  beta <- alpha * (1 - mu) / mu
+  
+  # sample from beta distribution
+  sample <- mapply(function(a, b) rbeta(1, a, b), alpha, beta)
+  
+  return(sample)
+}
+
+sampleGamma <- function(mu, se) {
+  
+  # defining alpha & beta
+  alpha <- mu^2 / se^2
+  beta <- se^2 / mu
+
+  # sample from gamma distribution
+  sample <- mapply(function(a, b) rgamma(1, a, b), alpha, beta)
+  return(sample)
+}
+
+sampleDirichlet <- function(alpha) {
+  
+
+  alpha
   # defining alpha & beta 
   alpha <- mu * ((mu * (1 - mu) / sd^2) - 1)
   beta <- alpha * (1 - mu) / mu

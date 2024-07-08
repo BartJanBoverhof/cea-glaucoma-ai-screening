@@ -1,2 +1,2 @@
-healthy_obs,obs_healthy,p_mild_mod_treated,p_mod_sev_treated,p_sev_blind_treated,p_mild_mod_untreated,p_mod_sev_untreated,p_sev_blind_untreated,treated_dev,untreated_dev
-0.036,0.286,0.05846213,0.04015889,0.032832015,0.1437862,0.087696841,0.077906126,0.2,0.2
+healthy_obs,obs_healthy,p_mild_mod_treated,p_mod_sev_treated,p_sev_blind_treated,p_mild_mod_untreated,p_mod_sev_untreated,p_sev_blind_untreated
+0.036,0.286,0.05846213,0.04015889,0.032832015,0.1437862,0.087696841,0.077906126
