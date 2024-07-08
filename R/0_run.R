@@ -47,6 +47,22 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
     p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
   }
 
+  if (strategy == "psa"){
+    v_prevalence <- get("v_prevalence", envir = parent.frame())
+    p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
+    v_incidences_of <- get("v_incidences_of", envir = parent.frame())
+    v_incidences_screening <- get("v_incidences_screening", envir = parent.frame())
+    p_dt <- get("p_dt", envir = parent.frame())
+    p_transition <- get("p_transition", envir = parent.frame())
+    v_utilities <- get("v_utilities", envir = parent.frame())
+
+    v_cost_utilisation_diagnostics <- get("v_cost_utilisation_diagnostics", envir = parent.frame())
+    v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
+    v_cost_medicine <- get("v_cost_medicine", envir = parent.frame())
+    v_cost_burden_disease <- get("v_cost_burden_disease",envir = parent.frame())
+    v_cost_dt <- get("v_cost_dt", envir = parent.frame())
+  }
+
   # Define a list to store the results for each age category
   age_results <- list()
 
@@ -187,6 +203,8 @@ if (output == "icer"){
   return_object <- ai_qaly_pp - soc_qaly_pp
 } else if (output == "costs"){
   return_object <- ai_costs_pp - soc_costs_pp
+} else if (output == "qaly_costs"){
+  return_object <- list(ai_qaly_pp - soc_qaly_pp, ai_costs_pp - soc_costs_pp)
 }
   return(return_object) 
 }
@@ -242,6 +260,23 @@ runModel <- function(cohort){
     v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
     p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
   }
+ 
+  if (strategy == "psa"){
+    v_prevalence <- get("v_prevalence", envir = parent.frame())
+    p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
+    v_incidences_of <- get("v_incidences_of", envir = parent.frame())
+    v_incidences_screening <- get("v_incidences_screening", envir = parent.frame())
+    p_dt <- get("p_dt", envir = parent.frame())
+    p_transition <- get("p_transition", envir = parent.frame())
+    v_utilities <- get("v_utilities", envir = parent.frame())
+
+    v_cost_utilisation_diagnostics <- get("v_cost_utilisation_diagnostics", envir = parent.frame())
+    v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
+    v_cost_medicine <- get("v_cost_medicine", envir = parent.frame())
+    v_cost_burden_disease <- get("v_cost_burden_disease",envir = parent.frame())
+    v_cost_dt <- get("v_cost_dt", envir = parent.frame())
+  } 
+
   #------------------------------------------------------------------------------#
   ####                       1 Decision Tree                            ####
   #------------------------------------------------------------------------------#
@@ -327,6 +362,7 @@ runModel <- function(cohort){
   ################################################################
   ai_time_spent <- getTimeSpent(a_trace = a_trace_ai$trace) ### (function returns time spent in each health state))
   soc_time_spent <- getTimeSpent(a_trace = a_trace_soc$trace) ### (function returns time spent in each health state))
+  
   vi_prevented <- getBlindnessPrevented(a_trace_ai = a_trace_ai$trace, a_trace_soc = a_trace_soc$trace) ### (function returns amount of years blindness prevented)
   #ai_screening_descriptives <- getScreenignDescriptives(trace = a_trace_ai$trace, ### function returns total amount of fully screenings performed (fully compliant)
   #                                                    screening_probabilities = p_screening,

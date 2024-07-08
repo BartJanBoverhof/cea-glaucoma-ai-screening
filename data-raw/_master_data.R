@@ -104,9 +104,9 @@ file.init <- "data-raw/9a_dsa_sd.csv" #Init statement
 v_dsa_sd  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
 save(v_dsa_sd, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/9a_v_dsa_sd.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
-file.init <- "data-raw/9b_psa_sd.csv" #Init statement
-v_psa_sd  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
-save(v_psa_sd, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/9b_v_psa_sd.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
+file.init <- "data-raw/9b_psa_se.csv" #Init statement
+v_psa_se  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
+save(v_psa_se, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/9b_v_psa_se.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
 
 

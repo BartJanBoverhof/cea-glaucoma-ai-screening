@@ -4,6 +4,7 @@
 # Purpose: Calculate the total time spent in each state
 # Inputs:  a_trace - a matrix or data frame with the proportion of time spent in each health state
 # Outputs: A vector with the sum of each column of the matrix or data frame
+# Do half cycle correction here!
 getTimeSpent <- function(a_trace){
   time_spent <- colSums(a_trace)
   return(time_spent)
@@ -13,6 +14,7 @@ getTimeSpent <- function(a_trace){
 # Purpose of the code: Calculate the number of blindness cases prevented by AI compared to SoC
 # Inputs: a_trace_ai - AI intervention trace, a_trace_soc - standard of care trace
 # Outputs: Number of blindness cases prevented
+# Do half cycle correction here!
 getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
   blind_ai <- sum(a_trace_ai[,"Blind"]) # Isaac: we already got this from getTimeSpent. Maybe we dont need to input the trace and get the sum again. Seems faster, but not sure how much time it can save. Low priority.
   blind_soc <- sum(a_trace_soc[,"Blind"])
@@ -303,8 +305,7 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
   #  filter(str_detect(type, "vi_mod$")) 
   
   # filter on blind (blind) costs
-  costs_vi_sev <- costs %>%
-    filter(str_detect(type, "vi_sev$"))
+  costs_vi_sev <- costs 
   
   if (societal_perspective == FALSE) {
     # set all costs to 0
@@ -322,7 +323,6 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
 
   # direct non-medical costs
   #direct_nonmed_vi_mod <- costs_vi_mod$transportation + costs_vi_mod$home_care_household + costs_vi_mod$home_care_household + costs_vi_mod$home_care_personal + costs_vi_mod$informal_care_household + costs_vi_mod$informal_care_personal + costs_vi_mod$informal_care_communication + costs_vi_mod$informal_care_companionship # direct non-medical costs visually impaired
-  
   direct_nonmed_vi_sev <- costs_vi_sev$transportation + costs_vi_sev$home_care_household + costs_vi_sev$home_care_household + costs_vi_sev$home_care_personal + costs_vi_sev$informal_care_household + costs_vi_sev$informal_care_personal + costs_vi_sev$informal_care_communication + costs_vi_sev$informal_care_companionship # direct non-medical costs blind
   
   # total number of patients
@@ -344,24 +344,15 @@ getProductivityCosts <- function(costs, trace, age_init) {
   
   pension_age <- 67 #rounded
   average_age <- age_init + 2
-
-  # filter on visually impaired (vf) costs 
-  costs_vi_mod <- costs %>%
-    filter(str_detect(type, "vi_mod$")) 
   
   # filter on blind (blind) costs
-  costs_vi_sev <- costs %>%
-    filter(str_detect(type, "vi_sev$"))
+  costs_vi_sev <- costs 
 
   # calculate total number of patients for each entry in trace
-  patients_severe_treated <- sum(trace[,"Severe treated"][1: (pension_age - average_age)])
-  patients_severe_untreated <- sum(trace[,"Severe untreated"][1: (pension_age - average_age)])
   patients_blind <- sum(trace[,"Blind"][1: (pension_age - average_age)])  
   
   # total costs
-  costs_severe_treated <- ((costs_vi_mod$productivity_absent + costs_vi_mod$productivity_disability) * sum(patients_severe_treated))
-  costs_severe_untreated <- ((costs_vi_mod$productivity_absent + costs_vi_mod$productivity_disability) * sum(patients_severe_untreated)) 
   costs_blind <- ((costs_vi_sev$productivity_absent + costs_vi_sev$productivity_disability) * sum(patients_blind)) 
   
-  return(sum(costs_severe_treated, costs_severe_untreated, costs_blind))
+  return(sum(costs_blind))
 }
