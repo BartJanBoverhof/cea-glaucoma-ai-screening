@@ -1,2 +1,2 @@
-healthy,mild_treated,mod_treated,severe_treated,mild_untreated,mod_untreated,severe_untreated,blind,obs,death
-1,0.984597156,0.899407583,0.773459716,0.984597156,0.899407583,0.773459716,0.633886256,1,0
+healthy,mild_treated,mod_treated,severe_treated,mild_untreated,mod_untreated,severe_untreated,blind,obs,death,utilities_dev
+1,0.984597156,0.899407583,0.773459716,0.984597156,0.899407583,0.773459716,0.633886256,1,0,0.1

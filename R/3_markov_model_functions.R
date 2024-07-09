@@ -26,7 +26,9 @@ getMarkovTrace <- function(scenario, # scenario
 
   age_max <- 100 # time horizon               
   cycle_length <- 1 #cycle length
+  
   v_utilities <- get("v_utilities", envir = parent.frame())
+  discount <- get("discount", envir = parent.frame())
 
   n_cycles <- (age_max - age_init)/cycle_length # time horizon, number of cycles
   
@@ -211,8 +213,8 @@ getMarkovTrace <- function(scenario, # scenario
   ####                       05 Creating corrected traces             ####
   #------------------------------------------------------------------------------#
   patients <- sum(m_trace[1,]) # number of patients in the subcohort
-  trace_utility <- traceCorrectionUtil(m_trace, v_utilities_gp, age_init = age_init, utilities = v_utilities) # trace corrected for utilities (discount & age)
-  trace_cost <- discountTraceCosts(m_trace) # trace corrected for cost discount
+  trace_utility <- traceCorrectionUtil(m_trace, v_utilities_gp, age_init = age_init, utilities = v_utilities, discounting = discount) # trace corrected for utilities (discount & age)
+  trace_cost <- discountTraceCosts(m_trace, discounting = discount) # trace corrected for cost discount
   
   return(list(trace = m_trace, patients = patients, trace_utility = trace_utility, trace_cost = trace_cost))
 }
