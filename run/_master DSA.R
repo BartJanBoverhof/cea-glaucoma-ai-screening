@@ -53,6 +53,7 @@ p_transition <- p_transition
 v_utilities <- v_utilities
 v_utilities_gp <- v_utilities_gp
 screening_interval <- 5
+discount <- TRUE
 
 # run base case
 strategy <- "base"
@@ -85,8 +86,8 @@ if (strategy == "dsa") {
 #------------------------------------------------------------------------------#
 paramNames <-  c(   "Transition probabilities untreated [-/+ 20%]",
                     "Transition probabilities treated [-/+ 20%]",
-                    "AI sensitivity [-/+ 20% points] (max 1)",
-                    "AI specificity [-/+ 20% points] (max 1)",
+                    "AI sensitivity [-/+ 20%] (max 100%)",
+                    "AI specificity [-/+ 20%] (max 100%)",
                     "Prevalence [-/+ 20%]",
                     "OF detection rate [-/+ 20%]",
                     "Incidences [-/+ 20%]",

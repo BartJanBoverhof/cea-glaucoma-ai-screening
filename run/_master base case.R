@@ -53,6 +53,7 @@ p_transition <- p_transition
 v_utilities <- v_utilities
 v_utilities_gp<- v_utilities_gp
 screening_interval <- 5
+discount <- TRUE
 
 # run base case
 strategy <- "base"

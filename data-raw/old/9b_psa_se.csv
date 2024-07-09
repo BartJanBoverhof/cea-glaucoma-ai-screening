@@ -1,0 +1,2 @@
+prevalence,incidence_screening,incidence_of,ai_sensitivity,ai_specificity,utilities_normal,utilities_mild,utilities_mod,utilities_sev,utilities_vi,screening_compliance,referal compliance,obs_state,p_mild_mod_treated,p_mod_sev_treated,p_sev_blind_treated,p_mild_mod_untreated,p_mod_sev_untreated,p_sev_blind_untreated,costs
+0.001020408,0.000382653,0.000382653,0.010204082,0.010204082,0.017320508,0.022874786,0.038877096,0.045714286,0.052551476,0.010204082,0.010204082,0.068367347,0.003029122,0.002534843,0.002300702,0.03230046,0.026038776,0.024673591,0.2

@@ -194,7 +194,7 @@ padArray <- function(pad, pad_to) {
   return(pad)
 }
 
-traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities) { #makes age utility decrement and discounting correction
+traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities, discounting) { #makes age utility decrement and discounting correction
   
   # Age correction
   # max age
@@ -213,21 +213,49 @@ traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities) { #mak
   a_trace_corrected <- sweep(a_trace_corrected, 2, as.numeric(utilities), "*") # discounting
 
   # discounting
-  exponents <- seq(from = 0, to = -(nrow(a_trace_corrected)-1), length.out = nrow(a_trace_corrected))
-  sequence <- (1 + 0.015) ^ exponents
-  a_trace_corrected <-  a_trace_corrected * sequence
+  if (discounting == TRUE) {
+    exponents <- seq(from = 0, to = -(nrow(a_trace_corrected)-1), length.out = nrow(a_trace_corrected))
+    sequence <- (1 + 0.015) ^ exponents
+    a_trace_discount <-  a_trace_corrected * sequence  
+  } else {
+    a_trace_discount <- a_trace_corrected
+  }
 
-  return(a_trace_corrected)
+  # half-cycle correction
+  num_cycles <- nrow(a_trace_discount)-1
+  corrected_trace <- a_trace_discount
+
+  # loop over trace
+  for (i in 2:num_cycles) {
+    corrected_trace[i,] <- (a_trace_discount[i,] + a_trace_discount[i-1,]) * 0.5
+  }
+  
+  corrected_trace <- corrected_trace[1:num_cycles,]
+
+  return(a_trace_discount)
 }
 
-discountTraceCosts <- function(a_trace) {
+discountTraceCosts <- function(a_trace, discounting) {
   
-  # discounting
-  exponents <- seq(from = 0, to = -(nrow(a_trace)-1), length.out = nrow(a_trace))
-  sequence <- (1 + 0.03) ^ exponents
+  if (discounting == TRUE) {
+    # discounting
+    exponents <- seq(from = 0, to = -(nrow(a_trace)-1), length.out = nrow(a_trace))
+    sequence <- (1 + 0.03) ^ exponents
+    a_trace_discount <-  a_trace * sequence
+  } else {
+    a_trace_discount <- a_trace
+  }
+  
+  # half-cycle correction
+  num_cycles <- nrow(a_trace_discount)-1
+  corrected_trace <- a_trace_discount
 
-
-  a_trace_discount <-  a_trace * sequence
+  # loop over trace
+  for (i in 2:num_cycles) {
+    corrected_trace[i,] <- (a_trace_discount[i,] + a_trace_discount[i-1,]) * 0.5
+  }
+  
+  corrected_trace <- corrected_trace[1:num_cycles,]
 
   return(a_trace_discount)
 }
@@ -247,11 +275,11 @@ sampleBeta <- function(mu, se) {
 sampleGamma <- function(mu, se) {
   
   # defining alpha & beta
-  alpha <- mu^2 / se^2
-  beta <- se^2 / mu
+  alpha <- (mu^2) / (se^2)
+  beta <- (se^2) / mu
 
   # sample from gamma distribution
-  sample <- mapply(function(a, b) rgamma(1, a, b), alpha, beta)
+  sample <- mapply(function(a, b) rgamma(1, shape = a, scale =b), alpha, beta)
   return(sample)
 }
 

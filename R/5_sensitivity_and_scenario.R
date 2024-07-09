@@ -291,17 +291,10 @@ runPSA <- function(n_sample){
       p_severity_undiagnosed$observation <- sampleBeta(mu_observation, se_observation)
 
       # utilities 
-      mu_utilities <- v_utilities
-      
-      se_utilities_mild <- v_psa_se$utilities_mild
-      se_utilities_mod <- v_psa_se$utilities_mod
-      se_utilities_sev <- v_psa_se$utilities_sev
-      se_utilities_vi <- v_psa_se$utilities_vi
-      
-      v_utilities$mild_treated <- v_utilities$mild_untreated <- sampleBeta(mu_utilities$mild_treated, se_utilities_mild)
-      v_utilities$mod_treated <- v_utilities$mod_untreated <- sampleBeta(mu_utilities$mod_treated, se_utilities_mod)
-      v_utilities$severe_treated <- v_utilities$severe_untreated <- sampleBeta(mu_utilities$severe_treated, se_utilities_sev)
-      v_utilities$blind <- sampleBeta(mu_utilities$blind, se_utilities_vi)
+      v_utilities$mild_treated <- v_utilities$mild_untreated <- sampleBeta(v_utilities$mild_treated, v_psa_se$utilities_mild)
+      v_utilities$mod_treated <- v_utilities$mod_untreated <- sampleBeta(v_utilities$mod_treated, v_psa_se$utilities_mod)
+      v_utilities$severe_treated <- v_utilities$severe_untreated <- sampleBeta(v_utilities$severe_treated, v_psa_se$utilities_sev)
+      v_utilities$blind <- sampleBeta(v_utilities$blind, v_psa_se$utilities_vi)
 
       # Assuming v_utilities is already constructed and contains the utilities as shown
 
@@ -322,11 +315,12 @@ runPSA <- function(n_sample){
         }
 
       # transition probabilities
-      mu_transition <- c(p_transition$p_mild_mod_untreated, p_transition$p_mod_sev_untreated, p_transition$p_sev_blind_untreated,
-                        p_transition$p_mild_mod_treated, p_transition$p_mod_sev_treated, p_transition$p_sev_blind_treated)
-      se_transition <- c(v_psa_se$p_mild_mod_untreated, v_psa_se$p_mod_sev_untreated, v_psa_se$p_sev_blind_untreated,
-                        v_psa_se$p_mild_mod_treated, v_psa_se$p_mod_sev_treated, v_psa_se$p_sev_blind_treated)
-      p_transition[-(1:2)] <- as.list(sampleBeta(mu_transition, se_transition))
+      p_transition$p_mild_mod_untreated <- sampleBeta(p_transition$p_mild_mod_untreated, v_psa_se$p_mild_mod_untreated)
+      p_transition$p_mod_sev_untreated <- sampleBeta(p_transition$p_mod_sev_untreated, v_psa_se$p_mod_sev_untreated)
+      p_transition$p_sev_blind_untreated <- sampleBeta(p_transition$p_sev_blind_untreated, v_psa_se$p_sev_blind_untreated)
+      p_transition$p_mild_mod_treated <- sampleBeta(p_transition$p_mild_mod_treated, v_psa_se$p_mild_mod_treated)
+      p_transition$p_mod_sev_treated <- sampleBeta(p_transition$p_mod_sev_treated, v_psa_se$p_mod_sev_treated)
+      p_transition$p_sev_blind_treated <- sampleBeta(p_transition$p_sev_blind_treated, v_psa_se$p_sev_blind_treated)
 
       #GAMMA samples (costs)
       # screening costs
@@ -610,6 +604,14 @@ runScenario <- function(vary, perspective, descriptives, output = "icer"){
       p_severity_undiagnosed$observation <- 0.42
 
       return_list$expert_observation_2 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
+
+    } else if (vary == "discount") {
+      return_list <- list()
+      print("Scenario: No discounting")
+      discount <- get("discount", envir = globalenv()) #re-obtain discount from global environment
+      discount <- FALSE
+
+      return_list$discount_1 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
 
     } else {
             print("Error: parameter not found")

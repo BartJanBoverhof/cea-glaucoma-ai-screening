@@ -45,6 +45,7 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
     v_cost_utilisation_diagnostics <- get("v_cost_utilisation_diagnostics", envir = parent.frame())
     v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
     p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
+    discount <- get("discount", envir = parent.frame())
   }
 
   if (strategy == "psa"){
@@ -259,6 +260,7 @@ runModel <- function(cohort){
     v_cost_utilisation_diagnostics <- get("v_cost_utilisation_diagnostics", envir = parent.frame())
     v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
     p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
+    discount <- get("discount", envir = parent.frame())
   }
  
   if (strategy == "psa"){
