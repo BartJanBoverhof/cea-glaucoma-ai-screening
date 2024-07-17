@@ -61,11 +61,12 @@ calculateMortality <- function(df_mortality, # mortality data
   end_age <- age_max
 
   # filter, transform and reshape the mortality data
+
   v_r_mort_by_age <- df_mortality %>%
     filter(Attribute == "Total male and female") %>%
     filter(!(Age %in% c("Total of all ages", "40 to 45 years", "45 to 50 years"))) %>% 
     filter(start_age <= as.numeric(gsub("[^0-9]", "", Age))) %>%  # Filter by start_age
-    transmute(Age = Age, mortality = (`All causes of death` / `Average population`)) %>%
+    transmute(Age = Age, mortality = (`All causes of death` / `Average population`)) %>% # divide by five to bring it to a yearly rate
     separate(Age, into = c("start_age", "end_age"), sep = " to ", remove = FALSE) %>%
     mutate(
       start_age = as.numeric(gsub("[^0-9]", "", start_age)),
@@ -232,7 +233,7 @@ traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities, discou
   
   corrected_trace <- corrected_trace[1:num_cycles,]
 
-  return(a_trace_discount)
+  return(corrected_trace)
 }
 
 discountTraceCosts <- function(a_trace, discounting) {
@@ -257,7 +258,7 @@ discountTraceCosts <- function(a_trace, discounting) {
   
   corrected_trace <- corrected_trace[1:num_cycles,]
 
-  return(a_trace_discount)
+  return(corrected_trace)
 }
 
 sampleBeta <- function(mu, se) {

@@ -242,9 +242,13 @@ runPSA <- function(n_sample){
     psa_out <- list()
     # run psa samples
     # print progress message
-    print(paste("PSA sample",1,"of",n_sample,"..."))
 
     for (i in 1:n_sample){
+
+      print(paste("PSA sample",i,"of",n_sample,"..."))
+
+      psa_iteration <<- i
+       
       # local save for all parameters
       v_prevalence <- get("v_prevalence", envir =globalenv())
       p_severity_undiagnosed <- get("p_severity_undiagnosed", envir =globalenv()) 
