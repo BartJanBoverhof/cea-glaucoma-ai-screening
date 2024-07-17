@@ -57,7 +57,7 @@ getScreenignDescriptives <- function(trace,
     if (row_indices[i] == 1){ # if the first cycle, take the first rowsum
       patients <- sum(trace[i,])
     } else {
-       patients <- sum(trace[row_indices[i], column_names]) # for other cycles, only screen non-diagnosed patients
+       patients <- sum(trace[row_indices[i]-1, column_names]) # for other cycles, only screen non-diagnosed patients
     }
 
     # determining  costs
@@ -100,7 +100,7 @@ getScreeningCosts <- function(trace,
     if (row_indices[i] == 1){ # if the first cycle, take the first rowsum
       patients <- sum(trace[i,])
     } else {
-       patients <- sum(trace[row_indices[i], column_names]) # for other cycles, only screen non-diagnosed patients
+       patients <- sum(trace[row_indices[i]-1, column_names]) # for other cycles, only screen non-diagnosed patients
     }
 
     # determining  costs
@@ -232,7 +232,8 @@ getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incid
     # calculate all mild patients that receive treatment
     mild_patients <- sum(mild_obs, mild_untreated, unlist(mild_treated), trace[1,"Mild treated"])
 
-    
+    trace[,"Mild treated"]
+
     # moderate patients 
     mod_mild_treated <- sum(trace[c(2:nrow(trace)),"Mild treated"] * p_transition$p_mild_mod_treated)
     mod_mod_untreated <- sum(trace[c(2:nrow(trace)),"Moderate untreated"] * v_incidence_of)
@@ -341,15 +342,12 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
 }
 
 getProductivityCosts <- function(costs, trace, age_init) {
-  
-  pension_age <- 67 #rounded
-  average_age <- age_init + 2
-  
+    
   # filter on blind (blind) costs
   costs_vi_sev <- costs 
 
   # calculate total number of patients for each entry in trace
-  patients_blind <- sum(trace[,"Blind"][1: (pension_age - average_age)])  
+  patients_blind <- sum(trace[,"Blind"][1: (pension_age - age_init)])  
   
   # total costs
   costs_blind <- ((costs_vi_sev$productivity_absent + costs_vi_sev$productivity_disability) * sum(patients_blind)) 

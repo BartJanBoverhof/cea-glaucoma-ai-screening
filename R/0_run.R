@@ -74,11 +74,11 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
 
 
   # create combined trace ai 
-  #a_trace_ai_uncorrected <- age50_55$ai_trace + ### uncorrected trace (for reference)
-  #    padArray(pad = age55_60$ai_trace, pad_to = age50_55$ai_trace) + 
-  #    padArray(pad = age60_65$ai_trace, pad_to = age50_55$ai_trace) +
-  #    padArray(pad = age65_70$ai_trace, pad_to = age50_55$ai_trace) +
-  #    padArray(pad = age70_75$ai_trace, pad_to = age50_55$ai_trace)
+  #a_trace_ai_uncorrected <- unlist(age_results[[1]]["ai_trace"]) + ### uncorrected trace (for reference)
+  #    padArray(pad = unlist(age_results[[2]]["ai_trace"]), pad_to = unlist(age_results[[1]]["ai_trace"])) + 
+  #    padArray(pad = unlist(age_results[[3]]["ai_trace"]), pad_to = unlist(age_results[[1]]["ai_trace"])) +
+  #    padArray(pad = unlist(age_results[[4]]["ai_trace"]), pad_to = unlist(age_results[[1]]["ai_trace"])) +
+  #    padArray(pad = unlist(age_results[[5]]["ai_trace"]), pad_to = unlist(age_results[[1]]["ai_trace"]))
 
   # create combined trace soc
   #a_trace_soc_uncorrected <- age50_55$soc_trace + ### uncorrected trace (for reference)
@@ -160,8 +160,8 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
     followed_up_people <- sum(sapply(age_results, function(x) x$ai_screen_descriptivers$followed_up_people)) / 1000
 
     if (total_population == FALSE){
-      #print(ai_time) 
-      #print(soc_time)
+      print(ai_time) 
+      print(soc_time)
       print(paste("years of visual impairment prevented:", vi_prevented))
       print(paste("months of visual impairment prevented:", vi_prevented*12))
       print(paste("amount of screening invitation per person", invited_people))
@@ -469,7 +469,6 @@ runModel <- function(cohort){
   soc_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, trace = a_trace_soc$trace_cost, societal_perspective = TRUE)
 
   # productivity costs
-  pension_age <- 66.583333333333333 # dutch pension age 2022
 
   if (cohort_min < pension_age){ # check if pension age is within the cohort
 

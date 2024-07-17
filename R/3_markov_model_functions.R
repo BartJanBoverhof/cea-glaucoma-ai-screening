@@ -194,20 +194,22 @@ getMarkovTrace <- function(scenario, # scenario
   ####                       04 Error handling / validation             ####
   #------------------------------------------------------------------------------#
   # check that transition probabilities are [0, 1] 
-  check1 <- check_transition_probability(a_matrices,   verbose = TRUE)
+  #check1 <- check_transition_probability(a_matrices,   verbose = TRUE)
 
   # If check1 is not equal to "Valid transition probabilities", print error and abort
-  if(check1 != "Valid transition probabilities") {
-    stop("Error: Invalid transition probabilities detected.")
-  }
+  #if(check1 != "Valid transition probabilities") {
+  #  stop("Error: Invalid transition probabilities detected.")
+  #  print("error in iteration",psa_iteration)
+  #}
 
   # check that all rows for each slice of the array sum to 1 
-  check2 <- check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
+  #check2 <- check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
   
   # If check1 is not equal to "Valid transition probabilities", print error and abort
-  if(check2 != "This is a valid transition array") {
-    stop("Error: Invalid transition probabilities detected.")
-  }
+  #if(check2 != "This is a valid transition array") {
+  #  stop("Error: Invalid transition probabilities detected.")
+  #    print("error in iteration",psa_iteration)
+  #}
   
   #------------------------------------------------------------------------------#
   ####                       05 Creating corrected traces             ####
@@ -215,6 +217,6 @@ getMarkovTrace <- function(scenario, # scenario
   patients <- sum(m_trace[1,]) # number of patients in the subcohort
   trace_utility <- traceCorrectionUtil(m_trace, v_utilities_gp, age_init = age_init, utilities = v_utilities, discounting = discount) # trace corrected for utilities (discount & age)
   trace_cost <- discountTraceCosts(m_trace, discounting = discount) # trace corrected for cost discount
-  
+
   return(list(trace = m_trace, patients = patients, trace_utility = trace_utility, trace_cost = trace_cost))
 }

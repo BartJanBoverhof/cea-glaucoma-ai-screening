@@ -7,12 +7,15 @@ getStartDistAI <- function(probabilities, severity_distribution, arm, visualize 
   p_screen_specificity <- probabilities$ai_spec       # screening specificity 
   p_referral_compliance <- probabilities$ref_comp   # referral compliance
   
-  p_severity_mild <- severity_distribution$mild
-  p_severity_mod <- severity_distribution$moderate
-  p_severity_severe <- severity_distribution$severe
-  p_severity_blind <- severity_distribution$blind
-  p_observation <- severity_distribution$observation
+  # normalize probabilities to exactly 1
+  normalizer <- sum(severity_distribution$mild, severity_distribution$moderate, severity_distribution$severe, severity_distribution$blind)
   
+  p_severity_mild <- severity_distribution$mild / normalizer
+  p_severity_mod <- severity_distribution$moderate / normalizer
+  p_severity_severe <- severity_distribution$severe / normalizer
+  p_severity_blind <- severity_distribution$blind / normalizer
+  p_observation <- severity_distribution$observation
+
   if (model_compliance == FALSE){
     p_screen_compliance <-  1     # screening compliance
     p_referral_compliance <- 1   # referral compliance
@@ -88,11 +91,11 @@ getStartDistAI <- function(probabilities, severity_distribution, arm, visualize 
   if(arm == "compliant"){
     
     # decision tree path probabilities
-    p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv - p_observation) # path healthy (false positives)
-    p_path_obs <- p_screen_compliance * ai_positive * p_referral_compliance * p_observation # path observation
+    p_path_no_glaucoma <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv) * (1-p_observation) # path healthy (false positives)
+    p_path_obs <- p_screen_compliance * ai_positive * p_referral_compliance * (1-ai_ppv) * p_observation # path observation
     
     p_path_mild_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mild # path mild
-    p_path_mod_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv  * p_severity_mod # path moderate
+    p_path_mod_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_mod # path moderate
     p_path_severe_diagnosed <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_severe # path severe
     p_path_blind <- p_screen_compliance * ai_positive * p_referral_compliance * ai_ppv * p_severity_blind # path blind
 
