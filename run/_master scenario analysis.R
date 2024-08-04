@@ -6,7 +6,7 @@ set.seed(3791) # set seed for reproducibility
 
 # loading packages
 #p_load_gh("DARTH-git/darthtools")
-if (!require('pacman')) install.packages('pacman'); library(pacman) # use this package to conveniently install other packages
+if (!require('pacman')) install.packages('pacman'); library(pacman); library("ggtext"); library(jsonlite); library(scales) # use this package to conveniently install other packages
 p_load("dplyr", "tidyr", "reshape2", "devtools", "scales", "ellipse", "ggplot2", "ggrepel", "gridExtra", "lazyeval", "igraph", "truncnorm", "ggraph", "reshape2", "patchwork", "knitr", "stringr", "diagram", "dampack","DiagrammeR") # load (install if required) packages from CRAN
 p_load_gh("DARTH-git/darthtools") # load (install if required) packages from GitHub
 library(stringr)
@@ -54,5 +54,14 @@ v_utilities <- v_utilities
 v_utilities_gp<- v_utilities_gp
 screening_interval <- 5
 discount <- TRUE 
+pension_age <- 67 
+strategy <- "scenario"
 
+# scenario plot
 scenarioPlot()
+
+# ROC plot  
+ROCPlot(load_grid = TRUE, cut_off = 100000)
+
+
+

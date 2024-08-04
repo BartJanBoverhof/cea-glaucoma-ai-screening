@@ -54,6 +54,7 @@ v_utilities <- v_utilities
 v_utilities_gp <- v_utilities_gp
 screening_interval <- 5
 discount <- TRUE
+pension_age <- 67
 
 # run base case
 strategy <- "base"
@@ -89,13 +90,13 @@ paramNames <-  c(   "Transition probabilities untreated [-/+ 20%]",
                     "AI sensitivity [-/+ 20%] (max 100%)",
                     "AI specificity [-/+ 20%] (max 100%)",
                     "Prevalence [-/+ 20%]",
-                    "OF detection rate [-/+ 20%]",
-                    "Incidences [-/+ 20%]",
+                    "Incidences diagnosed [-/+ 20%]",
+                    "Incidences undiagnosed [-/+ 20%]",
                     #"Utilities untreated [-/+ 10%]",
                     #"Utilities treated [-/+ 10%]",
                     "Screening costs [-/+ 20%]",
                     "Medicine costs [-/+ 20%]",
-                    "Diagnostics costs [-/+ 20%]",
+                    "Monitoring costs [-/+ 20%]",
                     "Laser and surgery costs [-/+ 20%]",
                     "Burden of disease costs [-/+ 20%]",
                     "Productivity costs [-/+ 20%]"
