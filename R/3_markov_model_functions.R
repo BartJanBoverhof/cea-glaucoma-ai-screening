@@ -24,6 +24,8 @@ getMarkovTrace <- function(scenario, # scenario
                     "Observation",
                     "Death")
 
+  p_transition <- get("p_transition", envir = parent.frame())
+
   age_max <- 100 # time horizon               
   cycle_length <- 1 #cycle length
   
@@ -193,24 +195,45 @@ getMarkovTrace <- function(scenario, # scenario
   #------------------------------------------------------------------------------#
   ####                       04 Error handling / validation             ####
   #------------------------------------------------------------------------------#
-  # check that transition probabilities are [0, 1] 
-  #check1 <- check_transition_probability(a_matrices,   verbose = TRUE)
+  # Check 1: Check if all values are within the [0, 1] range
+  check_values <- function(array) {
+    # Flatten the array to a vector for simplicity
+    flattened_array <- as.vector(array)
+    
+    # Check for any values outside the [0, 1] range
+    if (any(flattened_array < 0 | flattened_array > 1)) {
+      foo <- print("Some values are outside the range [0, 1].")
+    } else {
+      foo <- "All values are within the range [0, 1]."
+    }
+    return(foo)
+  }
 
-  # If check1 is not equal to "Valid transition probabilities", print error and abort
-  #if(check1 != "Valid transition probabilities") {
-  #  stop("Error: Invalid transition probabilities detected.")
-  #  print("error in iteration",psa_iteration)
-  #}
+  check1 <- check_values(a_matrices)
 
-  # check that all rows for each slice of the array sum to 1 
-  #check2 <- check_sum_of_transition_array(a_matrices,   n_states = n_states, n_cycles = n_cycles, verbose = TRUE)
+  if (check1 == "Some values are outside the range [0, 1].") {
+    valid_trans[[psa_iteration]] <- c(psa_iteration, check1)
+  }
   
-  # If check1 is not equal to "Valid transition probabilities", print error and abort
-  #if(check2 != "This is a valid transition array") {
-  #  stop("Error: Invalid transition probabilities detected.")
-  #    print("error in iteration",psa_iteration)
-  #}
-  
+  # Check 2: Check if all rows for each slice of the array sum to 1
+  check_slices <- function(array) {
+    slice_sums <- apply(array, 3, function(slice) round(rowSums(slice),2))
+    
+    if (any(as.vector(slice_sums) != 1)) {
+      foo <- print("Some horizontal slices do not sum to 1.")
+    } else {
+      foo <- "All horizontal slices sum to 1."
+    }
+    return(foo)
+  }
+
+  # Step 3: Apply the check
+  check2 <- check_slices(a_matrices)
+
+  if (check2 == "Some horizontal slices do not sum to 1.") {
+    valid_array[[psa_iteration]] <- c(psa_iteration, check2)
+  }
+
   #------------------------------------------------------------------------------#
   ####                       05 Creating corrected traces             ####
   #------------------------------------------------------------------------------#

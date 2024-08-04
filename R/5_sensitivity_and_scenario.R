@@ -273,7 +273,7 @@ runPSA <- function(n_sample){
       #incidence of screening
       mu_incidences_screening <- v_incidences_screening$incidence
       se_incidences <- rep(v_psa_se$incidence_screening,length(mu_incidences_screening))
-      v_incidences_screening$incidence <- sampleBeta(mu_incidences_screening, se_incidences)
+      v_incidences_screening$incidence <- sampleBeta(mu_incidences_screening, se_incidences)      
 
       # incidence of OF
       mu_incidences_of <- v_incidences_of$incidence
@@ -299,8 +299,6 @@ runPSA <- function(n_sample){
       v_utilities$mod_treated <- v_utilities$mod_untreated <- sampleBeta(v_utilities$mod_treated, v_psa_se$utilities_mod)
       v_utilities$severe_treated <- v_utilities$severe_untreated <- sampleBeta(v_utilities$severe_treated, v_psa_se$utilities_sev)
       v_utilities$blind <- sampleBeta(v_utilities$blind, v_psa_se$utilities_vi)
-
-      # Assuming v_utilities is already constructed and contains the utilities as shown
 
       # List of utility categories in the order they should be checked
       utility_categories <- c("mild_treated", "mod_treated", "severe_treated", "blind")
@@ -336,7 +334,7 @@ runPSA <- function(n_sample){
       mu_diagnosics <- v_cost_utilisation_diagnostics$price[1:(length(v_cost_utilisation_diagnostics$price) / 5)] # take the 8 cost items
       se_diagnostics <- mu_diagnosics * v_psa_se$costs
       v_cost_utilisation_diagnostics$price <- rep(sampleGamma(mu_diagnosics, se_diagnostics),5)
-      
+
       # intervention
       mu_intervention <- v_cost_utilisation_intervention$price[1:8] # take the 8 cost items
       se_intervention <- mu_intervention * v_psa_se$costs
@@ -350,7 +348,7 @@ runPSA <- function(n_sample){
       # burden of disease
       mu_burden <- v_cost_burden_disease[-1]
       se_burden <- mu_burden * v_psa_se$costs
-      v_cost_burden_disease[-1] <- as.list(sampleGamma(mu_burden, se_burden))
+      v_cost_burden_disease <- as.list(sampleGamma(mu_burden, se_burden))
       v_cost_burden_disease <- lapply(v_cost_burden_disease, function(x) {if(is.nan(x)) 0 else x})
 
       result <- callModel(output = "qaly_costs")

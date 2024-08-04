@@ -206,6 +206,8 @@ if (output == "icer"){
   return_object <- ai_costs_pp - soc_costs_pp
 } else if (output == "qaly_costs"){
   return_object <- list(ai_qaly_pp - soc_qaly_pp, ai_costs_pp - soc_costs_pp)
+} else if (output == "headroom"){ 
+  return_object <- list(ai_costs_pp = ai_costs_pp, soc_costs_pp = soc_costs_pp, ai_qaly_pp = ai_qaly_pp, soc_qaly_pp = soc_qaly_pp)
 }
   return(return_object) 
 }
@@ -469,7 +471,6 @@ runModel <- function(cohort){
   soc_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, trace = a_trace_soc$trace_cost, societal_perspective = TRUE)
 
   # productivity costs
-
   if (cohort_min < pension_age){ # check if pension age is within the cohort
 
     ai_productivity <- getProductivityCosts(costs = v_cost_burden_disease, trace = a_trace_ai$trace_cost, age_init = cohort_min)

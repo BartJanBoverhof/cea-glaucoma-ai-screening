@@ -220,8 +220,8 @@ getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incid
     v_incidence_screening <- v_incidence_screening[(age_init-49):(age_max-50)]
 
     # mild patients
-    mild_obs <- sum(trace[c(2:nrow(trace)),"Observation"] * v_incidence_screening)
-    mild_untreated <- sum(trace[c(2:nrow(trace)),"Mild untreated"] * v_incidence_of)
+    mild_obs <- sum(trace[c(2:nrow(trace)),"Observation"] * v_incidence_screening[c(2:nrow(trace))])
+    mild_untreated <- sum(trace[c(2:nrow(trace)),"Mild untreated"] * v_incidence_of[c(2:nrow(trace))])
     mild_treated <- list()
     
     if (strategy == "ai") # if strategy is ai, also include the screened participants
@@ -232,11 +232,10 @@ getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incid
     # calculate all mild patients that receive treatment
     mild_patients <- sum(mild_obs, mild_untreated, unlist(mild_treated), trace[1,"Mild treated"])
 
-    trace[,"Mild treated"]
 
     # moderate patients 
     mod_mild_treated <- sum(trace[c(2:nrow(trace)),"Mild treated"] * p_transition$p_mild_mod_treated)
-    mod_mod_untreated <- sum(trace[c(2:nrow(trace)),"Moderate untreated"] * v_incidence_of)
+    mod_mod_untreated <- sum(trace[c(2:nrow(trace)),"Moderate untreated"] * v_incidence_of[c(2:nrow(trace))])
     mod_treated <- list()
 
     if (strategy == "ai") # if strategy is ai, also include the screened participants
@@ -250,7 +249,7 @@ getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incid
     
     # severe patients
     sev_mod_treated <- sum(trace[c(2:nrow(trace)),"Moderate treated"] * p_transition$p_mod_sev_treated)
-    sev_sev_untreated <- sum(trace[c(2:nrow(trace)),"Severe untreated"] * v_incidence_of)
+    sev_sev_untreated <- sum(trace[c(2:nrow(trace)),"Severe untreated"] * v_incidence_of[c(2:nrow(trace))])
     sev_treated <- list()
 
     if (strategy == "ai") # if strategy is ai, also include the screened participants
@@ -263,7 +262,7 @@ getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incid
 
     # blind patients
     blind_sev_treated <- sum(trace[c(2:nrow(trace)),"Severe treated"] * p_transition$p_sev_blind_treated)
-    blind_blind_untreated <- sum(trace[c(2:nrow(trace)),"Blind"] * v_incidence_of)
+    blind_blind_untreated <- sum(trace[c(2:nrow(trace)),"Blind"] * v_incidence_of[c(2:nrow(trace))])
 
     # calculate all blind patients that receive treatment
     blind_patients <- sum(blind_sev_treated, blind_blind_untreated, trace[1,"Blind"])
@@ -320,7 +319,7 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
   # direct medical costs
   #direct_med_vi_mod <- costs_vi_mod$general_practitioner + costs_vi_mod$other + costs_vi_mod$inpatient_services + costs_vi_mod$physician + costs_vi_mod$mobility_training + costs_vi_mod$practical_skills + costs_vi_mod$blind_aids + costs_vi_mod$communication_aids + costs_vi_mod$vision_aids + costs_vi_mod$measuring_devices # direct medical costs visually impaired
   
-  direct_med_vi_sev <- costs_vi_sev$general_practitioner + costs_vi_sev$other + costs_vi_sev$inpatient_services + costs_vi_sev$physician + costs_vi_sev$mobility_training + costs_vi_sev$practical_skills + costs_vi_sev$blind_aids + costs_vi_sev$communication_aids + costs_vi_sev$vision_aids + costs_vi_sev$measuring_devices # direct medical costs blind
+  direct_med_vi_sev <- costs_vi_sev$general_practitioner + costs_vi_sev$other + costs_vi_sev$inpatient_services + costs_vi_sev$physician + costs_vi_sev$mobility_training + costs_vi_sev$practical_skills + costs_vi_sev$blind_aids + costs_vi_sev$communication_aids + costs_vi_sev$vision_aids# direct medical costs blind
 
   # direct non-medical costs
   #direct_nonmed_vi_mod <- costs_vi_mod$transportation + costs_vi_mod$home_care_household + costs_vi_mod$home_care_household + costs_vi_mod$home_care_personal + costs_vi_mod$informal_care_household + costs_vi_mod$informal_care_personal + costs_vi_mod$informal_care_communication + costs_vi_mod$informal_care_companionship # direct non-medical costs visually impaired
@@ -350,7 +349,7 @@ getProductivityCosts <- function(costs, trace, age_init) {
   patients_blind <- sum(trace[,"Blind"][1: (pension_age - age_init)])  
   
   # total costs
-  costs_blind <- ((costs_vi_sev$productivity_absent + costs_vi_sev$productivity_disability) * sum(patients_blind)) 
+  costs_blind <- ((costs_vi_sev$productivity_absent) * sum(patients_blind)) 
   
   return(sum(costs_blind))
 }
