@@ -100,15 +100,9 @@ file.init <- "data-raw/8f_cost_burden_disease.xlsx" #Init statement
 v_cost_burden_disease  <- read_excel(file.init)
 save(v_cost_burden_disease, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/8f_v_cost_burden_disease.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
-file.init <- "data-raw/9a_dsa_sd.csv" #Init statement
-v_dsa_sd  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
-save(v_dsa_sd, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/9a_v_dsa_sd.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
-
-file.init <- "data-raw/9b_psa_se.csv" #Init statement
-v_psa_se  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
-save(v_psa_se, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/9b_v_psa_se.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
-
-
+file.init <- "data-raw/9_sensitivity_se.csv" #Init statement
+v_sensitivity_se  <- read_delim(file.init, delim = ',', locale = locale(decimal_mark = "."))
+save(v_sensitivity_se, file = "~/Documents/GitHub/cea-glaucoma-ai-screening/data/9_sensitivity_se.RData") # Create .rda object for initial set of parameters and store it in 'data' folder
 
 
 

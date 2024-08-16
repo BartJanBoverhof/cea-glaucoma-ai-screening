@@ -36,6 +36,7 @@ load("data/8b_v_cost_medicine.RData")
 load("data/8c_v_cost_utilisation_diagnostics.RData")
 load("data/8d_v_cost_utilisation_intervention.RData")
 load("data/8f_v_cost_burden_disease.RData")
+load("data/9_sensitivity_se.RData")
 
 #------------------------------------------------------------------------------#
 ####                       1 Define Cohorts                            ####
@@ -55,6 +56,7 @@ v_utilities_gp <- v_utilities_gp
 screening_interval <- 5
 discount <- TRUE
 pension_age <- 67
+v_dsa_se <- v_sensitivity_se
 
 # run base case
 strategy <- "base"
@@ -72,8 +74,8 @@ if (strategy == "dsa") {
     dsa$prevalence <- runDSA(parameter = "prevalence")
     dsa$incidences_of <- runDSA(parameter = "incidences_of")
     dsa$incidences_screening <- runDSA(parameter = "incidences_screening")
-    #dsa$utilities_untreated <- runDSA(parameter = "utilities_untreated")
-    #dsa$utilities_treated <- runDSA(parameter = "utilities_treated")
+    dsa$utilities_untreated <- runDSA(parameter = "utilities_untreated")
+    dsa$utilities_treated <- runDSA(parameter = "utilities_treated")
     dsa$costs_screening <- runDSA(parameter = "costs_screening")
     dsa$costs_medicine <- runDSA(parameter = "costs_medicine")
     dsa$costs_diagnostics <- runDSA(parameter = "costs_diagnostics")
@@ -85,21 +87,21 @@ if (strategy == "dsa") {
 #------------------------------------------------------------------------------#
 ####                       06 Deterministic sensitivity analysis         ####
 #------------------------------------------------------------------------------#
-paramNames <-  c(   "Transition probabilities untreated [-/+ 20%]",
-                    "Transition probabilities treated [-/+ 20%]",
-                    "AI sensitivity [-/+ 20%] (max 100%)",
-                    "AI specificity [-/+ 20%] (max 100%)",
-                    "Prevalence [-/+ 20%]",
-                    "Incidences diagnosed [-/+ 20%]",
-                    "Incidences undiagnosed [-/+ 20%]",
-                    #"Utilities untreated [-/+ 10%]",
-                    #"Utilities treated [-/+ 10%]",
-                    "Screening costs [-/+ 20%]",
-                    "Medicine costs [-/+ 20%]",
-                    "Monitoring costs [-/+ 20%]",
-                    "Laser and surgery costs [-/+ 20%]",
-                    "Burden of disease costs [-/+ 20%]",
-                    "Productivity costs [-/+ 20%]"
+paramNames <-  c(   "Transition probabilities untreated",
+                    "Transition probabilities treated",
+                    "AI sensitivity",
+                    "AI specificity",
+                    "Prevalence",
+                    "Incidences diagnosed ",
+                    "Incidences undiagnosed ",
+                    "Utilities untreated",
+                    "Utilities treated",
+                    "Screening costs",
+                    "Medicine costs",
+                    "Monitoring costs",
+                    "Laser and surgery costs",
+                    "Burden of disease costs",
+                    "Productivity costs"
                     )
 
 data <- matrix(c(base, dsa$transition_untreated[1], dsa$transition_untreated[2],

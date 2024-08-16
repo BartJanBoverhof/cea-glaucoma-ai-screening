@@ -8,9 +8,9 @@ runDSA <- function(parameter){
         p_transition <- p_transition # local save
 
         # transfer paramaters to lower bound
-        p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 - p_transition$untreated_dev)
-        p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 - p_transition$untreated_dev)
-        p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 - p_transition$untreated_dev)
+        p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 - v_dsa_se$p_mild_mod_untreated)
+        p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 - v_dsa_se$p_mod_sev_untreated)
+        p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 - v_dsa_se$p_sev_blind_untreated)
 
         lower <- callModel() # lower bound
 
@@ -18,9 +18,9 @@ runDSA <- function(parameter){
         p_transition <- get("p_transition", envir =globalenv())
 
         # transfer paramaters to upper bound
-        p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 + p_transition$untreated_dev)
-        p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 + p_transition$untreated_dev)
-        p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 + p_transition$untreated_dev)
+        p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 + v_dsa_se$p_mild_mod_untreated)
+        p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 + v_dsa_se$p_mod_sev_untreated)
+        p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 + v_dsa_se$p_sev_blind_untreated)
 
         upper <- callModel() # lower bound
 
@@ -30,9 +30,9 @@ runDSA <- function(parameter){
         p_transition <- get("p_transition", envir =globalenv())
 
         # transfer paramaters to lower bound
-        p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 - p_transition$treated_dev)
-        p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 - p_transition$treated_dev)
-        p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 - p_transition$treated_dev)
+        p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 - v_dsa_se$p_mild_mod_treated)
+        p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 - v_dsa_se$p_mod_sev_treated)
+        p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 - v_dsa_se$p_sev_blind_treated)
 
         lower <- callModel() # lower bound
 
@@ -40,9 +40,9 @@ runDSA <- function(parameter){
         p_transition <- get("p_transition", envir =globalenv())
 
         # transfer paramaters to upper bound
-        p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 + p_transition$treated_dev)
-        p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 + p_transition$treated_dev)
-        p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 + p_transition$treated_dev)
+        p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 + v_dsa_se$p_mild_mod_treated)
+        p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 + v_dsa_se$p_mod_sev_treated)
+        p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 + v_dsa_se$p_sev_blind_treated)
 
         upper <- callModel() # lower bound
     
@@ -51,7 +51,7 @@ runDSA <- function(parameter){
         p_dt <- p_dt # local save
 
         # transform parameters to lower bound
-        p_dt$ai_sens <- p_dt$ai_sens * (1 - p_dt$ai_sens_dev)
+        p_dt$ai_sens <- p_dt$ai_sens * (1 - v_dsa_se$ai_sensitivity)
         
         lower <- callModel() # lower bound
 
@@ -59,7 +59,7 @@ runDSA <- function(parameter){
         p_dt <- get("p_dt", envir =globalenv())
 
         # transform parameters to upper bound
-        p_dt$ai_sens <- p_dt$ai_sens * (1 + p_dt$ai_sens_dev)
+        p_dt$ai_sens <- p_dt$ai_sens * (1 + v_dsa_se$ai_sensitivity)
         if (p_dt$ai_sens > 1) {p_dt$ai_sens <- 1} # if higher than 1, make it 1
 
         upper <- callModel() # lower bound
@@ -69,7 +69,7 @@ runDSA <- function(parameter){
         p_dt <- p_dt # local save
 
         # transform parameters to lower bound
-        p_dt$ai_spec <- p_dt$ai_spec * (1 - p_dt$ai_spec_dev)
+        p_dt$ai_spec <- p_dt$ai_spec * (1 - v_dsa_se$ai_specificity)
 
         lower <- callModel() # lower bound
 
@@ -77,7 +77,7 @@ runDSA <- function(parameter){
         p_dt <- get("p_dt", envir =globalenv())
 
         # transform parameters to upper bound
-        p_dt$ai_spec <- p_dt$ai_spec * (1+ p_dt$ai_spec_dev)
+        p_dt$ai_spec <- p_dt$ai_spec * (1 + v_dsa_se$ai_specificity)
         if (p_dt$ai_spec > 1) {p_dt$ai_spec <- 1} # if higher than 1, make it 1
 
         upper <- callModel() # lower bound
@@ -87,7 +87,7 @@ runDSA <- function(parameter){
         v_prevalence <- v_prevalence # local save
 
         # transform parameters to lower bound
-        v_prevalence$prevalence <- v_prevalence$prevalence * (1 - v_prevalence$prevalence_dev)
+        v_prevalence$prevalence <- v_prevalence$prevalence * (1 - v_dsa_se$prevalence)
 
         lower <- callModel() # lower bound
 
@@ -95,7 +95,7 @@ runDSA <- function(parameter){
         v_prevalence <- get("v_prevalence", envir =globalenv())
 
         # transform parameters to upper bound
-        v_prevalence$prevalence <- v_prevalence$prevalence * (1 + v_prevalence$prevalence_dev)
+        v_prevalence$prevalence <- v_prevalence$prevalence * (1 + v_dsa_se$prevalence)
 
         upper <- callModel() # lower bound
 
@@ -104,7 +104,7 @@ runDSA <- function(parameter){
         v_incidences_of <- v_incidences_of # local save
 
         # transform parameters to lower bound
-        v_incidences_of$incidence <- v_incidences_of$incidence * (1 - v_incidences_of$incidence_dev)
+        v_incidences_of$incidence <- v_incidences_of$incidence * (1 - v_dsa_se$incidence_of)
         
         lower <- callModel() # lower bound
 
@@ -112,7 +112,7 @@ runDSA <- function(parameter){
         v_incidences_of <- get("v_incidences_of", envir =globalenv())
 
         # transform parameters to upper bound
-        v_incidences_of$incidence <- v_incidences_of$incidence * (1 + v_incidences_of$incidence_dev)
+        v_incidences_of$incidence <- v_incidences_of$incidence * (1 + v_dsa_se$incidence_of)
 
         upper <- callModel() # lower bound
 
@@ -121,7 +121,7 @@ runDSA <- function(parameter){
         v_incidences_screening <- v_incidences_screening # local save
 
         # transform parameters to lower bound
-        v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 - v_incidences_screening$incidence_dev)
+        v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 - v_dsa_se$incidence_screening)
         
         lower <- callModel() # lower bound
 
@@ -129,7 +129,7 @@ runDSA <- function(parameter){
         v_incidences_screening <- get("v_incidences_screening", envir =globalenv())
 
         # transform parameters to upper bound
-        v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 + v_incidences_screening$incidence_dev)
+        v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 + v_dsa_se$incidence_screening)
 
         upper <- callModel() # lower bound
 
@@ -138,10 +138,10 @@ runDSA <- function(parameter){
         v_utilities <- v_utilities # local save
 
         # transform parameters to lower bound
-        v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 - v_utilities$utilities_dev)
-        v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 - v_utilities$utilities_dev)
-        v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 - v_utilities$utilities_dev)
-        v_utilities$blind <- v_utilities$blind * (1 - v_utilities$utilities_dev)
+        v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 - v_dsa_se$utilities_mild)
+        v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 - v_dsa_se$utilities_mod)
+        v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 - v_dsa_se$utilities_sev)
+        v_utilities$blind <- v_utilities$blind * (1 - v_dsa_se$utilities_vi)
 
         lower <- callModel() # lower bound
 
@@ -149,10 +149,10 @@ runDSA <- function(parameter){
         v_utilities <- get("v_utilities", envir =globalenv())
 
         # transform parameters to upper bound
-        v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 + v_utilities$utilities_dev)
-        v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 + v_utilities$utilities_dev)
-        v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 + v_utilities$utilities_dev)
-        v_utilities$blind <- v_utilities$blind * (1 + v_utilities$utilities_dev)
+        v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 +  v_dsa_se$utilities_mild)
+        v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 + v_dsa_se$utilities_mod)
+        v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 + v_dsa_se$utilities_sev)
+        v_utilities$blind <- v_utilities$blind * (1 + v_dsa_se$utilities_vi)
 
         upper <- callModel() # lower bound
 
@@ -161,10 +161,10 @@ runDSA <- function(parameter){
         v_utilities <- v_utilities # local save
 
         # transform parameters to lower bound
-        v_utilities$mild_treated <- v_utilities$mild_treated * (1 - v_utilities$utilities_dev)
-        v_utilities$mod_treated <- v_utilities$mod_treated * (1 - v_utilities$utilities_dev)
-        v_utilities$severe_treated <- v_utilities$severe_treated * (1 - v_utilities$utilities_dev)
-        v_utilities$blind <- v_utilities$blind * (1 - v_utilities$utilities_dev)
+        v_utilities$mild_treated <- v_utilities$mild_treated * (1 -  v_dsa_se$utilities_mild)
+        v_utilities$mod_treated <- v_utilities$mod_treated * (1 - v_dsa_se$utilities_mod)
+        v_utilities$severe_treated <- v_utilities$severe_treated * (1 - v_dsa_se$utilities_sev)
+        v_utilities$blind <- v_utilities$blind * (1 - v_dsa_se$utilities_vi)
 
         lower <- callModel() # lower bound
 
@@ -172,10 +172,10 @@ runDSA <- function(parameter){
         v_utilities <- get("v_utilities", envir =globalenv())
 
         # transform parameters to upper bound
-        v_utilities$mild_treated <- v_utilities$mild_treated * (1 + v_utilities$utilities_dev)
-        v_utilities$mod_treated <- v_utilities$mod_treated * (1 + v_utilities$utilities_dev)
-        v_utilities$severe_treated <- v_utilities$severe_treated * (1 + v_utilities$utilities_dev)
-        v_utilities$blind <- v_utilities$blind * (1 + v_utilities$utilities_dev)
+        v_utilities$mild_treated <- v_utilities$mild_treated * (1 +  v_dsa_se$utilities_mild)
+        v_utilities$mod_treated <- v_utilities$mod_treated * (1 + v_dsa_se$utilities_mod)
+        v_utilities$severe_treated <- v_utilities$severe_treated * (1 + v_dsa_se$utilities_sev)
+        v_utilities$blind <- v_utilities$blind * (1 + v_dsa_se$utilities_vi)
 
         upper <- callModel() # lower bound
 
@@ -621,4 +621,152 @@ runScenario <- function(vary, perspective, descriptives, output = "icer"){
     } 
     return(return_list)
   }
+
+calculateICER <- function(out) {
+    results_df <- data.frame(Simulation = integer(), Incremental_QALY = numeric(), Incremental_Costs = numeric())
+
+    # ICER calculation
+    for (i in 1:length(out)) {
+        # Extract incremental QALYs and Costs for each simulation
+        incremental_qaly <- qaly_costs_list[[i]][[1]]
+        incremental_costs <- qaly_costs_list[[i]][[2]]
+
+        results_df <- rbind(results_df, data.frame(Simulation = i, Incremental_QALY = incremental_qaly, Incremental_Costs = incremental_costs))
+    }
+
+    # Calculate ICER
+    ICER <- mean(results_df$Incremental_Costs) / mean(results_df$Incremental_QALY)
+    
+    
+    return(ICER)
+}
+
+# Define a function to calculate the mean, differences, and quantiles for specific cost parameters
+costStats <- function(costs_list) {
+    # Parameters to calculate differences for
+    diff_parameters <- c("ai_screening_pp", 
+                         "ai_medicine_pp - soc_medicine_pp",
+                         "ai_diagnostic_pp - soc_diagnostic_pp",
+                         "ai_intervention_pp - soc_intervention_pp",
+                         "ai_burden_pp - soc_burden_pp",
+                         "ai_productivity_pp - soc_productivity_pp")
+    
+    # Initialize lists to store results
+    mean_ai <- list()
+    mean_soc <- list()
+    mean_diffs <- list()
+    quantiles_2_5 <- list()
+    quantiles_97_5 <- list()
+    
+    # Loop through each difference parameter
+    for (param in diff_parameters) {
+        if (param == "ai_screening_pp") {
+            # Directly extract the AI screening cost parameter
+            param_values <- sapply(costs_list, function(iteration) iteration[[param]])
+            
+            # Calculate the mean value for AI screening
+            mean_ai[[param]] <- mean(param_values)
+            mean_soc[[param]] <- NA  # No SoC counterpart
+            
+            # Calculate the mean difference (which is just the AI mean here)
+            mean_diffs[[param]] <- mean(param_values)
+            
+            # Calculate the 2.5% and 97.5% quantiles of the AI values
+            quantiles_2_5[[param]] <- quantile(param_values, 0.025)
+            quantiles_97_5[[param]] <- quantile(param_values, 0.975)
+        } else {
+            # Split the parameter names to calculate the difference
+            params_split <- strsplit(param, " - ")[[1]]
+            ai_param <- params_split[1]
+            soc_param <- params_split[2]
+            
+            # Calculate the AI and SoC values for each iteration
+            ai_values <- sapply(costs_list, function(iteration) iteration[[ai_param]])
+            soc_values <- sapply(costs_list, function(iteration) iteration[[soc_param]])
+            
+            # Calculate the mean value for AI and SoC
+            mean_ai[[param]] <- mean(ai_values)
+            mean_soc[[param]] <- mean(soc_values)
+            
+            # Calculate the difference between AI and SoC for each iteration
+            param_values <- ai_values - soc_values
+            
+            # Calculate the mean difference
+            mean_diffs[[param]] <- mean(param_values)
+            
+            # Calculate the 2.5% and 97.5% quantiles of the differences
+            quantiles_2_5[[param]] <- quantile(param_values, 0.025)
+            quantiles_97_5[[param]] <- quantile(param_values, 0.975)
+        }
+    }
+    
+    # Combine the results into a data frame
+    results <- data.frame(
+        Parameter = diff_parameters,
+        Mean_AI = unlist(mean_ai),
+        Mean_SoC = unlist(mean_soc),
+        Mean_Difference = unlist(mean_diffs),
+        `2.5%_Quantile` = unlist(quantiles_2_5),
+        `97.5%_Quantile` = unlist(quantiles_97_5)
+    )
+    
+    return(results)
+}
+
+
+
+# Define a function to calculate the mean, 2.5% quantile, and 97.5% quantile for ICER per year of VI
+icerVIStats <- function(out_list) {
+    # Extract the ICER values for VI from each element in the list
+    icer_vi <- lapply(out_list, function(x) x$icer_vi)
+    
+    # Unlist the ICER values to get a single vector
+    icer_vi_values <- unlist(icer_vi)
+    
+    # Calculate the mean of the ICER values
+    mean_icer <- mean(icer_vi_values)
+    
+    
+    # Combine the results into a list or data frame
+    result <- data.frame(
+        Mean_ICER = mean_icer
+    )
+    
+    return(result)
+}
+
+# Define a function to calculate the mean, differences, and quantiles for QALYs
+QALYStats <- function(out_list) {
+    # Extract the QALY values for AI and SOC from each element in the list
+    qaly_ai <- lapply(out_list, function(x) x$qaly$ai_qaly_pp)
+    qaly_soc <- lapply(out_list, function(x) x$qaly$soc_qaly_pp)
+    
+    # Unlist the QALY values to get a single vector
+    qaly_ai_values <- unlist(qaly_ai)
+    qaly_soc_values <- unlist(qaly_soc)
+    
+    # Calculate the mean for AI and SOC QALYs
+    mean_qaly_ai <- mean(qaly_ai_values)
+    mean_qaly_soc <- mean(qaly_soc_values)
+    
+    # Calculate the difference between AI and SOC QALYs for each iteration
+    qaly_diff_values <- qaly_ai_values - qaly_soc_values
+    
+    # Calculate the mean difference
+    mean_qaly_diff <- mean(qaly_diff_values)
+    
+    # Calculate the 2.5% and 97.5% quantiles for the difference
+    quantile_2_5_diff <- quantile(qaly_diff_values, 0.025)
+    quantile_97_5_diff <- quantile(qaly_diff_values, 0.975)
+    
+    # Combine the results into a data frame
+    results <- data.frame(
+        Parameter = c("QALY_AI", "QALY_SoC", "QALY_Difference"),
+        Mean = c(mean_qaly_ai, mean_qaly_soc, mean_qaly_diff),
+        `2.5%_Quantile` = c(NA, NA, quantile_2_5_diff),  # Quantiles only for the difference
+        `97.5%_Quantile` = c(NA, NA, quantile_97_5_diff)  # Quantiles only for the difference
+    )
+    
+    return(results)
+}
 

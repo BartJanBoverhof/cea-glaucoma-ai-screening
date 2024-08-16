@@ -36,7 +36,7 @@ load("data/8b_v_cost_medicine.RData")
 load("data/8c_v_cost_utilisation_diagnostics.RData")
 load("data/8d_v_cost_utilisation_intervention.RData")
 load("data/8f_v_cost_burden_disease.RData")
-load("data/9b_v_psa_se.RData")
+load("data/9_sensitivity_se.RData")
 
 #------------------------------------------------------------------------------#
 ####                       1 Define Cohorts                            ####
@@ -53,7 +53,7 @@ p_severity_undiagnosed <- p_severity_undiagnosed
 p_transition <- p_transition
 v_utilities <- v_utilities
 v_utilities_gp<- v_utilities_gp
-v_psa_se <- v_psa_se
+v_psa_se <- v_sensitivity_se
 screening_interval <- 5
 discount <- TRUE
 pension_age <- 67 
@@ -66,9 +66,26 @@ valid_trans <<- list()
 valid_array <<- list()
 
 #out <- runPSA(n_sample = 10000)
-#saveRDS(out, file = "results_psa.rds")
-out <- readRDS("results_psa.rds")
+#saveRDS(out, file = "data/results_psa.rds")
+out <- readRDS("data/results_psa.rds")
 
-source("R/6_visualisation_functions.R", echo = TRUE) #Load visualization functions
-psaPlot(out = out)
+# ICER and PSA plot
+qaly_costs_list <- lapply(out, function(x) x$qaly_costs) # extract list for the qaly and costs (PSA plot & ICER)
+
+#PSA plot
+#psaPlot(out = qaly_costs_list)
+
+# calculate all costs
+costs_list <- lapply(out, function(x) x$costs)
+
+# call the function with the costs_list
+# calcualte PSA ICER
+ICER <- calculateICER(out)
+cost_stats <- costStats(costs_list)
+icer_stats <- icerVIStats(out)
+qaly_stats <- QALYStats(out)
+
+
+
+
 
