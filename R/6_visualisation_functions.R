@@ -144,10 +144,17 @@ scenarioPlot <- function(){
 
   costs_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
 
-  # Add ICER values to the Identifier string
-  icer_data$Identifier <- paste0(icer_data$Identifier, " <b>(€", format(round(icer_data$ICER, 0), big.mark = ",", scientific = FALSE), ")</b>")
-  qaly_data$Identifier <- paste(qaly_data$Identifier, " - (", format(round(qaly_data$QALY, 0), nsmall = 4, big.mark = ",", scientific = FALSE), ")", sep = "")
-  costs_data$Identifier <- paste(costs_data$Identifier, " - (",round(costs_data$Costs,0),")", sep = "")
+  # Custom function to format the ICER without extra spaces
+  format_icer <- function(icer) {
+    formatted_icer <- formatC(icer, format = "f", digits = 0, big.mark = ",")
+    formatted_icer <- paste0("€", formatted_icer)
+    return(formatted_icer)
+  }
+
+  # Apply this formatting to the ICER column in your data
+  icer_data$Identifier <- paste0(icer_data$Identifier, " <b>(", format_icer(icer_data$ICER), ")</b>")
+
+
 
   # Adjust the plot to use 'Identifier' for color, shape, and fill in a single legend
   euro_formatter <- function(x) {
@@ -411,8 +418,8 @@ psaPlot <- function(out){
 
   # obtain base-case ICER 
   base <- callModel(output = "qaly_costs")
-  base_qaly <- base[[1]]
-  base_costs <- base[[2]]
+  base_qaly <- base[[1]][[1]]
+  base_costs <- base[[1]][[2]]
 
   # Enhanced Cost-Effectiveness Plane
   ce_plane <- ggplot(results_df, aes(x = Incremental_QALY, y = Incremental_Costs)) +

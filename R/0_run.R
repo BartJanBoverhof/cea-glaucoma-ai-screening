@@ -72,21 +72,45 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
     age_results[[i]] <- runModel(cohort = age_categories[i])
   }
 
+  if (descriptives == TRUE) {
+    # create combined trace ai 
+    a_trace_ai_uncorrected <- unlist(age_results[[1]]$ai_trace) + ### uncorrected trace (for reference)
+        padArray(pad = unlist(age_results[[2]]$ai_trace), pad_to = unlist(age_results[[1]]$ai_trace)) + 
+        padArray(pad = unlist(age_results[[3]]$ai_trace), pad_to = unlist(age_results[[1]]$ai_trace)) +
+        padArray(pad = unlist(age_results[[4]]$ai_trace), pad_to = unlist(age_results[[1]]$ai_trace)) +
+        padArray(pad = unlist(age_results[[5]]$ai_trace), pad_to = unlist(age_results[[1]]$ai_trace))
 
-  # create combined trace ai 
-  #a_trace_ai_uncorrected <- unlist(age_results[[1]]["ai_trace"]) + ### uncorrected trace (for reference)
-  #    padArray(pad = unlist(age_results[[2]]["ai_trace"]), pad_to = unlist(age_results[[1]]["ai_trace"])) + 
-  #    padArray(pad = unlist(age_results[[3]]["ai_trace"]), pad_to = unlist(age_results[[1]]["ai_trace"])) +
-  #    padArray(pad = unlist(age_results[[4]]["ai_trace"]), pad_to = unlist(age_results[[1]]["ai_trace"])) +
-  #    padArray(pad = unlist(age_results[[5]]["ai_trace"]), pad_to = unlist(age_results[[1]]["ai_trace"]))
+    # create combined trace soc
+    a_trace_soc_uncorrected <- age_results[[1]]$soc_trace + ### uncorrected trace (for reference)
+        padArray(pad = age_results[[2]]$soc_trace, pad_to = age_results[[1]]$soc_trace) + 
+        padArray(pad = age_results[[3]]$soc_trace, pad_to = age_results[[1]]$soc_trace) +
+        padArray(pad = age_results[[4]]$soc_trace, pad_to = age_results[[1]]$soc_trace) +
+        padArray(pad = age_results[[5]]$soc_trace, pad_to = age_results[[1]]$soc_trace)
+    
+    # percentage of patients detected at different time points
+    # ai trace
+    ai_1 <- sum(a_trace_ai_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[1,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")])) # at first screening instance
+    ai_2 <- sum(a_trace_ai_uncorrected[6,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[6,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[6,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    ai_3 <- sum(a_trace_ai_uncorrected[11,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[11,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[11,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    ai_4 <- sum(a_trace_ai_uncorrected[16,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[16,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[16,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    ai_5 <- sum(a_trace_ai_uncorrected[21,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[21,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[21,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    ai_6 <- sum(a_trace_ai_uncorrected[26,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[26,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[26,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
 
-  # create combined trace soc
-  #a_trace_soc_uncorrected <- age50_55$soc_trace + ### uncorrected trace (for reference)
-  #    padArray(pad = age55_60$soc_trace, pad_to = age50_55$soc_trace) + 
-  #    padArray(pad = age60_65$soc_trace, pad_to = age50_55$soc_trace) +
-  #    padArray(pad = age65_70$soc_trace, pad_to = age50_55$soc_trace) +
-  #    padArray(pad = age70_75$soc_trace, pad_to = age50_55$soc_trace)
-      
+    # soc trace
+    soc_1 <- sum(a_trace_soc_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[1,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")])) # at first screening instance
+    soc_2 <- sum(a_trace_soc_uncorrected[6,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[6,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[6,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    soc_3 <- sum(a_trace_soc_uncorrected[11,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[11,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[11,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    soc_4 <- sum(a_trace_soc_uncorrected[16,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[16,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[16,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    soc_5 <- sum(a_trace_soc_uncorrected[21,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[21,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[21,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    soc_6 <- sum(a_trace_soc_uncorrected[26,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[26,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[26,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+
+    ai_1 - soc_1
+    ai_2 - soc_2
+    ai_3 - soc_3
+    ai_4 - soc_4
+    ai_5 - soc_5
+    ai_6 - soc_6
+  }
   # ai costs per patient
   # calculate AI costs per patient
   ai_screening_pp <- sum(sapply(age_results, function(x) x$ai_costs$ai_screening_costs)) / 1000
@@ -139,6 +163,7 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
   soc_qaly_pp <- sum(sapply(age_results, function(x) x$soc_qaly)) / 1000
   
   icer <- (ai_costs_pp - soc_costs_pp) / (ai_qaly_pp - soc_qaly_pp) 
+  vi_prevented <- sum(sapply(age_results, function(x) x$vi_prevented)) / 1000
 
   # print messag to console
   # if parameter variable doesnt exist, set it to NA
@@ -205,7 +230,11 @@ if (output == "icer"){
 } else if (output == "costs"){
   return_object <- ai_costs_pp - soc_costs_pp
 } else if (output == "qaly_costs"){
-  return_object <- list(ai_qaly_pp - soc_qaly_pp, ai_costs_pp - soc_costs_pp)
+  qaly_costs <- list(ai_qaly_pp - soc_qaly_pp, ai_costs_pp - soc_costs_pp)
+  costs <- list(ai_screening_pp = ai_screening_pp, ai_medicine_pp = ai_medicine_pp, ai_diagnostic_pp = ai_diagnostic_pp, ai_intervention_pp = ai_intervention_pp, ai_burden_pp = ai_burden_pp, ai_productivity_pp = ai_productivity_pp, soc_medicine_pp = soc_medicine_pp, soc_diagnostic_pp = soc_diagnostic_pp, soc_intervention_pp = soc_intervention_pp, soc_burden_pp = soc_burden_pp, soc_productivity_pp = soc_productivity_pp)
+  qaly <- list(ai_qaly_pp = ai_qaly_pp, soc_qaly_pp = soc_qaly_pp)
+  icer_vi <- list((icer_vi = ai_costs_pp - soc_costs_pp) / vi_prevented)
+  return_object <- list(qaly_costs = qaly_costs, costs = costs, qaly = qaly, icer_vi = icer_vi)
 } else if (output == "headroom"){ 
   return_object <- list(ai_costs_pp = ai_costs_pp, soc_costs_pp = soc_costs_pp, ai_qaly_pp = ai_qaly_pp, soc_qaly_pp = soc_qaly_pp)
 }
