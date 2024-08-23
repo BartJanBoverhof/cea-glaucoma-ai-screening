@@ -65,9 +65,9 @@ strategy <- "psa"
 valid_trans <<- list()
 valid_array <<- list()
 
-#out <- runPSA(n_sample = 10000)
-#saveRDS(out, file = "data/results_psa.rds")
-out <- readRDS("data/results_psa.rds")
+#out <- runPSA(n_sample = 10000, perspective = "healthcare")
+#saveRDS(out, file = "data/results_psa_hcp.rds")
+out <- readRDS("data/results_psa_hcp.rds")
 
 # ICER and PSA plot
 qaly_costs_list <- lapply(out, function(x) x$qaly_costs) # extract list for the qaly and costs (PSA plot & ICER)

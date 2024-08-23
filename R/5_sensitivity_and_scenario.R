@@ -236,7 +236,7 @@ runDSA <- function(parameter){
 
 
 
-runPSA <- function(n_sample){
+runPSA <- function(n_sample, perspective){
 
     strategy <- get("strategy", envir = parent.frame())
     psa_out <- list()
@@ -350,6 +350,16 @@ runPSA <- function(n_sample){
       se_burden <- mu_burden * v_psa_se$costs
       v_cost_burden_disease <- as.list(sampleGamma(mu_burden, se_burden))
       v_cost_burden_disease <- lapply(v_cost_burden_disease, function(x) {if(is.nan(x)) 0 else x})
+
+      # set 0 if healthcare perspective
+      if (perspective == "healthcare"){
+        v_cost_burden_disease$informal_care_household <- 0
+        v_cost_burden_disease$informal_care_personal <- 0
+        v_cost_burden_disease$informal_care_communication <- 0
+        v_cost_burden_disease$informal_care_companionship <- 0
+        v_cost_burden_disease$productivity_absent <- 0
+
+      }
 
       result <- callModel(output = "qaly_costs")
       psa_out[[i]] <- result
@@ -557,6 +567,13 @@ runScenario <- function(vary, perspective, descriptives, output = "icer"){
 
       return_list$ai_performance_2 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
 
+      # Scenario - low performance  
+      print("Scenario: high performance (75% specificity)")
+
+      p_dt <- get("p_dt", envir = globalenv()) #re-obtain p_dt from global environment
+      p_dt$ai_spec <- 0.75
+
+      return_list$ai_performance_3 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
 
     } else if (vary == "expert_utilisation") {
       return_list <- list()
