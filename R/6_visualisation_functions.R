@@ -7,8 +7,8 @@ scenarioPlot <- function(){
 
   # run base case
   strategy <- "scenario"
-  icer_screening_age <- runScenario(vary = "screening_age", perspective = "societal", descriptives = TRUE, output = "icer")
-  icer_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = TRUE, output = "icer")
+  icer_screening_age <- runScenario(vary = "screening_age", perspective = "societal", descriptives = FALSE, output = "icer")
+  icer_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = FALSE, output = "icer")
   icer_transition <- runScenario(vary = "transition", perspective = "societal", descriptives = TRUE, output = "icer")
   icer_utilities <- runScenario(vary = "utilities", perspective = "societal", descriptives = TRUE, output = "icer")
   icer_compliance <- runScenario(vary = "compliance", perspective = "societal", descriptives = TRUE, output = "icer")
@@ -18,8 +18,8 @@ scenarioPlot <- function(){
   icer_expert_observation <- runScenario(vary = "expert_observation", perspective = "societal", descriptives = TRUE, output = "icer")
   icer_discounting <- runScenario(vary = "discount", perspective = "societal", descriptives = TRUE, output = "icer")
     
-  qaly_screening_age <- runScenario(vary = "screening_age", perspective = "societal", descriptives = TRUE, output = "qaly")
-  qaly_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = TRUE, output = "qaly")
+  qaly_screening_age <- runScenario(vary = "screening_age", perspective = "societal", descriptives = FALSE, output = "qaly")
+  qaly_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = FALSE, output = "qaly")
   qaly_transition <- runScenario(vary = "transition", perspective = "societal", descriptives = TRUE, output = "qaly")
   qaly_utilities <- runScenario(vary = "utilities", perspective = "societal", descriptives = TRUE, output = "qaly")
   qaly_compliance <- runScenario(vary = "compliance", perspective = "societal", descriptives = TRUE, output = "qaly")
@@ -29,8 +29,8 @@ scenarioPlot <- function(){
   qaly_expert_observation <- runScenario(vary = "expert_observation", perspective = "societal", descriptives = TRUE, output = "qaly")
   qaly_discounting <- runScenario(vary = "discount", perspective = "societal", descriptives = TRUE, output = "qaly")
 
-  costs_screening_age <- runScenario(vary = "screening_age", perspective = "societal", descriptives = TRUE, output = "costs")
-  costs_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = TRUE, output = "costs")
+  costs_screening_age <- runScenario(vary = "screening_age", perspective = "societal", descriptives = FALSE, output = "costs")
+  costs_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = FALSE, output = "costs")
   costs_transition <- runScenario(vary = "transition", perspective = "societal", descriptives = TRUE, output = "costs")
   costs_utilities <- runScenario(vary = "utilities", perspective = "societal", descriptives = TRUE, output = "costs")
   costs_compliance <- runScenario(vary = "compliance", perspective = "societal", descriptives = TRUE, output = "costs")
@@ -124,29 +124,29 @@ scenarioPlot <- function(){
 
   # Example of adding "Shape" and "Color" columns to the dataframe
   # This is a simplified example. You'll need to assign unique shapes and colors based on your actual data
-  icer_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
-  icer_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", 
+  icer_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
+  icer_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", "#964B00",
   "#FFFF00","#FFFF00","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9","#A9A9A9","#A9A9A9","#FF0000")
 
-  qaly_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
-  qaly_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", 
+  qaly_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
+  qaly_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", "#964B00",
   "#FFFF00","#FFFF00","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9","#A9A9A9","#A9A9A9","#FF0000")
 
-  costs_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
-  costs_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", 
+  costs_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
+  costs_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", "#964B00",
   "#FFFF00","#FFFF00","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9","#A9A9A9","#A9A9A9","#FF0000")
 
   # Ensure shapes can be filled (using shapes 21-25)
   # If your data already uses shapes 21-25, this step is correct. Otherwise, adjust your shape assignments accordingly.
-  icer_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  icer_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
 
-  qaly_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  qaly_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
 
-  costs_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  costs_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
 
   # Custom function to format the ICER without extra spaces
   format_icer <- function(icer) {
-    formatted_icer <- formatC(icer, format = "f", digits = 0, big.mark = ",")
+    formatted_icer <- formatC(icer, format = "f", digits = 0, big.mark = ".")
     formatted_icer <- paste0("€", formatted_icer)
     return(formatted_icer)
   }
@@ -154,11 +154,9 @@ scenarioPlot <- function(){
   # Apply this formatting to the ICER column in your data
   icer_data$Identifier <- paste0(icer_data$Identifier, " <b>(", format_icer(icer_data$ICER), ")</b>")
 
-
-
   # Adjust the plot to use 'Identifier' for color, shape, and fill in a single legend
   euro_formatter <- function(x) {
-    paste0("€", format(x, big.mark = ",", scientific = FALSE))
+    paste0("€", format(x, big.mark = ".", scientific = FALSE))
   }
 
     # Create the individual plots with adjusted legend
@@ -576,21 +574,25 @@ ROCPlot <- function(load_grid, cut_off) {
     
     # Plot the ISO plot with ROC curve
     plot <- ggplot() +
-        geom_tile(data = grid_a, aes(x = fpr, y = sensitivity, fill = icer)) +
+        geom_tile(data = grid_a, aes(x = fpr, y = sensitivity, fill = icer), color = ifelse(grid_a$icer < 20000, "green", NA),size = 0.3 ) +
+        geom_rect(data = lowest_icer_tile, 
+                  aes(xmin = fpr - tile_width / 2, xmax = fpr + tile_width / 2, 
+                      ymin = sensitivity - tile_height / 2, ymax = sensitivity + tile_height / 2, color = "ICER < 20.000"), 
+                      fill = NA, size = 0.1, show.legend = TRUE) + 
         geom_rect(data = lowest_icer_tile, 
                   aes(xmin = fpr - tile_width / 2, xmax = fpr + tile_width / 2, 
                       ymin = sensitivity - tile_height / 2, ymax = sensitivity + tile_height / 2, color = "Lowest ICER tile\non ROC curve"), 
-                  fill = NA, size = 0.7, show.legend = TRUE) +
+                      fill = NA, size = 0.7, show.legend = TRUE) +
         geom_line(data = roc_data, aes(x = fpr, y = tpr), alpha = 0.5, size = 0.8, colour = "black") +
         scale_fill_distiller(palette = "RdYlBu", name = "ICER", labels = label_comma()) +
         geom_point(aes(x = (1 - 0.95), y = 0.85, color = "Base-case\nscenario"), fill = "white", size = 1.5, stroke = 0.5, shape = 21, show.legend = TRUE) + # Add base case point without legend
         labs(x = "1 - Specificity",
              y = "Sensitivity") +
-        scale_color_manual(name = "Legend", values = c("Base-case\nscenario" = "black", "Lowest ICER tile\non ROC curve" = "red")) +
+        scale_color_manual(name = "Legend", values = c("ICER < 20.000" = "green", "Base-case\nscenario" = "black", "Lowest ICER tile\non ROC curve" = "red")) +
         guides(color = guide_legend(override.aes = list(
-            shape = c(21, NA), 
-            fill = c("white", NA), 
-            linetype = c(0, 1)
+            shape = c(21, NA, NA), 
+            fill = c("white", NA, NA), 
+            linetype = c(0, 1, 1)
         ))) +
         theme_minimal(base_size = 15) +
         theme(
@@ -609,4 +611,5 @@ ROCPlot <- function(load_grid, cut_off) {
         
     # Save plot
     ggsave("figures/ROC_plot.png", plot = plot, width = 7, height = 5, dpi = 300)
+    print(lowest_icer_tile)
 }
