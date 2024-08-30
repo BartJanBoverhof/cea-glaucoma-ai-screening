@@ -66,22 +66,37 @@ strategy <- "dsa"
 
 # deterministic sensitivity analysis
 if (strategy == "dsa") {
-    dsa <- list()
-    dsa$transition_untreated <- runDSA(parameter = "transition_untreated")
-    dsa$transition_treated <- runDSA(parameter = "transition_treated")
-    dsa$sensitivity <- runDSA(parameter = "sensitivity")
-    dsa$specificity <- runDSA(parameter = "specificity")
-    dsa$prevalence <- runDSA(parameter = "prevalence")
-    dsa$incidences_of <- runDSA(parameter = "incidences_of")
-    dsa$incidences_screening <- runDSA(parameter = "incidences_screening")
-    dsa$utilities_untreated <- runDSA(parameter = "utilities_untreated")
-    dsa$utilities_treated <- runDSA(parameter = "utilities_treated")
-    dsa$costs_screening <- runDSA(parameter = "costs_screening")
-    dsa$costs_medicine <- runDSA(parameter = "costs_medicine")
-    dsa$costs_diagnostics <- runDSA(parameter = "costs_diagnostics")
-    dsa$costs_intervention <- runDSA(parameter = "costs_intervention")
-    dsa$costs_burden_disease <- runDSA(parameter = "costs_burden_disease")
-    dsa$costs_productivity <- runDSA(parameter = "costs_productivity")
+    dsa_se <- list()
+    dsa_se$transition_untreated <- runDSA(parameter = "transition_untreated")
+    dsa_se$transition_treated <- runDSA(parameter = "transition_treated")
+    dsa_se$sensitivity <- runDSA(parameter = "sensitivity")
+    dsa_se$specificity <- runDSA(parameter = "specificity")
+    dsa_se$prevalence <- runDSA(parameter = "prevalence")
+    dsa_se$incidences_of <- runDSA(parameter = "incidences_of")
+    dsa_se$incidences_screening <- runDSA(parameter = "incidences_screening")
+    dsa_se$utilities <- runDSA(parameter = "utilities")
+    dsa_se$costs_screening <- runDSA(parameter = "costs_screening")
+    dsa_se$costs_medicine <- runDSA(parameter = "costs_medicine")
+    dsa_se$costs_diagnostics <- runDSA(parameter = "costs_diagnostics")
+    dsa_se$costs_intervention <- runDSA(parameter = "costs_intervention")
+    dsa_se$costs_burden_disease <- runDSA(parameter = "costs_burden_disease")
+    dsa_se$costs_productivity <- runDSA(parameter = "costs_productivity")
+    
+    dsa_20 <- list()
+    dsa_20$transition_untreated <- runDSA(parameter = "transition_untreated", use_se = FALSE)
+    dsa_20$transition_treated <- runDSA(parameter = "transition_treated", use_se = FALSE)
+    dsa_20$sensitivity <- runDSA(parameter = "sensitivity", use_se = FALSE)
+    dsa_20$specificity <- runDSA(parameter = "specificity", use_se = FALSE)
+    dsa_20$prevalence <- runDSA(parameter = "prevalence", use_se = FALSE)
+    dsa_20$incidences_of <- runDSA(parameter = "incidences_of", use_se = FALSE)
+    dsa_20$incidences_screening <- runDSA(parameter = "incidences_screening", use_se = FALSE)
+    dsa_20$utilities<- runDSA(parameter = "utilities", use_se = FALSE)
+    dsa_20$costs_screening <- runDSA(parameter = "costs_screening", use_se = FALSE)
+    dsa_20$costs_medicine <- runDSA(parameter = "costs_medicine", use_se = FALSE)
+    dsa_20$costs_diagnostics <- runDSA(parameter = "costs_diagnostics", use_se = FALSE)
+    dsa_20$costs_intervention <- runDSA(parameter = "costs_intervention", use_se = FALSE)
+    dsa_20$costs_burden_disease <- runDSA(parameter = "costs_burden_disease", use_se = FALSE)
+    dsa_20$costs_productivity <- runDSA(parameter = "costs_productivity", use_se = FALSE)
 }
 
 #------------------------------------------------------------------------------#
@@ -94,8 +109,7 @@ paramNames <-  c(   "Transition probabilities untreated",
                     "Prevalence",
                     "Incidences diagnosed ",
                     "Incidences undiagnosed ",
-                    "Utilities untreated",
-                    "Utilities treated",
+                    "Utilities",
                     "Screening costs",
                     "Medicine costs",
                     "Monitoring costs",
@@ -104,21 +118,36 @@ paramNames <-  c(   "Transition probabilities untreated",
                     "Productivity costs"
                     )
 
-data <- matrix(c(base, dsa$transition_untreated[1], dsa$transition_untreated[2],
-                base, dsa$transition_treated[1], dsa$transition_treated[2],
-                base, dsa$sensitivity[1], dsa$sensitivity[2],
-                base, dsa$specificity[1], dsa$specificity[2],
-                base, dsa$prevalence[1], dsa$prevalence[2],
-                base, dsa$incidences_of[1], dsa$incidences_of[2],
-                base, dsa$incidences_screening[1], dsa$incidences_screening[2],
-                base, dsa$utilities_untreated[1], dsa$utilities_untreated[2],
-                base, dsa$utilities_treated[1], dsa$utilities_treated[2], 
-                base, dsa$costs_screening[1], dsa$costs_screening[2],
-                base, dsa$costs_medicine[1], dsa$costs_medicine[2],
-                base, dsa$costs_diagnostics[1], dsa$costs_diagnostics[2],
-                base, dsa$costs_intervention[1], dsa$costs_intervention[2],
-                base, dsa$costs_burden_disease[1], dsa$costs_burden_disease[2],
-                base, dsa$costs_productivity[1], dsa$costs_productivity[2]),
+data_se <- matrix(c(base, dsa_se$transition_untreated[1], dsa_se$transition_untreated[2],
+                base, dsa_se$transition_treated[1], dsa_se$transition_treated[2],
+                base, dsa_se$sensitivity[1], dsa_se$sensitivity[2],
+                base, dsa_se$specificity[1], dsa_se$specificity[2],
+                base, dsa_se$prevalence[1], dsa_se$prevalence[2],
+                base, dsa_se$incidences_of[1], dsa_se$incidences_of[2],
+                base, dsa_se$incidences_screening[1], dsa_se$incidences_screening[2],
+                base, dsa_se$utilities[1], dsa_se$utilities[2], 
+                base, dsa_se$costs_screening[1], dsa_se$costs_screening[2],
+                base, dsa_se$costs_medicine[1], dsa_se$costs_medicine[2],
+                base, dsa_se$costs_diagnostics[1], dsa_se$costs_diagnostics[2],
+                base, dsa_se$costs_intervention[1], dsa_se$costs_intervention[2],
+                base, dsa_se$costs_burden_disease[1], dsa_se$costs_burden_disease[2],
+                base, dsa_se$costs_productivity[1], dsa_se$costs_productivity[2]),
+                nrow = length(paramNames), ncol = 3, byrow = TRUE)
+
+data_20 <- matrix(c(base, dsa_20$transition_untreated[1], dsa_20$transition_untreated[2],
+                base, dsa_20$transition_treated[1], dsa_20$transition_treated[2],
+                base, dsa_20$sensitivity[1], dsa_20$sensitivity[2],
+                base, dsa_20$specificity[1], dsa_20$specificity[2],
+                base, dsa_20$prevalence[1], dsa_20$prevalence[2],
+                base, dsa_20$incidences_of[1], dsa_20$incidences_of[2],
+                base, dsa_20$incidences_screening[1], dsa_20$incidences_screening[2],
+                base, dsa_20$utilities[1], dsa_20$utilities[2],
+                base, dsa_20$costs_screening[1], dsa_20$costs_screening[2],
+                base, dsa_20$costs_medicine[1], dsa_20$costs_medicine[2],
+                base, dsa_20$costs_diagnostics[1], dsa_20$costs_diagnostics[2],
+                base, dsa_20$costs_intervention[1], dsa_20$costs_intervention[2],
+                base, dsa_20$costs_burden_disease[1], dsa_20$costs_burden_disease[2],
+                base, dsa_20$costs_productivity[1], dsa_20$costs_productivity[2]),
                 nrow = length(paramNames), ncol = 3, byrow = TRUE)
 
 Parms = paramNames
@@ -126,9 +155,7 @@ Outcomes = data
 titleName = "Tornado diagram"
 
 #save plot
-ggsave("figures/tornado_plot.png", tornadoPlot(Parms = paramNames, Outcomes = data, titleName = "Tornado diagram", outcomeName = ""), width = 20, height = 15, units = "cm")
-
-
+tornadoPlot(Parms = paramNames, Outcomes_se = data_se, Outcomes_20 = data_20, titleName = "Tornado diagram", outcomeName_se = "By standard errors", outcomeName_20 = "By 20% of the mean")
 
 
 
