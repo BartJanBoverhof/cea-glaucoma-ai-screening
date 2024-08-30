@@ -1,4 +1,4 @@
-runDSA <- function(parameter){
+runDSA <- function(parameter, use_se = TRUE){
 
     strategy <- get("strategy", envir = parent.frame())
 
@@ -7,20 +7,43 @@ runDSA <- function(parameter){
         
         p_transition <- p_transition # local save
 
-        # transfer paramaters to lower bound
-        p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 - v_dsa_se$p_mild_mod_untreated)
-        p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 - v_dsa_se$p_mod_sev_untreated)
-        p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 - v_dsa_se$p_sev_blind_untreated)
+        if (use_se == TRUE) {
+          # transfer paramaters to lower bound
+          p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 - v_dsa_se$p_mild_mod_untreated)
+          p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 - v_dsa_se$p_mod_sev_untreated)
+          p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 - v_dsa_se$p_sev_blind_untreated)
+        }
+        
+        if (use_se == FALSE) {
+          # transfer paramaters to lower bound
+          p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 - 0.2)
+          p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 - 0.2)
+          p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 - 0.2) 
+        }
 
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_transition <- get("p_transition", envir =globalenv())
 
-        # transfer paramaters to upper bound
-        p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 + v_dsa_se$p_mild_mod_untreated)
-        p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 + v_dsa_se$p_mod_sev_untreated)
-        p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 + v_dsa_se$p_sev_blind_untreated)
+        if (use_se == TRUE) {
+          # transfer paramaters to upper bound
+          p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 + v_dsa_se$p_mild_mod_untreated)
+          p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 + v_dsa_se$p_mod_sev_untreated)
+          p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 + v_dsa_se$p_sev_blind_untreated)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to upper bound
+          p_transition$p_mild_mod_untreated <- p_transition$p_mild_mod_untreated * (1 + 0.2)
+          p_transition$p_mod_sev_untreated <- p_transition$p_mod_sev_untreated * (1 + 0.2)
+          p_transition$p_sev_blind_untreated <- p_transition$p_sev_blind_untreated * (1 + 0.2)
+        }
+
+        # if higher than 1, recode to 1
+        if (p_transition$p_mild_mod_untreated > 1) {p_transition$p_mild_mod_untreated <- 1}
+        if (p_transition$p_mod_sev_untreated > 1) {p_transition$p_mod_sev_untreated <- 1}
+        if (p_transition$p_sev_blind_untreated > 1) {p_transition$p_sev_blind_untreated <- 1}
 
         upper <- callModel() # lower bound
 
@@ -29,20 +52,43 @@ runDSA <- function(parameter){
         # reset variable from global variable
         p_transition <- get("p_transition", envir =globalenv())
 
-        # transfer paramaters to lower bound
-        p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 - v_dsa_se$p_mild_mod_treated)
-        p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 - v_dsa_se$p_mod_sev_treated)
-        p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 - v_dsa_se$p_sev_blind_treated)
+        if (use_se == TRUE) {
+          # transfer paramaters to lower bound
+          p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 - v_dsa_se$p_mild_mod_treated)
+          p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 - v_dsa_se$p_mod_sev_treated)
+          p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 - v_dsa_se$p_sev_blind_treated)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to lower bound
+          p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 - 0.2)
+          p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 - 0.2)
+          p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 - 0.2)
+        }
 
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_transition <- get("p_transition", envir =globalenv())
 
-        # transfer paramaters to upper bound
-        p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 + v_dsa_se$p_mild_mod_treated)
-        p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 + v_dsa_se$p_mod_sev_treated)
-        p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 + v_dsa_se$p_sev_blind_treated)
+        if (use_se == TRUE) {
+          # transfer paramaters to upper bound
+          p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 + v_dsa_se$p_mild_mod_treated)
+          p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 + v_dsa_se$p_mod_sev_treated)
+          p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 + v_dsa_se$p_sev_blind_treated)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to upper bound
+          p_transition$p_mild_mod_treated <- p_transition$p_mild_mod_treated * (1 + 0.2)
+          p_transition$p_mod_sev_treated <- p_transition$p_mod_sev_treated * (1 + 0.2)
+          p_transition$p_sev_blind_treated <- p_transition$p_sev_blind_treated * (1 + 0.2)
+        }
+
+        # if higher than 1, recode to 1
+        if (p_transition$p_mild_mod_treated > 1) {p_transition$p_mild_mod_treated <- 1}
+        if (p_transition$p_mod_sev_treated > 1) {p_transition$p_mod_sev_treated <- 1}
+        if (p_transition$p_sev_blind_treated > 1) {p_transition$p_sev_blind_treated <- 1}
 
         upper <- callModel() # lower bound
     
@@ -50,17 +96,33 @@ runDSA <- function(parameter){
         
         p_dt <- p_dt # local save
 
-        # transform parameters to lower bound
-        p_dt$ai_sens <- p_dt$ai_sens * (1 - v_dsa_se$ai_sensitivity)
+        if (use_se == TRUE) {
+          # transfer paramaters to lower bound
+          p_dt$ai_sens <- p_dt$ai_sens * (1 - v_dsa_se$ai_sensitivity)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to lower bound
+          p_dt$ai_sens <- p_dt$ai_sens * (1 - 0.2)
+        }
         
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_dt <- get("p_dt", envir =globalenv())
+        
+        if (use_se == TRUE) {
+          # transfer paramaters to upper bound
+          p_dt$ai_sens <- p_dt$ai_sens * (1 + v_dsa_se$ai_sensitivity)
+        }
 
-        # transform parameters to upper bound
-        p_dt$ai_sens <- p_dt$ai_sens * (1 + v_dsa_se$ai_sensitivity)
-        if (p_dt$ai_sens > 1) {p_dt$ai_sens <- 1} # if higher than 1, make it 1
+        if (use_se == FALSE) {
+          # transfer paramaters to upper bound
+          p_dt$ai_sens <- p_dt$ai_sens * (1 + 0.2)
+        }
+
+        # if higher than 1, recode to 1
+        if (p_dt$ai_sens > 1) {p_dt$ai_sens <- 1} #
 
         upper <- callModel() # lower bound
     
@@ -68,34 +130,64 @@ runDSA <- function(parameter){
     
         p_dt <- p_dt # local save
 
-        # transform parameters to lower bound
-        p_dt$ai_spec <- p_dt$ai_spec * (1 - v_dsa_se$ai_specificity)
+        if (use_se == TRUE) {
+          # transfer paramaters to lower bound
+          p_dt$ai_spec <- p_dt$ai_spec * (1 - v_dsa_se$ai_specificity)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to lower bound
+          p_dt$ai_spec <- p_dt$ai_spec * (1 - 0.2)
+        }
 
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         p_dt <- get("p_dt", envir =globalenv())
 
-        # transform parameters to upper bound
-        p_dt$ai_spec <- p_dt$ai_spec * (1 + v_dsa_se$ai_specificity)
-        if (p_dt$ai_spec > 1) {p_dt$ai_spec <- 1} # if higher than 1, make it 1
+        if (use_se == TRUE) {
+          # transfer paramaters to upper bound
+          p_dt$ai_spec <- p_dt$ai_spec * (1 + v_dsa_se$ai_specificity)
+        }
 
+        if (use_se == FALSE) {
+          # transfer paramaters to upper bound
+          p_dt$ai_spec <- p_dt$ai_spec * (1 + 0.2)
+        }
+
+        # if higher than 1, recode to 1
+        if (p_dt$ai_spec > 1) {p_dt$ai_spec <- 1}
+        
         upper <- callModel() # lower bound
 
     } else if (parameter == "prevalence"){
     
         v_prevalence <- v_prevalence # local save
 
-        # transform parameters to lower bound
-        v_prevalence$prevalence <- v_prevalence$prevalence * (1 - v_dsa_se$prevalence)
+        if (use_se == TRUE) {
+          # transfer paramaters to lower bound
+          v_prevalence$prevalence <- v_prevalence$prevalence * (1 - v_dsa_se$prevalence)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to lower bound
+          v_prevalence$prevalence <- v_prevalence$prevalence * (1 - 0.2)
+        }
 
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_prevalence <- get("v_prevalence", envir =globalenv())
 
-        # transform parameters to upper bound
-        v_prevalence$prevalence <- v_prevalence$prevalence * (1 + v_dsa_se$prevalence)
+        if (use_se == TRUE) {
+          # transfer paramaters to upper bound
+          v_prevalence$prevalence <- v_prevalence$prevalence * (1 + v_dsa_se$prevalence)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to upper bound
+          v_prevalence$prevalence <- v_prevalence$prevalence * (1 + 0.2)
+        }
 
         upper <- callModel() # lower bound
 
@@ -103,81 +195,128 @@ runDSA <- function(parameter){
 
         v_incidences_of <- v_incidences_of # local save
 
-        # transform parameters to lower bound
-        v_incidences_of$incidence <- v_incidences_of$incidence * (1 - v_dsa_se$incidence_of)
+        if (use_se == TRUE) {
+          # transfer paramaters to lower bound
+          v_incidences_of$incidence <- v_incidences_of$incidence * (1 - v_dsa_se$incidence_of)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to lower bound
+          v_incidences_of$incidence <- v_incidences_of$incidence * (1 - 0.2)
+        }
         
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_incidences_of <- get("v_incidences_of", envir =globalenv())
 
-        # transform parameters to upper bound
-        v_incidences_of$incidence <- v_incidences_of$incidence * (1 + v_dsa_se$incidence_of)
+        if (use_se == TRUE) {
+          # transfer paramaters to upper bound
+          v_incidences_of$incidence <- v_incidences_of$incidence * (1 + v_dsa_se$incidence_of)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to upper bound
+          v_incidences_of$incidence <- v_incidences_of$incidence * (1 + 0.2)
+        }
 
         upper <- callModel() # lower bound
 
     } else if (parameter == "incidences_screening"){
     
         v_incidences_screening <- v_incidences_screening # local save
+        
+        if (use_se == TRUE) {
+          # transfer paramaters to lower bound
+          v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 - v_dsa_se$incidence_screening)
+        }
 
-        # transform parameters to lower bound
-        v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 - v_dsa_se$incidence_screening)
+        if (use_se == FALSE) {
+          # transfer paramaters to lower bound
+          v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 - 0.2)
+        }
         
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_incidences_screening <- get("v_incidences_screening", envir =globalenv())
 
-        # transform parameters to upper bound
-        v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 + v_dsa_se$incidence_screening)
+        if (use_se == TRUE) {
+          # transfer paramaters to upper bound
+          v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 + v_dsa_se$incidence_screening)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to upper bound
+          v_incidences_screening$incidence <- v_incidences_screening$incidence * (1 + 0.2)
+        }
 
         upper <- callModel() # lower bound
 
-    } else if (parameter == "utilities_untreated"){
+    } else if (parameter == "utilities"){
     
         v_utilities <- v_utilities # local save
 
-        # transform parameters to lower bound
-        v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 - v_dsa_se$utilities_mild)
-        v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 - v_dsa_se$utilities_mod)
-        v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 - v_dsa_se$utilities_sev)
-        v_utilities$blind <- v_utilities$blind * (1 - v_dsa_se$utilities_vi)
+        if (use_se == TRUE) {
+          # transfer paramaters to lower bound
+          v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 - v_dsa_se$utilities_mild)
+          v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 - v_dsa_se$utilities_mod)
+          v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 - v_dsa_se$utilities_sev)
+          v_utilities$mild_treated <- v_utilities$mild_treated * (1 - v_dsa_se$utilities_mild)
+          v_utilities$mod_treated <- v_utilities$mod_treated * (1 - v_dsa_se$utilities_mod)
+          v_utilities$severe_treated <- v_utilities$severe_treated * (1 - v_dsa_se$utilities_sev)
+          v_utilities$blind <- v_utilities$blind * (1 - v_dsa_se$utilities_vi)
+        }
+
+        if (use_se == FALSE) {
+          # transfer paramaters to lower bound
+          v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 - 0.2)
+          v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 - 0.2)
+          v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 - 0.2)
+          v_utilities$mild_treated <- v_utilities$mild_treated * (1 - 0.2)
+          v_utilities$mod_treated <- v_utilities$mod_treated * (1 - 0.2)
+          v_utilities$severe_treated <- v_utilities$severe_treated * (1 - 0.2)
+          v_utilities$blind <- v_utilities$blind * (1 - 0.2)
+        }
 
         lower <- callModel() # lower bound
 
         # reset variable from global variable
         v_utilities <- get("v_utilities", envir =globalenv())
 
-        # transform parameters to upper bound
-        v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 +  v_dsa_se$utilities_mild)
-        v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 + v_dsa_se$utilities_mod)
-        v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 + v_dsa_se$utilities_sev)
-        v_utilities$blind <- v_utilities$blind * (1 + v_dsa_se$utilities_vi)
+        if (use_se == TRUE) {
+          # transfer paramaters to upper bound
+          v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 + v_dsa_se$utilities_mild)
+          v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 + v_dsa_se$utilities_mod)
+          v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 + v_dsa_se$utilities_sev)
+          v_utilities$mild_treated <- v_utilities$mild_treated * (1 + v_dsa_se$utilities_mild)
+          v_utilities$mod_treated <- v_utilities$mod_treated * (1 + v_dsa_se$utilities_mod)
+          v_utilities$severe_treated <- v_utilities$severe_treated * (1 + v_dsa_se$utilities_sev)
+          v_utilities$blind <- v_utilities$blind * (1 + v_dsa_se$utilities_vi)
+        }
 
-        upper <- callModel() # lower bound
+        if (use_se == FALSE) {
+          # transfer paramaters to upper bound
+          v_utilities$mild_untreated <- v_utilities$mild_untreated * (1 + 0.2)
+          v_utilities$mod_untreated <- v_utilities$mod_untreated * (1 + 0.2)
+          v_utilities$severe_untreated <- v_utilities$severe_untreated * (1 + 0.2)
+          v_utilities$mild_treated <- v_utilities$mild_treated * (1 + 0.2)
+          v_utilities$mod_treated <- v_utilities$mod_treated * (1 + 0.2)
+          v_utilities$severe_treated <- v_utilities$severe_treated * (1 + 0.2)
+          v_utilities$blind <- v_utilities$blind * (1 + 0.2)
+        }
 
-    } else if (parameter == "utilities_treated"){
+        # if higher than 1, recode to 1
+        if (v_utilities$mild_untreated > 1) {v_utilities$mild_untreated <- 1}
+        if (v_utilities$mod_untreated > 1) {v_utilities$mod_untreated <- 1}
+        if (v_utilities$severe_untreated > 1) {v_utilities$severe_untreated <- 1}
+        if (v_utilities$mild_treated > 1) {v_utilities$mild_treated <- 1}
+        if (v_utilities$mod_treated > 1) {v_utilities$mod_treated <- 1}
+        if (v_utilities$severe_treated > 1) {v_utilities$severe_treated <- 1}
+        if (v_utilities$blind > 1) {v_utilities$blind <- 1}
 
-        v_utilities <- v_utilities # local save
+        upper <- callModel() # lower boun
 
-        # transform parameters to lower bound
-        v_utilities$mild_treated <- v_utilities$mild_treated * (1 -  v_dsa_se$utilities_mild)
-        v_utilities$mod_treated <- v_utilities$mod_treated * (1 - v_dsa_se$utilities_mod)
-        v_utilities$severe_treated <- v_utilities$severe_treated * (1 - v_dsa_se$utilities_sev)
-        v_utilities$blind <- v_utilities$blind * (1 - v_dsa_se$utilities_vi)
-
-        lower <- callModel() # lower bound
-
-        # reset variable from global variable
-        v_utilities <- get("v_utilities", envir =globalenv())
-
-        # transform parameters to upper bound
-        v_utilities$mild_treated <- v_utilities$mild_treated * (1 +  v_dsa_se$utilities_mild)
-        v_utilities$mod_treated <- v_utilities$mod_treated * (1 + v_dsa_se$utilities_mod)
-        v_utilities$severe_treated <- v_utilities$severe_treated * (1 + v_dsa_se$utilities_sev)
-        v_utilities$blind <- v_utilities$blind * (1 + v_dsa_se$utilities_vi)
-
-        upper <- callModel() # lower bound
 
     } else if (parameter == "costs_screening"){
 
@@ -659,7 +798,7 @@ calculateICER <- function(out) {
 }
 
 # Define a function to calculate the mean, differences, and quantiles for specific cost parameters
-costStats <- function(costs_list) {
+costStats <- function(costs_list, total_population = FALSE) { 
     # Parameters to calculate differences for
     diff_parameters <- c("ai_screening_pp", 
                          "ai_medicine_pp - soc_medicine_pp",
@@ -675,6 +814,8 @@ costStats <- function(costs_list) {
     quantiles_2_5 <- list()
     quantiles_97_5 <- list()
     
+    population <- 5637443 
+
     # Loop through each difference parameter
     for (param in diff_parameters) {
         if (param == "ai_screening_pp") {
@@ -727,6 +868,11 @@ costStats <- function(costs_list) {
         `97.5%_Quantile` = unlist(quantiles_97_5)
     )
     
+    if (total_population == TRUE) {
+      
+      results$Mean_Difference <- results$Mean_Difference * population   
+    }
+
     return(results)
 }
 
@@ -753,7 +899,10 @@ icerVIStats <- function(out_list) {
 }
 
 # Define a function to calculate the mean, differences, and quantiles for QALYs
-QALYStats <- function(out_list) {
+QALYStats <- function(out_list, total_population = FALSE) {
+    
+    population <- 5637443 
+    
     # Extract the QALY values for AI and SOC from each element in the list
     qaly_ai <- lapply(out_list, function(x) x$qaly$ai_qaly_pp)
     qaly_soc <- lapply(out_list, function(x) x$qaly$soc_qaly_pp)
@@ -783,7 +932,12 @@ QALYStats <- function(out_list) {
         `2.5%_Quantile` = c(NA, NA, quantile_2_5_diff),  # Quantiles only for the difference
         `97.5%_Quantile` = c(NA, NA, quantile_97_5_diff)  # Quantiles only for the difference
     )
-    
+
+    if (total_population == TRUE) {
+      
+      results$Mean[3] <- results$Mean[3] * population   
+    } 
+
     return(results)
 }
 

@@ -138,11 +138,11 @@ scenarioPlot <- function(){
 
   # Ensure shapes can be filled (using shapes 21-25)
   # If your data already uses shapes 21-25, this step is correct. Otherwise, adjust your shape assignments accordingly.
-  icer_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  icer_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway-Heath (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
 
-  qaly_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  qaly_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway-Heath (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
 
-  costs_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  costs_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway-Heath (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
 
   # Custom function to format the ICER without extra spaces
   format_icer <- function(icer) {
@@ -295,6 +295,37 @@ scenarioPlot <- function(){
                       minor_breaks = seq(0, 700, by = 50),
                       labels = euro_formatter) 
 
+    # Create the CE Plane Plot combining Incremental QALYs and Incremental Costs
+    ce_plane_plot <- ggplot(icer_data, aes(x = qaly_data$QALY, y = costs_data$Costs, color = Identifier, shape = Identifier, fill = Identifier)) +
+      geom_abline(slope = 20000/1, intercept = 0, linetype = "solid", color = "#03217d", size = 1) +  # Add ICER line
+      geom_point(size = 5.5, stroke = 1, color = "black", alpha = 0.9) +
+      scale_color_manual(values = setNames(icer_data$Color, icer_data$Identifier)) +
+      scale_fill_manual(values = setNames(icer_data$Color, icer_data$Identifier)) +
+      scale_shape_manual(values = setNames(as.numeric(icer_data$Shape), icer_data$Identifier)) +
+      labs(
+        x = "Incremental QALYs",
+        y = "Incremental Costs (€)",
+        color = "Scenario",
+        shape = "Scenario",
+        fill = "Scenario"
+      ) +
+      theme_minimal(base_size = 15) +
+      theme(
+        legend.position = "none",
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        panel.grid.major = element_line(color = "#adadad"),
+        panel.grid.minor = element_line(color = "#adadad"),
+        panel.background = element_rect(fill = "lightgray")
+      ) +
+      geom_vline(xintercept = 0, linetype = "solid", color = "black", size = 1) +
+      geom_hline(yintercept = 0, linetype = "solid", color = "black", size = 1) +
+      scale_x_continuous(
+        minor_breaks = seq(0, 0.04, by = 0.005)
+      ) +
+      scale_y_continuous(labels = euro_formatter) 
 
   g <- ggplotGrob(legend_plot)
   legend <- g$grobs[[which(sapply(g$grobs, function(x) x$name) == "guide-box")]]
@@ -302,89 +333,110 @@ scenarioPlot <- function(){
 
   layout_matrix <- rbind(
     c(1, 2),
-    c(3, 2),
-    c(4, 2)
+    c(3, 2)
   )
 
   # Arrange the plots in the desired layout
   plot <- grid.arrange(
-    plot_qaly, legend, plot_costs, plot_icer,
+    plot_icer, legend, ce_plane_plot,
     layout_matrix = layout_matrix,
     widths = c(1.2,1),  # Make the legend plot column narrower
-    heights = c(1, 1, 1)  # Equal heights for each row
+    heights = c(1, 1.5)  # Equal heights for each row
   )
 
   # Save plot to figures folder
   ggsave("figures/scenario.png", plot = plot, width = 10, height = 10)
 }
     
-tornadoPlot <-function(Parms, Outcomes, titleName, outcomeName){
+tornadoPlot <- function(Parms, Outcomes_se, Outcomes_20, titleName, outcomeName_se, outcomeName_20) {
   library(ggplot2)
   library(reshape2)
   library(scales)
+  library(gridExtra)
   
-  # Grouped Bar Plot
-  # Determine the overall optimal strategy
-  paramNames2 <- Parms
-  
-  # Combine the parameter list with the data
-  ymean <- Outcomes[1,1]
-  yMin <- Outcomes[,2] - ymean
-  yMax <- Outcomes[,3] - ymean
-  ySize <- abs(yMax - yMin)  #High value - Low value
-  
-  
-  rankY<- order(ySize)
-  nParams <- length(paramNames2)
-  
-  Tor <- data.frame(
-    Parameter=c(paramNames2[rankY],paramNames2[rankY]),  
-    Level=c(rep("Lower bound",nParams),rep("Upper bound",nParams)),
-    value=ymean+c(yMin[rankY],yMax[rankY]),
-    sort=seq(1,nParams)
-  )
-  
-  #re-order the levels in the order of appearance in the data.frame
-  Tor$Parameter2 <- ordered(Tor$Parameter, Tor$Parameter[1:(length(Tor$Parameter)/2)])
-  # Tor$Parameter2 <- factor(Tor$Parameter, as.character(Tor$Parameter))
-  #Define offset as a new axis transformation. Source: http://blog.ggplot2.org/post/25938265813/defining-a-new-transformation-for-ggplot2-scales  
-  offset_trans <- function(offset=0) {
-    trans_new(paste0("offset-", format(offset)), function(x) x-offset, function(x) x+offset)
-  }
-  #Plot the Tornado diagram.
-  txtsize<-12
-  print(
-  ggplot(Tor, aes(x=Parameter2, y=value, fill=Level)) +  # Ensure 'fill' is mapped to 'Level' within 'aes()'
-    geom_bar(data=Tor[Tor$Level=="Lower bound",], aes(x=Parameter2, y=value, fill="Lower bound"), stat="identity", alpha=0.8, stroke = 2, colour = "black") +
-    geom_bar(data=Tor[Tor$Level=="Upper bound",], aes(x=Parameter2, y=value, fill="Upper bound"), stat="identity", alpha=0.8, stroke = 2, colour = "black") +
-    ggtitle("", subtitle = outcomeName) +
-    scale_fill_manual(name="Parameter Level", values=c("Lower bound"="blue", "Upper bound"="red")) +  # Define colors for 'Low' and 'High'
-    scale_y_continuous(name="ICER", trans=offset_trans(offset=ymean), labels = function(x) ifelse(x == ymean, paste(x, " (ymean)", sep = ""), x)) +
-    scale_x_discrete(name="Parameter") +
-    geom_hline(yintercept = ymean, linetype = "dotted", size=0.5) +
-    theme_bw(base_size = 14) +
-    coord_flip() +
-    theme_minimal(base_size = 15) +
-    theme(legend.position = c(0.95, 0.05), # This positions the legend at the right bottom corner
-          legend.justification = c(1, 0), # This ensures the legend aligns at its bottom-right corner
-          legend.box.just = "right", # Aligns the legend box to the right
-          legend.margin = margin(), # Adjust margins if necessary
-          legend.box = "vertical",
-          legend.title=element_text(size = txtsize, angle = 0, hjust = 1),
-          legend.key = element_rect(colour = "black"),
-          legend.text = element_text(size = txtsize),
-          title = element_text(face="bold", size=15),
-          axis.title.x = element_text(face="bold", size=txtsize),
-          axis.title.y = element_text(face="bold", size=txtsize),
-          axis.text.y = element_text(size=txtsize),
-          axis.text.x = element_text(size=txtsize),
-          axis.ticks.y = element_blank(),
-          panel.grid.major = element_line(color = "#adadad"),  
-          panel.grid.minor = element_line(color = "#adadad"),
-          panel.background = element_rect(fill = "lightgray")
+  create_tornado <- function(Outcomes, outcomeName) {
+    # Grouped Bar Plot
+    paramNames2 <- Parms
+    
+    # Compute relevant values for the tornado plot
+    ymean <- Outcomes[1,1]
+    yMin <- Outcomes[,2] - ymean
+    yMax <- Outcomes[,3] - ymean
+    ySize <- abs(yMax - yMin)
+    
+    rankY <- order(ySize)
+    nParams <- length(paramNames2)
+    
+    Tor <- data.frame(
+      Parameter=c(paramNames2[rankY],paramNames2[rankY]),  
+      Level=c(rep("Lower bound",nParams),rep("Upper bound",nParams)),
+      value=ymean+c(yMin[rankY],yMax[rankY]),
+      sort=seq(1,nParams)
     )
-  )
+    
+    Tor$Parameter2 <- ordered(Tor$Parameter, Tor$Parameter[1:(length(Tor$Parameter)/2)])
+    
+    offset_trans <- function(offset=0) {
+      trans_new(paste0("offset-", format(offset)), function(x) x-offset, function(x) x+offset)
+    }
+    
+    # Custom label function for euro sign and thousand separator
+    euro_format <- function(x) {
+      paste0("€", format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE))
+    }
+    
+    # Plot the Tornado diagram.
+    txtsize <- 16
+    p <- ggplot(Tor, aes(x=Parameter2, y=value, fill=Level)) + 
+      geom_bar(data=Tor[Tor$Level=="Lower bound",], aes(x=Parameter2, y=value, fill="Lower bound"), 
+               stat="identity", alpha=0.8, stroke=2, colour="black") +
+      geom_bar(data=Tor[Tor$Level=="Upper bound",], aes(x=Parameter2, y=value, fill="Upper bound"), 
+               stat="identity", alpha=0.8, stroke=2, colour="black") +
+      ggtitle("", subtitle=outcomeName) +
+      scale_fill_manual(name="Parameter Level", values=c("Lower bound"="blue", "Upper bound"="red")) +
+      scale_y_continuous(name="ICER", trans=offset_trans(offset=ymean), 
+                         labels=function(x) ifelse(x == ymean, paste(euro_format(x), " (ymean)", sep=""), euro_format(x))) +
+      scale_x_discrete(name="Parameter") +
+      geom_hline(yintercept=ymean, linetype="dotted", size=0.5) +
+      theme_bw(base_size=14) +
+      coord_flip() +
+      theme_minimal(base_size=15) +
+      theme(legend.position=c(0.95, 0.05),
+            legend.justification=c(1, 0),
+            legend.box.just="right",
+            legend.margin=margin(),
+            legend.box="vertical",
+            legend.title=element_text(size=txtsize, angle=0, hjust=1),
+            legend.key=element_rect(colour="black"),
+            legend.text=element_text(size=txtsize),
+            title=element_text(face="bold", size=15),
+            axis.title.x=element_text(face="bold", size=12),
+            axis.title.y=element_text(face="bold", size=txtsize),
+            axis.text.y=element_text(size=txtsize),
+            axis.text.x=element_text(size=txtsize, angle=45, hjust=1),
+            axis.ticks.y=element_blank(),
+            panel.grid.major=element_line(color="#adadad"),  
+            panel.grid.minor=element_line(color="#adadad"),
+            panel.background=element_rect(fill="lightgray"))
+    
+    return(p)
+  }
+  
+  # Create tornado plots for both Outcomes_se and Outcomes_20
+  plot_se <- create_tornado(Outcomes_se, outcomeName_se)
+  plot_20 <- create_tornado(Outcomes_20, outcomeName_20)
+  
+  # Arrange plots in a grid
+  combined_plot <- grid.arrange(plot_se, plot_20, ncol=2)
+  
+  # Save the plot
+  ggsave(filename="figures/tornado_plot.png", plot=combined_plot, width=16, height=8)
+  
+  # Display the plot
+  print(combined_plot)
 }
+
+
 
 psaPlot <- function(out){
 
@@ -453,9 +505,6 @@ psaPlot <- function(out){
     annotate("label", x = 0, y = 0, label = "WTP treshold at €20,000", 
             size = 5, color = "White", fill = "#012591", fontface = "bold", alpha =0.7) 
             
-
-
-
 
   ggsave("figures/ce_plane.png", plot = ce_plane, width = 7, height = 6)
 
@@ -574,7 +623,7 @@ ROCPlot <- function(load_grid, cut_off) {
     
     # Plot the ISO plot with ROC curve
     plot <- ggplot() +
-        geom_tile(data = grid_a, aes(x = fpr, y = sensitivity, fill = icer), color = ifelse(grid_a$icer < 20000, "green", NA),size = 0.3 ) +
+        geom_tile(data = grid_a, aes(x = fpr, y = sensitivity, fill = icer), color = ifelse(grid_a$icer < 20000, "darkblue", NA),size = 0.3 ) +
         geom_rect(data = lowest_icer_tile, 
                   aes(xmin = fpr - tile_width / 2, xmax = fpr + tile_width / 2, 
                       ymin = sensitivity - tile_height / 2, ymax = sensitivity + tile_height / 2, color = "ICER < 20.000"), 
@@ -588,7 +637,7 @@ ROCPlot <- function(load_grid, cut_off) {
         geom_point(aes(x = (1 - 0.95), y = 0.85, color = "Base-case\nscenario"), fill = "white", size = 1.5, stroke = 0.5, shape = 21, show.legend = TRUE) + # Add base case point without legend
         labs(x = "1 - Specificity",
              y = "Sensitivity") +
-        scale_color_manual(name = "Legend", values = c("ICER < 20.000" = "green", "Base-case\nscenario" = "black", "Lowest ICER tile\non ROC curve" = "red")) +
+        scale_color_manual(name = "Legend", values = c("ICER < 20.000" = "darkblue", "Base-case\nscenario" = "black", "Lowest ICER tile\non ROC curve" = "red")) +
         guides(color = guide_legend(override.aes = list(
             shape = c(21, NA, NA), 
             fill = c("white", NA, NA), 
