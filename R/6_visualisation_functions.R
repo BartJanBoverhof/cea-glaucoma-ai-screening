@@ -11,6 +11,7 @@ scenarioPlot <- function(){
   icer_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = FALSE, output = "icer")
   icer_transition <- runScenario(vary = "transition", perspective = "societal", descriptives = TRUE, output = "icer")
   icer_utilities <- runScenario(vary = "utilities", perspective = "societal", descriptives = TRUE, output = "icer")
+  icer_prevalence <- runScenario(vary = "prevalence", perspective = "societal", descriptives = TRUE, output = "icer")
   icer_compliance <- runScenario(vary = "compliance", perspective = "societal", descriptives = TRUE, output = "icer")
   icer_sensitivity <- runScenario(vary = "ai_senstivity", perspective = "societal", descriptives = TRUE, output = "icer")
   icer_specificity <- runScenario(vary = "ai_specificity", perspective = "societal", descriptives = TRUE, output = "icer")
@@ -22,6 +23,7 @@ scenarioPlot <- function(){
   qaly_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = FALSE, output = "qaly")
   qaly_transition <- runScenario(vary = "transition", perspective = "societal", descriptives = TRUE, output = "qaly")
   qaly_utilities <- runScenario(vary = "utilities", perspective = "societal", descriptives = TRUE, output = "qaly")
+  qaly_prevalence <- runScenario(vary = "prevalence", perspective = "societal", descriptives = TRUE, output = "qaly")
   qaly_compliance <- runScenario(vary = "compliance", perspective = "societal", descriptives = TRUE, output = "qaly")
   qaly_sensitivity <- runScenario(vary = "ai_senstivity", perspective = "societal", descriptives = TRUE, output = "qaly")
   qaly_specificity <- runScenario(vary = "ai_specificity", perspective = "societal", descriptives = TRUE, output = "qaly")
@@ -33,6 +35,7 @@ scenarioPlot <- function(){
   costs_screening_interval <- runScenario(vary = "screening_interval", perspective = "societal", descriptives = FALSE, output = "costs")
   costs_transition <- runScenario(vary = "transition", perspective = "societal", descriptives = TRUE, output = "costs")
   costs_utilities <- runScenario(vary = "utilities", perspective = "societal", descriptives = TRUE, output = "costs")
+  costs_prevalence <- runScenario(vary = "prevalence", perspective = "societal", descriptives = TRUE, output = "costs")
   costs_compliance <- runScenario(vary = "compliance", perspective = "societal", descriptives = TRUE, output = "costs")
   costs_sensitivity <- runScenario(vary = "ai_senstivity", perspective = "societal", descriptives = TRUE, output = "costs")
   costs_specificity <- runScenario(vary = "ai_specificity", perspective = "societal", descriptives = TRUE, output = "costs")
@@ -48,6 +51,7 @@ scenarioPlot <- function(){
       ai_sensitivity = icer_sensitivity,
       ai_specificity = icer_specificity,
       compliance = icer_compliance,
+      prevalence = icer_prevalence,
       utilities = icer_utilities,
       transition = icer_transition,
       screening_interval = icer_screening_interval,
@@ -62,6 +66,7 @@ scenarioPlot <- function(){
       ai_sensitivity = qaly_sensitivity,
       ai_specificity = qaly_specificity,
       compliance = qaly_compliance,
+      prevalence = qaly_prevalence,
       utilities = qaly_utilities,
       transition = qaly_transition,
       screening_interval = qaly_screening_interval,
@@ -76,6 +81,7 @@ scenarioPlot <- function(){
       ai_sensitivity = costs_sensitivity,
       ai_specificity = costs_specificity,
       compliance = costs_compliance,
+      prevalence = costs_prevalence,
       utilities = costs_utilities,
       transition = costs_transition,
       screening_interval = costs_screening_interval,
@@ -124,29 +130,28 @@ scenarioPlot <- function(){
 
   # Example of adding "Shape" and "Color" columns to the dataframe
   # This is a simplified example. You'll need to assign unique shapes and colors based on your actual data
-  icer_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
+  icer_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 21, 24,22 ,21,24,22, 21,24,22, 21,23,24,22, 21)
   icer_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", "#964B00",
-  "#FFFF00","#FFFF00","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9","#A9A9A9","#A9A9A9","#FF0000")
+  "#FFFF00","#FFFF00","#257a25","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9", "#A9A9A9","#A9A9A9","#A9A9A9","#FF0000") 
 
-  qaly_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
+  qaly_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 21, 24,22 ,21,24,22, 21,24,22, 21,23,24,22, 21)
   qaly_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", "#964B00",
-  "#FFFF00","#FFFF00","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9","#A9A9A9","#A9A9A9","#FF0000")
+  "#FFFF00","#FFFF00","#257a25","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9", "#A9A9A9","#A9A9A9","#A9A9A9","#FF0000") 
 
-  costs_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 24,22,21, 24,22,21, 24,22,21, 24,22,21)
+  costs_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 21, 24,22 ,21,24,22, 21,24,22, 21,23,24,22, 21)
   costs_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", "#964B00",
-  "#FFFF00","#FFFF00","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9","#A9A9A9","#A9A9A9","#FF0000")
-
+  "#FFFF00","#FFFF00","#257a25","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#FFA500","#A9A9A9", "#A9A9A9","#A9A9A9","#A9A9A9","#FF0000") 
   # Ensure shapes can be filled (using shapes 21-25)
   # If your data already uses shapes 21-25, this step is correct. Otherwise, adjust your shape assignments accordingly.
-  icer_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway-Heath (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  icer_data$Identifier <- c("No discounting","Expert estimate observation min", "Expert estimate observation max","Expert estimate utilisitation min", "Expert estimate utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Prevalence from E3 study", "Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transition probabilities Burr (2014)", "Transitions probabilities Chauhan (2014)", "Transitions probabilities Garway-Heath (2015)","Screening interval every 3 years", "Screening at ages 50, 60 & 70", "Screening at ages 50 & 65","Screening age 50-85","Screening age 60-75", "Screening age 60-70", "Screening age 50-65", "Base case")
 
-  qaly_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway-Heath (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  qaly_data$Identifier <- c("No discounting","Expert estimate observation min", "Expert estimate observation max","Expert estimate utilisitation min", "Expert estimate utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Prevalence from E3 study", "Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transition probabilities Burr (2014)", "Transitions probabilities Chauhan (2014)", "Transitions probabilities Garway-Heath (2015)","Screening interval every 3 years", "Screening at ages 50, 60 & 70", "Screening at ages 50 & 65","Screening age 50-85","Screening age 60-75", "Screening age 60-70", "Screening age 50-65", "Base case")
 
-  costs_data$Identifier <- c("No discounting","Expert observation min", "Expert observation max","Expert utilisitation min", "Expert utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transitions from Burr (2014)", "Transitions from Chauhan (2014)", "Transitions from Garway-Heath (2015)","Screening interval every 3 years", "Screening interval age 50, 60 & 70", "Screening interval age 50 & 65","Screening age 50-85", "Screening age 60-75", "Screening age 60-70", "Base case")
+  costs_data$Identifier <- c("No discounting","Expert estimate observation min", "Expert estimate observation max","Expert estimate utilisitation min", "Expert estimate utilisation max","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Prevalence from E3 study", "Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transition probabilities Burr (2014)", "Transitions probabilities Chauhan (2014)", "Transitions probabilities Garway-Heath (2015)","Screening interval every 3 years", "Screening at ages 50, 60 & 70", "Screening at ages 50 & 65","Screening age 50-85","Screening age 60-75", "Screening age 60-70", "Screening age 50-65", "Base case")
 
   # Custom function to format the ICER without extra spaces
   format_icer <- function(icer) {
-    formatted_icer <- formatC(icer, format = "f", digits = 0, big.mark = ".")
+    formatted_icer <- formatC(icer, format = "f", digits = 0, big.mark = ",")
     formatted_icer <- paste0("€", formatted_icer)
     return(formatted_icer)
   }
@@ -176,23 +181,23 @@ scenarioPlot <- function(){
       theme(
         legend.position = "left",
         legend.title = element_text(size = 20, hjust = 0, face = "bold"),
-        legend.text = element_markdown(size = 12, hjust = 0),  # Use element_markdown for legend text
+        legend.text = element_markdown(size = 13, hjust = 0),  # Use element_markdown for legend text
         legend.direction = "vertical",
         legend.box = "vertical",
         legend.key.size = unit(0.95, "cm"),  # Adjust the size if needed
         legend.box.just = "left",
         axis.title.y = element_blank(),
         axis.text.y = element_blank(),
-        axis.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 15),
         panel.grid.major = element_line(color = "#adadad"),  
         panel.grid.minor = element_line(color = "#adadad"),
         panel.background = element_rect(fill = "lightgray"),
-        plot.margin = unit(c(30, 0, 0, 0), "cm")  # Add 1cm whitespace to the left side
+        #plot.margin = unit(c(30, 0, 0, 0), "cm")  # Add 1cm whitespace to the left side
       ) +
       guides(
-        color = guide_legend(ncol = 1),  # Ensure legend is in one column
-        fill = guide_legend(ncol = 1),
-        shape = guide_legend(ncol = 1)
+        color = guide_legend(ncol = 2),  # Ensure legend is in one column
+        fill = guide_legend(ncol = 2),
+        shape = guide_legend(ncol = 2)
       ) +
       geom_vline(xintercept = base_icer, linetype = "solid", color = "black", size = 1) +
       scale_x_continuous(
@@ -203,149 +208,58 @@ scenarioPlot <- function(){
       geom_point(data = icer_data, aes(x = ICER, y = Category), position = position_dodge(width = 0), size = 0.4, color = "black", alpha = 1, inherit.aes = FALSE)
 
 
-  # Adjust the plot to use 'Identifier' for color, shape, and fill in a single legend
-  plot_icer <- ggplot(icer_data, aes(x = ICER, y = Category, color = Identifier, shape = Identifier, fill = Identifier)) +
-    geom_point(position = position_dodge(width = 0), size = 5.5, stroke = 1, color = "black", alpha = 0.9) +
-    scale_color_manual(values = setNames(icer_data$Color, icer_data$Identifier), breaks = rev(icer_data$Identifier)) +
-    scale_fill_manual(values = setNames(icer_data$Color, icer_data$Identifier), breaks = rev(icer_data$Identifier)) +
-    scale_shape_manual(values = setNames(as.numeric(icer_data$Shape), icer_data$Identifier), breaks = rev(icer_data$Identifier)) +
-    labs(
-      title = "",
-      x = "Incremental Cost Effectiveness Ratio (ICER)",
-      y = "",
-      shape = "Scenario (ICER)",
-      fill = "Scenario (ICER)"
-    ) +
-    theme_minimal(base_size = 15) +
-    theme(
-      legend.position = "none",
-      legend.title = element_text(size = 15, face = "italic", hjust = 0.04),
-      legend.text = element_text(size = 9.5, hjust = 1),
-      axis.title.y = element_blank(),
-      axis.text.y = element_blank(),
-      axis.text.x = element_text(size = 12, angle = 45, hjust = 1),  # Tilt the x-axis labels
-      panel.grid.major = element_line(color = "#adadad"),  
-      panel.grid.minor = element_line(color = "#adadad"),
-      panel.background = element_rect(fill = "lightgray"),
-      plot.margin = unit(c(0, 0.5, 0, 0.8), "cm")  # Add 1cm whitespace to the left side
-    ) +
-    geom_vline(xintercept = base_icer, linetype = "solid", color = "black", size = 1) +
-    scale_x_continuous(
-      breaks = seq(10000, 80000, by = 10000),  # Major breaks for axis labels
-      minor_breaks = seq(0, 80000, by = 5000),  # Minor breaks for grid lines
-      labels = euro_formatter
-    )
-
-  plot_qaly <- ggplot(qaly_data, aes(x = QALY, y = Category, color = Identifier, shape = Identifier, fill = Identifier)) +
-    geom_point(position = position_dodge(width = 0), size = 5.5, stroke = 1, color = "black", alpha = 0.9) +
-    #geom_point(position = position_dodge(width = 0.5), size = 1, stroke = 1, fill = "black", alpha = 1, show.legend = FALSE) +
-    scale_color_manual(values = setNames(qaly_data$Color, qaly_data$Identifier), breaks = rev(qaly_data$Identifier)) +
-    scale_fill_manual(values = setNames(qaly_data$Color, qaly_data$Identifier), breaks = rev(qaly_data$Identifier)) +
-    scale_shape_manual(values = setNames(as.numeric(qaly_data$Shape), qaly_data$Identifier), breaks = rev(qaly_data$Identifier)) +
-    labs(
-      title = "",
-      x = "Incremental QALY",
-      y = "",
-      shape = "Scenario (QALY)",
-      fill = "Scenario (QALY)"
-    ) +
-    theme_minimal(base_size = 15) +
-    theme(
-      legend.position = "none",
-      legend.title = element_text(size = 15, face = "bold"),
-      legend.text = element_text(size = 12, hjust = 1),
-      axis.title.y = element_blank(),
-      axis.text.y = element_blank(),
-      axis.text.x = element_text(size = 12, angle = 45, hjust = 1),  # Tilt the x-axis labels
-      panel.grid.major = element_line(color = "#adadad"),  
-      panel.grid.minor = element_line(color = "#adadad"),
-      panel.background = element_rect(fill = "lightgray"),
-      plot.margin = unit(c(0, 0.5, 0, 0.8), "cm")  # Add 1cm whitespace to the left side
-    ) + 
-    geom_vline(xintercept = base_qaly, linetype = "solid", color = "black", size = 1) + 
-    scale_x_continuous(
-      minor_breaks = seq(0, 0.04, by = 0.005)  # Minor breaks for grid lines
-    )
-
-  plot_costs <- ggplot(costs_data, aes(x = Costs, y = Category, color = Identifier, shape = Identifier, fill = Identifier)) +
-    geom_point(position = position_dodge(width = 0), size = 5.5, stroke = 1, color = "black", alpha = 0.9) +
-    scale_color_manual(values = setNames(costs_data$Color, costs_data$Identifier), breaks = rev(costs_data$Identifier)) +
-    scale_fill_manual(values = setNames(costs_data$Color, costs_data$Identifier), breaks = rev(costs_data$Identifier)) +
-    scale_shape_manual(values = setNames(as.numeric(costs_data$Shape), costs_data$Identifier), breaks = rev(costs_data$Identifier)) +
-    labs(
-      title = "",
-      x = "Incremental Costs",
-      y = "",
-      shape = "Scenario (Costs)",
-      fill = "Scenario (Costs)"
-    ) +
-    theme_minimal(base_size = 15) +
-    theme(
-      legend.position = "none",  # Remove legend
-      axis.title.y = element_blank(),
-      axis.text.y = element_blank(),
-      axis.text.x = element_text(size = 12, angle = 45, hjust = 1),  # Tilt the x-axis labels
-      panel.grid.major = element_line(color = "#adadad"),  
-      panel.grid.minor = element_line(color = "#adadad"),
-      panel.background = element_rect(fill = "lightgray"),
-      plot.margin = unit(c(0, 0.5, 0, 0.8), "cm")  # Add 1cm whitespace to the left side
-    ) +
-    geom_vline(xintercept = base_costs, linetype = "solid", color = "black", size = 1) +
-    scale_x_continuous(breaks = seq(100, 700, by = 100), 
-                      minor_breaks = seq(0, 700, by = 50),
-                      labels = euro_formatter) 
-
     # Create the CE Plane Plot combining Incremental QALYs and Incremental Costs
     ce_plane_plot <- ggplot(icer_data, aes(x = qaly_data$QALY, y = costs_data$Costs, color = Identifier, shape = Identifier, fill = Identifier)) +
-      geom_abline(slope = 20000/1, intercept = 0, linetype = "solid", color = "#03217d", size = 1) +  # Add ICER line
+      geom_abline(slope = 20000/1, intercept = 0, linetype = "solid", color = "#012591", size = 1) +  # Add ICER line
+      geom_abline(slope = 50000/1, intercept = 0, linetype = "solid", color = "#006b0c", size = 1) +  # Add ICER line
       geom_point(size = 5.5, stroke = 1, color = "black", alpha = 0.9) +
       scale_color_manual(values = setNames(icer_data$Color, icer_data$Identifier)) +
       scale_fill_manual(values = setNames(icer_data$Color, icer_data$Identifier)) +
       scale_shape_manual(values = setNames(as.numeric(icer_data$Shape), icer_data$Identifier)) +
       labs(
-        x = "Incremental QALYs",
-        y = "Incremental Costs (€)",
-        color = "Scenario",
-        shape = "Scenario",
-        fill = "Scenario"
+      title = "Scenario CE-plane",  # Add title to the plot
+      x = "Incremental QALYs",
+      y = "Incremental Costs (€)",
+      color = "Scenario",
+      shape = "Scenario",
+      fill = "Scenario"
       ) +
       theme_minimal(base_size = 15) +
       theme(
-        legend.position = "none",
-        axis.title.x = element_text(size = 12),
-        axis.title.y = element_text(size = 12),
-        axis.text.x = element_text(size = 12),
-        axis.text.y = element_text(size = 12),
-        panel.grid.major = element_line(color = "#adadad"),
-        panel.grid.minor = element_line(color = "#adadad"),
-        panel.background = element_rect(fill = "lightgray")
+      legend.position = "none",
+      axis.title.x = element_text(size = 19),
+      axis.title.y = element_text(size = 19),
+      axis.text.x = element_text(size = 19),
+      axis.text.y = element_text(size = 19),
+      panel.grid.major = element_line(color = "#adadad"),
+      panel.grid.minor = element_line(color = "#adadad"),
+      panel.background = element_rect(fill = "lightgray"),
+      plot.title = element_text(size = 20, hjust = 0, face = "bold"),  # Format the plot title
       ) +
       geom_vline(xintercept = 0, linetype = "solid", color = "black", size = 1) +
       geom_hline(yintercept = 0, linetype = "solid", color = "black", size = 1) +
       scale_x_continuous(
-        minor_breaks = seq(0, 0.04, by = 0.005)
+      minor_breaks = seq(0, 0.04, by = 0.005)
       ) +
-      scale_y_continuous(labels = euro_formatter) 
+      scale_y_continuous(labels = euro_formatter) +
+      annotate("label", x = 0.025, y = 500, label = paste("WTP €20,000"), 
+        size = 5, color = "White", fill = "#012591", fontface = "bold", alpha =1) +
+      annotate("label", x = 0.01, y = 500, label = paste("WTP €50,000"), 
+        size = 5, color = "White", fill = "#006b0c", fontface = "bold", alpha =1) 
 
   g <- ggplotGrob(legend_plot)
   legend <- g$grobs[[which(sapply(g$grobs, function(x) x$name) == "guide-box")]]
-  plot_icer <- plot_icer + theme(legend.position = "none")
-
-  layout_matrix <- rbind(
-    c(1, 2),
-    c(3, 2)
-  )
 
   # Arrange the plots in the desired layout
   plot <- grid.arrange(
-    plot_icer, legend, ce_plane_plot,
-    layout_matrix = layout_matrix,
-    widths = c(1.2,1),  # Make the legend plot column narrower
-    heights = c(1, 1.5)  # Equal heights for each row
+    legend,ce_plane_plot,  # Legend on top, CE-plane plot below
+    ncol = 1,  # Ensure it's one column layout
+    widths = c(1),  # Equal width for both legend and plot
+    heights = c(1, 1)  # Legend takes 30% of the height, CE-plane takes the rest
   )
 
   # Save plot to figures folder
-  ggsave("figures/scenario.png", plot = plot, width = 10, height = 10)
+  ggsave("figures/scenario.png", plot = plot, width = 10, height = 13)
 }
     
 tornadoPlot <- function(Parms, Outcomes_se, Outcomes_20, titleName, outcomeName_se, outcomeName_20) {
@@ -464,7 +378,8 @@ psaPlot <- function(out){
   }
 
   # Calculate the percentage of cost-effective samples
-  cost_effective_samples <- sum(results_df$Incremental_Costs / results_df$Incremental_QALY <= 20000) / nrow(results_df) * 100
+  cost_effective_samples_20000 <- sum(results_df$Incremental_Costs / results_df$Incremental_QALY <= 20000) / nrow(results_df) * 100
+  cost_effective_samples_50000 <- sum(results_df$Incremental_Costs / results_df$Incremental_QALY <= 50000) / nrow(results_df) * 100
 
   # obtain base-case ICER 
   base <- callModel(output = "qaly_costs")
@@ -477,6 +392,7 @@ psaPlot <- function(out){
     geom_hline(yintercept = 0, linetype = "dashed", color = "red", size = 1) +  # Add a horizontal line at y=0
     geom_vline(xintercept = 0, linetype = "dashed", color = "red", size = 1) +  # Add a vertical line at x=0
     geom_abline(slope = 20000/1, intercept = 0, linetype = "solid", color = "#03217d", size = 1) +  # Add ICER line
+    geom_abline(slope = 50000/1, intercept = 0, linetype = "solid", color = "#006b0c", size = 1) +  # Add ICER line
     geom_point(aes(x = base_qaly, y = base_costs, alpha = 0.5), color = "white", size = 2) + # Add base case point
     labs(
       title = "",
@@ -485,9 +401,6 @@ psaPlot <- function(out){
       shape = "Scenario",
       fill = "Scenario"
     ) +
-    #scale_color_manual(values = setNames(results_df$Color, results_df$Identifier)) +
-    #scale_fill_manual(values = setNames(results_df$Color, results_df$Identifier)) +
-    #scale_shape_manual(values = setNames(as.numeric(results_df$Shape), results_df$Identifier)) +
     theme_minimal(base_size = 15) +
     theme(
       legend.position = "none",  # Place legend on the right
@@ -500,11 +413,14 @@ psaPlot <- function(out){
       panel.background = element_rect(fill = "lightgray")
     ) +
     scale_y_continuous(labels = euro_formatter) +
-    annotate("label", x = 0.022, y = -250, label = paste("Cost-effective:", round(cost_effective_samples, 2), "%"), 
-            size = 5, color = "White", fill = "#585757", fontface = "bold", alpha =0.7) +
-    annotate("label", x = 0, y = 0, label = "WTP treshold at €20,000", 
-            size = 5, color = "White", fill = "#012591", fontface = "bold", alpha =0.7) 
-            
+    annotate("label", x = 0.014, y = -250, label = paste("Cost-effective at €20,000 treshold:", round(cost_effective_samples_20000, 1), "%"), 
+            size = 5, color = "White", fill = "#012591", fontface = "bold", alpha =0.7) +
+    annotate("label", x = 0.014, y = -180, label = paste("Cost-effective at €50,000 treshold:", round(cost_effective_samples_50000, 1), "%"), 
+            size = 5, color = "White", fill = "#006b0c", fontface = "bold", alpha =0.7) 
+    #annotate("label", x = 0.025, y = 500, label = "WTP treshold at €20,000", 
+    #        size = 5, color = "White", fill = "#012591", fontface = "bold", alpha =0.8) +
+    #annotate("label", x = 0.002, y = 500, label = "WTP treshold at €50,000", 
+    #        size = 5, color = "White", fill = "#006b0c", fontface = "bold", alpha =0.8) 
 
   ggsave("figures/ce_plane.png", plot = ce_plane, width = 7, height = 6)
 
@@ -542,8 +458,11 @@ psaPlot <- function(out){
     scale_x_continuous(breaks = seq(0, 100000, by = 20000), minor_breaks = seq(0, 100000, by = 10000),labels = euro_formatter) +
     scale_y_continuous(breaks = seq(0,1, by = 0.2), labels = scales::percent) +
     geom_vline(xintercept = 20000, linetype = "solid", color = "#012591", size = 1) +  # Add a vertical line at x=0
+    geom_vline(xintercept = 50000, linetype = "solid", color = "#006b0c", size = 1) +  # Add a vertical line at x=0
     annotate("label", x = 20000, y = 0.85, label = "WTP treshold at €20,000", 
-            size = 5, color = "White", fill = "#012591", fontface = "bold") 
+            size = 5, color = "White", fill = "#012591", fontface = "bold") +
+    annotate("label", x = 50000, y = 0.15, label = "WTP treshold at €50,000", 
+            size = 5, color = "White", fill = "#006b0c", fontface = "bold")
 
   ggsave("figures/ceac.png", plot = ceac, width = 7, height = 6)
   }
@@ -646,7 +565,6 @@ ROCPlot <- function(load_grid, cut_off) {
         theme_minimal(base_size = 15) +
         theme(
             legend.position = "right",  # Adjust legend position if necessary
-            #legend.spacing = unit(0.5, "cm"),  # Reduce space between legend items
             legend.margin = margin(0, 0, 0, 0, "cm"),  # Reduce space around legend
             axis.title.y = element_text(size = 20),
             axis.title.x = element_text(size = 20),

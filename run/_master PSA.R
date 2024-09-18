@@ -67,13 +67,13 @@ valid_array <<- list()
 
 #out <- runPSA(n_sample = 10000, perspective = "healthcare")
 #saveRDS(out, file = "data/results_psa_hcp.rds")
-out <- readRDS("data/results_psa_hcp.rds")
+out <- readRDS("data/results_psa_soc.rds")
 
 # ICER and PSA plot
 qaly_costs_list <- lapply(out, function(x) x$qaly_costs) # extract list for the qaly and costs (PSA plot & ICER)
 
 #PSA plot
-#psaPlot(out = qaly_costs_list)
+psaPlot(out = qaly_costs_list)
 
 # calculate all costs
 costs_list <- lapply(out, function(x) x$costs)
