@@ -538,14 +538,24 @@ runScenario <- function(vary, perspective, descriptives, output = "icer"){
 
       # Scenario - 60 to 70 years
       print("----------------------------------")
-      print("Scenario: 60 to 75 years")
+      print("Scenario: 60 to 70 years")
       age_categories <- get("age_categories", envir = globalenv()) #re-obtain age_categories from global environment
-
       
       age_categories <- c("60 to 65 years", "65 to 70 years")
       t_total_cohort <- getCohort(df_mortality, age_categories = age_categories) ### (function returns distribution of age cohort category)
 
       return_list$screening_age_3 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
+
+      # Scenario - 50-65 years
+      print("----------------------------------")
+      print("Scenario: 50 to 65 years")
+      age_categories <- get("age_categories", envir = globalenv()) #re-obtain age_categories from global environment
+
+      age_categories <- c("50 to 55 years", "55 to 60 years", "60 to 65 years")
+      t_total_cohort <- getCohort(df_mortality, age_categories = age_categories) ### (function returns distribution of age cohort category)
+
+      return_list$screening_age_4 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
+
 
     } else if (vary == "screening_interval") {
       return_list <- list()
@@ -640,6 +650,17 @@ runScenario <- function(vary, perspective, descriptives, output = "icer"){
       v_utilities$blind <- 0.5350
 
       return_list$utilities_2 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
+
+    } else if (vary == "prevalence"){
+      return_list <- list()
+
+      # Scenario - prevalence E3 study
+      print("Scenario: Prevalence E3 study")
+
+      v_prevalence <- get("v_prevalence", envir = globalenv()) #re-obtain v_prevalence from global environment
+      v_prevalence$prevalence <- c(0.008267717, 0.01427531, 0.0151444, 0.021899736, 0.026522001, 0.03365166, 0.037650602, 0.047572816, 0.043715847, 0.043715847)
+
+      return_list$prevalence_1 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
 
     } else if (vary == "compliance") {
       return_list <- list()
