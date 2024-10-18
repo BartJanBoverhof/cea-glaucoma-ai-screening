@@ -192,6 +192,7 @@ getMarkovTrace <- function(scenario, # scenario
     }
   }
   
+
   #------------------------------------------------------------------------------#
   ####                       04 Error handling / validation             ####
   #------------------------------------------------------------------------------#
@@ -233,7 +234,7 @@ getMarkovTrace <- function(scenario, # scenario
   if (check2 == "Some horizontal slices do not sum to 1.") {
     valid_array[[psa_iteration]] <- c(psa_iteration, check2)
   }
-
+  
   #------------------------------------------------------------------------------#
   ####                       05 Creating corrected traces             ####
   #------------------------------------------------------------------------------#

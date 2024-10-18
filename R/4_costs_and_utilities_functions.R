@@ -112,6 +112,10 @@ getScreeningCosts <- function(trace,
 
   cost <- unlist(screening_cost)
 
+  # additional calculations
+  # costs per severity stage
+  mild <- sum(trace[,"Mild treated"]) / 1000
+
   # return costs
   return(sum(cost))
 }
@@ -209,7 +213,7 @@ getDiagnosticCosts <- function(trace, diagnostics_cost) {
   return(sum(costs_obs, costs_mild, costs_mod, costs_sev, costs_blind))
 }
 
-getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incidence_of, v_incidence_screening, age_init, interval, max_repititions, strategy){
+getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incidence_of, v_incidence_screening, age_init, interval, max_repititions, strategy, analysis) {
     
 
     ### DETERMINE PATIENTS THAT RECEIVE TREATMENT ###
@@ -224,11 +228,15 @@ getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incid
     mild_untreated <- sum(trace[c(2:nrow(trace)),"Mild untreated"] * v_incidence_of[c(2:nrow(trace))])
     mild_treated <- list()
     
-    if (strategy == "ai") # if strategy is ai, also include the screened participants
-      for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become untreated after screening
-        mild_treated[rep] <- trace[(rep*interval),"Mild untreated"] - trace[(rep*interval)+1,"Mild untreated"]
-      }
-    
+    if (analysis == "bia"){ # if the analysis is bia, this is not relevant
+        mild_treated <- 0
+    } else {
+      if (strategy == "ai") # if strategy is ai, also include the screened participants
+        for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become treated after screening
+          mild_treated[rep] <- trace[(rep*interval),"Mild untreated"] - trace[(rep*interval)+1,"Mild untreated"]
+        }
+    }
+
     # calculate all mild patients that receive treatment
     mild_patients <- sum(mild_obs, mild_untreated, unlist(mild_treated), trace[1,"Mild treated"])
 
@@ -238,11 +246,14 @@ getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incid
     mod_mod_untreated <- sum(trace[c(2:nrow(trace)),"Moderate untreated"] * v_incidence_of[c(2:nrow(trace))])
     mod_treated <- list()
 
-    if (strategy == "ai") # if strategy is ai, also include the screened participants
-      for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become untreated after screening
-        mod_treated[rep] <- trace[(rep*interval),"Moderate untreated"] - trace[(rep*interval)+1,"Moderate untreated"]
-      }
-
+    if (analysis == "bia"){ # if the analysis is bia, this is not relevant
+        mod_treated <- 0
+    } else {
+      if (strategy == "ai") # if strategy is ai, also include the screened participants
+        for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become untreated after screening
+          mod_treated[rep] <- trace[(rep*interval),"Moderate untreated"] - trace[(rep*interval)+1,"Moderate untreated"]
+        }
+    }
     # calculate all moderate patients that receive treatment
     mod_patients <- sum(mod_mild_treated, mod_mod_untreated, unlist(mod_treated), trace[1,"Moderate treated"])
     
@@ -252,10 +263,14 @@ getInterventionCosts <- function(trace, intervention_cost, p_transition, v_incid
     sev_sev_untreated <- sum(trace[c(2:nrow(trace)),"Severe untreated"] * v_incidence_of[c(2:nrow(trace))])
     sev_treated <- list()
 
-    if (strategy == "ai") # if strategy is ai, also include the screened participants
-      for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become untreated after screening
-        sev_treated[rep] <- trace[(rep*interval),"Severe untreated"] - trace[(rep*interval)+1,"Severe untreated"]
-      }
+    if (analysis == "bia"){ # if the analysis is bia, this is not relevant
+        sev_treated <- 0
+    } else {
+      if (strategy == "ai") # if strategy is ai, also include the screened participants
+        for (rep in 1:max_repititions) { # for loop to calculate the amount of people that become untreated after screening
+          sev_treated[rep] <- trace[(rep*interval),"Severe untreated"] - trace[(rep*interval)+1,"Severe untreated"]
+        }
+    }
     
     # calculate all severe patients that receive treatment
     sev_patients <- sum(sev_mod_treated, sev_sev_untreated, unlist(sev_treated), trace[1,"Severe treated"])
@@ -340,13 +355,20 @@ getCostsBurdenOfDisease <- function(costs, trace, societal_perspective) {
   #  return(sum(costs_severe_treated, costs_severe_untreated, costs_blind))
 }
 
-getProductivityCosts <- function(costs, trace, age_init) {
+getProductivityCosts <- function(costs, trace, age_init, strategy) {
     
   # filter on blind (blind) costs
   costs_vi_sev <- costs 
+  
+  # max collumn to iterate over
+  max <- (pension_age - age_init)
+
+  # if budget impact analysis, iterate over the whole trace
+  if (strategy == "bia")
+    max <- NROW(trace)
 
   # calculate total number of patients for each entry in trace
-  patients_blind <- sum(trace[,"Blind"][1: (pension_age - age_init)])  
+  patients_blind <- sum(trace[,"Blind"][1: max])  
   
   # total costs
   costs_blind <- ((costs_vi_sev$productivity_absent) * sum(patients_blind)) 

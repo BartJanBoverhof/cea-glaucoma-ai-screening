@@ -42,6 +42,7 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
     age_categories <- get("age_categories", envir = parent.frame())
     screening_interval <- get("screening_interval", envir = parent.frame())
     v_utilities <- get("v_utilities", envir = parent.frame())
+    v_cost_burden_disease <- get("v_cost_burden_disease", envir = parent.frame())
     v_cost_utilisation_diagnostics <- get("v_cost_utilisation_diagnostics", envir = parent.frame())
     v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
     p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
@@ -88,30 +89,40 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
         padArray(pad = age_results[[4]]$soc_trace, pad_to = age_results[[1]]$soc_trace) +
         padArray(pad = age_results[[5]]$soc_trace, pad_to = age_results[[1]]$soc_trace)
     
-    # percentage of patients detected at different time points
-    # ai trace
-    ai_1 <- sum(a_trace_ai_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[1,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")])) # at first screening instance
-    ai_2 <- sum(a_trace_ai_uncorrected[6,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[6,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[6,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
-    ai_3 <- sum(a_trace_ai_uncorrected[11,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[11,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[11,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
-    ai_4 <- sum(a_trace_ai_uncorrected[16,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[16,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[16,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
-    ai_5 <- sum(a_trace_ai_uncorrected[21,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[21,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[21,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
-    ai_6 <- sum(a_trace_ai_uncorrected[26,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_ai_uncorrected[26,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_ai_uncorrected[26,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+    if (strategy != "bia"){ #only posible is strategy is not bia 
+      # cumulative amount of patients found at different time points
+      # ai trace
+      ai_0 <- (sum(a_trace_ai_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_ai_uncorrected[1,]))*100 # at first screening instance
+      ai_1 <- (sum(a_trace_ai_uncorrected[5,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_ai_uncorrected[5,]))*100 # at first screening instance
+      ai_2 <- (sum(a_trace_ai_uncorrected[10,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_ai_uncorrected[10,]))*100
+      ai_3 <- (sum(a_trace_ai_uncorrected[15,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_ai_uncorrected[15,]))*100
+      ai_4 <- (sum(a_trace_ai_uncorrected[20,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_ai_uncorrected[20,]))*100
+      ai_5 <- (sum(a_trace_ai_uncorrected[25,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_ai_uncorrected[25,]))*100
 
-    # soc trace
-    soc_1 <- sum(a_trace_soc_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[1,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[1,c("Mild treated", "Moderate treated", "Severe treated", "Blind")])) # at first screening instance
-    soc_2 <- sum(a_trace_soc_uncorrected[6,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[6,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[6,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
-    soc_3 <- sum(a_trace_soc_uncorrected[11,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[11,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[11,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
-    soc_4 <- sum(a_trace_soc_uncorrected[16,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[16,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[16,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
-    soc_5 <- sum(a_trace_soc_uncorrected[21,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[21,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[21,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
-    soc_6 <- sum(a_trace_soc_uncorrected[26,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / (sum(a_trace_soc_uncorrected[26,c("Mild untreated", "Moderate untreated", "Severe untreated")]) + sum(a_trace_soc_uncorrected[26,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]))
+      # soc trace
+      soc_0 <- 0 # at first screening instance
+      soc_1 <- (sum(a_trace_soc_uncorrected[5,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_soc_uncorrected[5,]))*100 # at first screening instance
+      soc_2 <- (sum(a_trace_soc_uncorrected[10,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_soc_uncorrected[10,]))*100
+      soc_3 <- (sum(a_trace_soc_uncorrected[15,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_soc_uncorrected[15,]))*100
+      soc_4 <- (sum(a_trace_soc_uncorrected[20,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_soc_uncorrected[20,]))*100
+      soc_5 <- (sum(a_trace_soc_uncorrected[25,c("Mild treated", "Moderate treated", "Severe treated", "Blind")]) / sum(a_trace_soc_uncorrected[25,]))*100
 
-    ai_1 - soc_1
-    ai_2 - soc_2
-    ai_3 - soc_3
-    ai_4 - soc_4
-    ai_5 - soc_5
-    ai_6 - soc_6
+      ai_0 -  soc_0
+      ai_1 -  soc_1
+      ai_2 -  soc_2
+      ai_3 -  soc_3
+      ai_4 -  soc_4
+      ai_5 -  soc_5
+
+      ai_0 / soc_0
+      ai_1 / soc_1
+      ai_2 / soc_2
+      ai_3 / soc_3
+      ai_4 / soc_4
+      ai_5 / soc_5
+    } 
   }
+
   # ai costs per patient
   # calculate AI costs per patient
   ai_screening_pp <- sum(sapply(age_results, function(x) x$ai_costs$ai_screening_costs)) / 1000
@@ -127,8 +138,6 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
   soc_intervention_pp <- sum(sapply(age_results, function(x) x$soc_costs$soc_intervention_costs)) / 1000
   soc_burden_pp <- sum(sapply(age_results, function(x) x$soc_costs$soc_burden)) / 1000
   soc_productivity_pp <- sum(sapply(age_results, function(x) x$soc_costs$soc_productivity)) / 1000
-
-
 
   if (strategy == "dsa"){ # if strategy is dsa, multiply respective costs with the multiplier
     if (parameter == "costs_screening"){
@@ -181,9 +190,9 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
     soc_time <- rowSums(sapply(age_results, function(x) x$soc_time_spent)) / 1000
 
     vi_prevented <- sum(sapply(age_results, function(x) x$vi_prevented)) / 1000
-    invited_people <- sum(sapply(age_results, function(x) x$ai_screen_descriptivers$invited_people)) / 1000
-    screened_people <- sum(sapply(age_results, function(x) x$ai_screen_descriptivers$screened_people)) / 1000
-    followed_up_people <- sum(sapply(age_results, function(x) x$ai_screen_descriptivers$followed_up_people)) / 1000
+    invited_people <- sum(sapply(age_results, function(x) x$ai_screening_descriptives$invited_people)) / 1000
+    screened_people <- sum(sapply(age_results, function(x) x$ai_screening_descriptives$screened_people)) / 1000
+    followed_up_people <- sum(sapply(age_results, function(x) x$ai_screening_descriptives$followed_up_people)) / 1000
 
     if (total_population == FALSE){
       print(ai_time) 
@@ -219,7 +228,7 @@ callModel <- function(descriptives = FALSE, perspective = "societal", total_popu
       print(paste("burden cost pp AI:", total_population * round(ai_burden_pp, 2), "burden cost pp SOC:", total_population * round(soc_burden_pp, 2)))
       print(paste("productivity cost pp AI:", total_population * round(ai_productivity_pp, 2), "productivity cost pp SOC:", total_population * round(soc_productivity_pp, 2)))
       print(paste("total cost pp AI:", total_population * round(ai_costs_pp, 2), "total cost pp SOC:", total_population * round(soc_costs_pp, 2)))
-      print(paste("QALY pp AI:", total_population * round(ai_qaly_pp, 4), "QALY pp SOC:", total_population * round(soc_qaly_pp, 4)))
+      print(paste("QALY pp AI:", total_population * ai_qaly_pp, "QALY pp SOC:", total_population * soc_qaly_pp))
       print(paste("ICER:", round(icer, 2)))
     }
   }
@@ -289,6 +298,7 @@ runModel <- function(cohort){
     age_categories <- get("age_categories", envir = parent.frame())
     screening_interval <- get("screening_interval", envir = parent.frame())
     v_utilities <- get("v_utilities", envir = parent.frame())
+    v_cost_burden_disease <- get("v_cost_burden_disease", envir = parent.frame())
     v_cost_utilisation_diagnostics <- get("v_cost_utilisation_diagnostics", envir = parent.frame())
     v_cost_utilisation_intervention <- get("v_cost_utilisation_intervention", envir = parent.frame())
     p_severity_undiagnosed <- get("p_severity_undiagnosed", envir = parent.frame())
@@ -311,6 +321,13 @@ runModel <- function(cohort){
     v_cost_burden_disease <- get("v_cost_burden_disease",envir = parent.frame())
     v_cost_dt <- get("v_cost_dt", envir = parent.frame())
   } 
+
+  # determine if intenden analysis is BIA
+  if (strategy == "bia"){
+    analysis <- "bia"
+  } else {
+     analysis <- "else" 
+  }
 
   #------------------------------------------------------------------------------#
   ####                       1 Decision Tree                            ####
@@ -377,20 +394,33 @@ runModel <- function(cohort){
   # The same applies for the two objects below.
   # For a_trace_ai_utillity, please check that a_trace_ai_utillity < a_trace_ai_uncorrected, and that they are 
   # equal if all utilities = 1.
-
-
-
+  
   # create list with all traces #Isaac: what is the purpose of this object and why it contains only costs?
 
   ################## SOC STRATEGY
   a_trace_soc <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
-                                    cohort = v_cohort_soc,
-                                    df_mortality = v_mortality, 
-                                    p_transition =  p_transition, 
-                                    age_init = cohort_min,
-                                    incidences = incidences,
-                                    interval = 0, 
-                                    max_repititions = 0)                         
+                                cohort = v_cohort_soc,
+                                df_mortality = v_mortality, 
+                                p_transition =  p_transition, 
+                                age_init = cohort_min,
+                                incidences = incidences,
+                                interval = 0, 
+                                max_repititions = 0)                         
+
+  if (analysis == "bia") {
+
+    # retain only the first 5 cycles of the markov model
+    a_trace_ai$trace <- a_trace_ai$trace[1:5,]
+    a_trace_ai$trace_utility <- a_trace_ai$trace_utility[1:5,]
+    a_trace_ai$trace_cost <- a_trace_ai$trace_cost[1:5,]
+    
+    a_trace_soc$trace <- a_trace_soc$trace[1:5,]
+    a_trace_soc$trace_utility <- a_trace_soc$trace_utility[1:5,]
+    a_trace_soc$trace_cost <- a_trace_soc$trace_cost[1:5,]
+
+    # set max repitions to 1
+    max_repititions <- 0
+  } 
 
   ################################################################
   ########################### RESULTS ###########################
@@ -399,11 +429,10 @@ runModel <- function(cohort){
   soc_time_spent <- getTimeSpent(a_trace = a_trace_soc$trace) ### (function returns time spent in each health state))
   
   vi_prevented <- getBlindnessPrevented(a_trace_ai = a_trace_ai$trace, a_trace_soc = a_trace_soc$trace) ### (function returns amount of years blindness prevented)
-  #ai_screening_descriptives <- getScreenignDescriptives(trace = a_trace_ai$trace, ### function returns total amount of fully screenings performed (fully compliant)
-  #                                                    screening_probabilities = p_screening,
-  #                                                    screening_cost = v_cost_dt, # obtain screening costs
-  #                                                    interval = 5, 
-  #                                                    max_repititions = 4) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model
+  ai_screening_descriptives <- getScreenignDescriptives(trace = a_trace_ai$trace, ### function returns total amount of fully screenings performed (fully compliant)
+                                                      screening_probabilities = p_screening,
+                                                      interval = 5, 
+                                                      max_repititions = max_repititions) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model
 
   #------------------------------------------------------------------------------#
   ####                       3 Utilities                           ####
@@ -426,16 +455,11 @@ runModel <- function(cohort){
   # are 3 AI screenings per patient per lifetime. Do we consider that a valid result? My point is that we need to link that with the 
   # average age of the patient population. If this is 67 years, then 3 AI screenings do not seem correct. However, in the model now
   # I suppose the average age should be a bit above 60 years then. We need to consider whether that's valid or not.
-  ai_screen_descriptivers <- getScreenignDescriptives(trace = a_trace_ai$trace,
-                                                      screening_probabilities = p_screening,
-                                                      interval = screening_interval, 
-                                                      max_repititions = max_repititions) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model
-  
   ai_screening_costs <- getScreeningCosts(trace = a_trace_ai$trace_cost, ### function returns screening costs per screening repetition
                                           screening_probabilities = p_screening,
                                           screening_cost = v_cost_dt, # obtain screening costs
                                           interval = screening_interval, 
-                                          max_repititions = max_repititions) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model 
+                                          max_repititions = max_repititions) # screening repition reflects the amount of repitions IN ADDITION to the screening before the markov model
 
   #------------------------------------------------------------------------------#
   ####                   4b Costs medicine                    ####
@@ -474,8 +498,10 @@ runModel <- function(cohort){
                                                 age_init = cohort_min,
                                                 interval = screening_interval,
                                                 max_repititions = max_repititions,
-                                                strategy = "ai") # obtain intervention costs
+                                                strategy = "ai",
+                                                analysis = analysis) # obtain intervention costs
 
+  # if strategy is bia, use the specific bia trace.
   soc_intervention_costs <- getInterventionCosts(trace = a_trace_soc$trace_cost, # cohort trace of the patients non-compliant with AI screening
                                                 intervention_cost = v_cost_utilisation_intervention,
                                                 p_transition = p_transition,
@@ -484,8 +510,9 @@ runModel <- function(cohort){
                                                 age_init = cohort_min,
                                                 interval = screening_interval,
                                                 max_repititions = max_repititions,
-                                                strategy = "soc") # obtain intervention costs
-
+                                                strategy = "soc",
+                                                analysis = analysis) # obtain intervention costs
+  
   #------------------------------------------------------------------------------#
   ####                 4e Costs burden of disease visually impaired & blind   ####
   #------------------------------------------------------------------------------
@@ -498,14 +525,25 @@ runModel <- function(cohort){
   # traces of different length confusing and difficult to validate. I'd propose to use something like list_traces_ai_costs all the time
   # and have results separated per cohort (we will need to present these anyway!) and then take the weighted average for the total cohort results.
   # Also noticed that productivity costs change significantly if age_inits is changed as well.
-  ai_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, trace = a_trace_ai$trace_cost, societal_perspective = TRUE)
-  soc_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, trace = a_trace_soc$trace_cost, societal_perspective = TRUE)
+  ai_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, 
+                                       trace = a_trace_ai$trace_cost, 
+                                       societal_perspective = TRUE)
 
+  soc_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, 
+                                        trace = a_trace_soc$trace_cost, 
+                                        societal_perspective = TRUE)
   # productivity costs
   if (cohort_min < pension_age){ # check if pension age is within the cohort
 
-    ai_productivity <- getProductivityCosts(costs = v_cost_burden_disease, trace = a_trace_ai$trace_cost, age_init = cohort_min)
-    soc_productivity <- getProductivityCosts(costs = v_cost_burden_disease, trace = a_trace_soc$trace_cost, age_init = cohort_min)
+    ai_productivity <- getProductivityCosts(costs = v_cost_burden_disease, 
+                                            trace = a_trace_ai$trace_cost, 
+                                            age_init = cohort_min,
+                                            strategy = strategy)
+
+    soc_productivity <- getProductivityCosts(costs = v_cost_burden_disease, 
+                                             trace = a_trace_soc$trace_cost, 
+                                             age_init = cohort_min,
+                                             strategy = strategy)
 
     if (cohort_min == 65){
       ai_productivity <- ai_productivity * (pension_age - 65)
@@ -531,6 +569,6 @@ runModel <- function(cohort){
               ai_time_spent = ai_time_spent,
               soc_time_spent = soc_time_spent,
               vi_prevented = vi_prevented,
-              ai_screen_descriptivers = ai_screen_descriptivers))
+              ai_screening_descriptives = ai_screening_descriptives))
 }
 

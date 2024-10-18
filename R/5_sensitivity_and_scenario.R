@@ -568,21 +568,14 @@ runScenario <- function(vary, perspective, descriptives, output = "icer"){
       screening_interval <- 3
       return_list$interval_1 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
 
-      # Scenario - every 10 years
+      # Scenario - every 7 years
       print("----------------------------------")
-      print("Scenario: screening every 10 year")
+      print("Scenario: screening every 7 year")
       screening_interval <- get("screening_interval", envir = globalenv()) #re-obtain screening_interval from global environment
 
-      screening_interval <- 10
+      screening_interval <- 7
       return_list$interval_2 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
-
-      # Scenario - once
-      print("----------------------------------")
-      print("Scenario: screening at 50 and 65")
-      screening_interval <- get("screening_interval", envir = globalenv()) #re-obtain screening_interval from global environment
-
-      screening_interval <- 15
-      return_list$interval_3 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
+      print("ss")
       # varying transition probabilities
     } else if (vary == "transition") {
       return_list <- list()
@@ -650,6 +643,57 @@ runScenario <- function(vary, perspective, descriptives, output = "icer"){
       v_utilities$blind <- 0.5350
 
       return_list$utilities_2 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
+
+    } else if (vary == "vi_costs"){
+      return_list <- list()
+
+      # Scenario - moderate costs of visual impairment
+      print("Scenario: Severe costs of visual impairment")
+
+      v_cost_burden_disease <- get("v_cost_burden_disease", envir = globalenv()) #re-obtain v_cost_burden_disease from global environment
+      v_cost_burden_disease$gp <- 95.30
+      v_cost_burden_disease$other <- 325.69
+      v_cost_burden_disease$inpatient_services <- 579.28
+      v_cost_burden_disease$physician <- 105.71
+      v_cost_burden_disease$mobility_training <- 186.23
+      v_cost_burden_disease$practical_skills <- 121.58
+      v_cost_burden_disease$blind_aids <- 2870.79
+      v_cost_burden_disease$communication_aids <- 2019.60
+      v_cost_burden_disease$vision_aids <- 167.19
+      v_cost_burden_disease$transportation <- 15.66
+      v_cost_burden_disease$home_care_household <- 14.20
+      v_cost_burden_disease$home_care_personal <- 2.88
+      v_cost_burden_disease$informal_care_household <- 847.33
+      v_cost_burden_disease$informal_care_personal <- 141.44
+      v_cost_burden_disease$informal_care_communication <- 784.93
+      v_cost_burden_disease$informal_care_companionship <- 159.59
+      v_cost_burden_disease$productivity_absent <- 10062.02
+
+      return_list$vi_costs_1 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
+
+      # Scenario - severe costs of visual impairment
+      print("Scenario: Max costs of visual impairment")
+
+      v_cost_burden_disease <- get("v_cost_burden_disease", envir = globalenv()) #re-obtain v_cost_burden_disease from global environment
+      v_cost_burden_disease$gp <- 88.09
+      v_cost_burden_disease$other <- 307.78
+      v_cost_burden_disease$inpatient_services <- 622.42
+      v_cost_burden_disease$physician <- 137.33
+      v_cost_burden_disease$mobility_training <- 225.65
+      v_cost_burden_disease$practical_skills <- 118.76
+      v_cost_burden_disease$blind_aids <- 4661.97
+      v_cost_burden_disease$communication_aids <- 2470.32
+      v_cost_burden_disease$vision_aids <- 100.94
+      v_cost_burden_disease$transportation <- 27.42
+      v_cost_burden_disease$home_care_household <- 19.41
+      v_cost_burden_disease$home_care_personal <- 1.97
+      v_cost_burden_disease$informal_care_household <- 1040.23
+      v_cost_burden_disease$informal_care_personal <- 169.24
+      v_cost_burden_disease$informal_care_communication <- 707.99
+      v_cost_burden_disease$informal_care_companionship <- 176.52
+      v_cost_burden_disease$productivity_absent <- 8349.38
+
+      return_list$vi_costs_2 <- callModel(descriptives = descriptives, perspective = perspective, output = output)
 
     } else if (vary == "prevalence"){
       return_list <- list()
@@ -814,7 +858,10 @@ calculateICER <- function(out) {
     # Calculate ICER
     ICER <- mean(results_df$Incremental_Costs) / mean(results_df$Incremental_QALY)
     
-    
+    #net monetary benefit
+    NMB_20000 <- (20000 * mean(results_df$Incremental_QALY)) - mean(results_df$Incremental_Costs)
+    NMB_50000 <- (50000 * mean(results_df$Incremental_QALY)) - mean(results_df$Incremental_Costs)
+
     return(ICER)
 }
 
