@@ -59,10 +59,11 @@ pension_age <- 67
 
 # run base case
 strategy <- "base"
-#base <- callModel(descriptives = TRUE, perspective= "societal")
 base <- callModel(descriptives = TRUE, perspective= "societal", total_population = FALSE)
 
-
+# budget impact analysis (time horizon only 5 years) and on total population
+strategy <- "bia"
+base <- callModel(descriptives = TRUE, perspective= "societal", total_population = TRUE)
 
 
 
