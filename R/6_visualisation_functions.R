@@ -146,6 +146,7 @@ scenarioPlot <- function(){
   costs_data$Shape <- c(21, 24,21, 24,21, 24,22,21, 24,22,21, 24,21, 21 ,21,24 ,24,22 ,21,24,22, 21,24, 21,23,24,22, 21)
   costs_data$Color <- c("#2f2f2f","#800080","#800080","#00FF00","#00FF00","#0000FF","#0000FF","#0000FF", "#964B00", "#964B00", "#964B00",
   "#FFFF00","#FFFF00","#257a25","#828231","#828231","#FF00FF","#FF00FF","#00FFFF","#00FFFF","#00FFFF","#FFA500","#FFA500","#A9A9A9", "#A9A9A9","#A9A9A9","#A9A9A9","#FF0000")  
+  
   # Ensure shapes can be filled (using shapes 21-25)
   # If your data already uses shapes 21-25, this step is correct. Otherwise, adjust your shape assignments accordingly.
   icer_data$Identifier <- c("No discounting","Min p(no glaucoma <-> observation)", "Max p(no glaucoma <-> observation)","Min resource utilisation", "Max resource utilisation","AI sensitivity 87%", "AI sensitivity 90%", "AI sensitivity 75%","AI specificity 98%", "AI specificity 90%","AI specificity 75%","Compliance 100%", "Compliance from literature","Prevalence from E3 study","Costs due to visual impairment: severe" ,"Costs due to visual impairment: blindess" ,"Uilities HUI-3", "Utilities EQ-5D Burr (2007)","Transition probabilities Burr (2014)", "Transitions probabilities Chauhan (2014)", "Transitions probabilities Garway-Heath (2015)","Screening interval every 3 years", "Screening interval every 7 years","Screening age 50-85","Screening age 60-75", "Screening age 60-70", "Screening age 50-65", "Base case")

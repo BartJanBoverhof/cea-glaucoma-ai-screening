@@ -106,8 +106,6 @@ calculateIncidence <- function(incidences,
 }
 
 
-
-
 # Function Name: getScreeningProbabilities
 # Description: Generates screening-related probabilities based on test performance and compliance.
 getScreeningProbabilities <- function(probabilities, model_compliance, p_prevalence){

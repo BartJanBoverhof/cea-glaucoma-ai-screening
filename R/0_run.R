@@ -356,16 +356,12 @@ runModel <- function(cohort){
   v_cohort_soc <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort[cohort]) * 1000)) # re-scale to cohort of 1000 patients
 
 
-  # I would think that the older patients the higher the probability of being severe, but right now the opposite happens. 
-  # I think this happens for two reasons: 1. p_dt_soc is not age dependent and 2. t_total_cohort seems incorrect. 
 
   #------------------------------------------------------------------------------#
   ####                       2 Markov model                            ####
   #------------------------------------------------------------------------------#
   
   ################## AI STRATEGY
-  # We should also add what the function is returning. I see the traces (LYs, costs and utilities and total patients)
-  # Question here: are these results discounted? I cannot see the option of discounting by the way and I think this was implemented in aprevious version of the code.
   a_trace_ai <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
                                     cohort = v_cohort_ai,
                                     p_screening = p_screening, 
@@ -376,11 +372,6 @@ runModel <- function(cohort){
                                     severity = p_severity_undiagnosed,
                                     interval = screening_interval, 
                                     max_repititions = max_repititions)  
-
-  # Also, unclear why we need to sum all these when traces will be of different length for each cohort.
-  # The same applies for the two objects below.
-  # For a_trace_ai_utillity, please check that a_trace_ai_utillity < a_trace_ai_uncorrected, and that they are 
-  # equal if all utilities = 1.
   
 
   ################## SOC STRATEGY
@@ -422,23 +413,13 @@ runModel <- function(cohort){
 
   #------------------------------------------------------------------------------#
   ####                       3 Utilities                           ####
-  #------------------------------------------------------------------------------#
-  # As discussed before, I'm not sure why that step is needed. To validate the results, it'd be easier to calculate
-  # total QALYs for each cohort separately and then take the weighted average.
-  # It could also be a good exercise to check whether these calculations are correct, since they should be equal I suppose.
-  # I've also noticed that changing age_init does not change the results of ai_total_qaly or soc_total_qaly. Is that correct?                        
+  #------------------------------------------------------------------------------#                     
   ai_total_qaly <- getQALYs(a_trace = a_trace_ai$trace_utility) ### (function returns total amount of QALY'S gained
   soc_total_qaly <- getQALYs(a_trace = a_trace_soc$trace_utility) ### (function returns total amount of QALY'S gained
 
   #------------------------------------------------------------------------------#
   ####                   4a Costs decision tree screening costs                    ####
   #------------------------------------------------------------------------------#
-
-  # Again, why don't we get results per age cohort separately and then calculate the weighted average?
-  # Is the cost of one screening sum(v_cost_dt)? This is equal to 188€. If ai_screening_costs = 557€, that means that on average there 
-  # are 3 AI screenings per patient per lifetime. Do we consider that a valid result? My point is that we need to link that with the 
-  # average age of the patient population. If this is 67 years, then 3 AI screenings do not seem correct. However, in the model now
-  # I suppose the average age should be a bit above 60 years then. We need to consider whether that's valid or not.
   ai_screening_costs <- getScreeningCosts(trace = a_trace_ai$trace_cost, ### function returns screening costs per screening repetition
                                           screening_probabilities = p_screening,
                                           screening_cost = v_cost_dt, # obtain screening costs
@@ -497,14 +478,6 @@ runModel <- function(cohort){
   #------------------------------------------------------------------------------#
   ####                 4e Costs burden of disease visually impaired & blind   ####
   #------------------------------------------------------------------------------
-
-  # part of the code, so that we can easily change this once allowing to select societal or health care perspective.
-  # I see for example that for burden you used a_trace_ai_cost but for productivity you used list_traces_ai_costs. 
-  # I understand that list_traces_ai_costs is used for productivity because it's easier to assign 0 costs to some cohorts.
-  # But this also has the advantage of getting results separately per cohort. As mentioned above, I find the approach of combining
-  # traces of different length confusing and difficult to validate. I'd propose to use something like list_traces_ai_costs all the time
-  # and have results separated per cohort (we will need to present these anyway!) and then take the weighted average for the total cohort results.
-  # Also noticed that productivity costs change significantly if age_inits is changed as well.
   ai_burden <- getCostsBurdenOfDisease(costs = v_cost_burden_disease, 
                                        trace = a_trace_ai$trace_cost, 
                                        societal_perspective = TRUE)

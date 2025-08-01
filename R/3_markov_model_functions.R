@@ -177,18 +177,6 @@ getMarkovTrace <- function(scenario, # scenario
       m_trace[t + 1, "Moderate untreated"] <- m_trace[t + 1, "Moderate untreated"] * (1 - detection_rate_flat)
       m_trace[t + 1, "Severe untreated"] <- m_trace[t + 1, "Severe untreated"] * (1 - detection_rate_flat)
 
-      # re-allocate participants from the "no glaucoma" and "observation" states
-      # is this necessary??
-     #m_trace[t + 1, "Mild treated"] <- m_trace[t + 1, "Mild treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_mild
-     # m_trace[t + 1, "Moderate treated"] <- m_trace[t + 1, "Moderate treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_mod
-     # m_trace[t + 1, "Severe treated"] <- m_trace[t + 1, "Severe treated"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_severe
-     # m_trace[t + 1, "Blind"] <- m_trace[t + 1, "Blind"] + ((m_trace[t + 1, "No glaucoma"] + m_trace[t + 1, "Observation"]) * detection_rate_missed) * severity_blind
-
-      # re-allocate particiipants to the "no glaucoma" and "observation" states
-      #m_trace[t + 1, "No glaucoma"] <- m_trace[t + 1, "No glaucoma"] * (1 - detection_rate_missed)
-      #m_trace[t + 1, "Observation"] <- m_trace[t + 1, "Observation"] * (1 - detection_rate_missed)
-
-
     }
   }
   
