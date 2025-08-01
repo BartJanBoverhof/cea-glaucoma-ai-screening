@@ -1,10 +1,7 @@
+# Function Name: callModel
+# Description: Runs the overall model across age cohorts and returns summary results.
+# Parameters: descriptives - logical for detailed output; perspective - cost perspective; total_population - if TRUE scale to national level; output - returned metric.
 callModel <- function(descriptives = FALSE, perspective = "societal", total_population = FALSE, output = "icer"){
-## Isaac: we should add some guidance about how to get the model to run.
-## I've been trying for some time and I'm not able to do it. I assumed this could be done from this script, but I'm not getting any results. 
-## The idea is to have a model that is as user friendly as possible.
-## Without being able to run the model, it's very difficult to validate the code. I'll give it a try in any case.
-## In general, please note there is a lack of code description, which again makes it difficult for other users to understand what the code is doing. I understand that commenting your code could be tedious, but it is necessary and a good practice. You can try using ChatGPT to assist you with that. It can be a good exercise to see if it actually understands the code as it should be.    
-  
   # inherit local variables from previous function (for dsa, if applicable)
   strategy <- get("strategy", envir = parent.frame())
 
@@ -252,16 +249,9 @@ if (output == "icer"){
 }
 
 
+# Function Name: runModel
+# Description: Executes the model for a specific age cohort and returns costs, QALYs and traces.
 runModel <- function(cohort){
-  # Isaac: I understand why you prefer to run age-dependent cohorts separately. 
-  # However, this approach has several issues associated as discussed.
-  # I wonder for example if the proportion of patients that are male should also be age-dependent. In fact, the same could be said about 
-  # all parameters in the model, such as p_dt, p_severity_undiagnosed, p_transition or even the utilities. 
-  # For the utilities, I know we consider age in terms of age-related decrement. However, the values at baseline were obtained 
-  # for a cohort of a certain age. It could also be argued that these baseline values could also be age-dependent.
-  # The reason I insist on this issue is because I believe it might be criticised by some reviewers. It's totally fine to have
-  # different age cohorts, but then each cohort parameters' should be cohort specific (in theory) and I wonder whether that's
-  # actually the case. Clear justification has to be provided for the assumptins made. 
   
   # inherit local variables from previous function (for dsa, if applicable)
   strategy <- get("strategy", envir = parent.frame())
@@ -366,7 +356,6 @@ runModel <- function(cohort){
   v_cohort_soc <- lapply(p_dt_soc, function(x) x*(unname(t_total_cohort[cohort]) * 1000)) # re-scale to cohort of 1000 patients
 
 
-  # Isaac:  same as above: what we do here is to re-scale the cohorts based on the age distribution, but I'm not sure if that's correct.
   # I would think that the older patients the higher the probability of being severe, but right now the opposite happens. 
   # I think this happens for two reasons: 1. p_dt_soc is not age dependent and 2. t_total_cohort seems incorrect. 
 
@@ -375,7 +364,6 @@ runModel <- function(cohort){
   #------------------------------------------------------------------------------#
   
   ################## AI STRATEGY
-  #Isaac: we need to explain the input parameters of these functions (low priority right now)
   # We should also add what the function is returning. I see the traces (LYs, costs and utilities and total patients)
   # Question here: are these results discounted? I cannot see the option of discounting by the way and I think this was implemented in aprevious version of the code.
   a_trace_ai <- getMarkovTrace(scenario = "ai", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
@@ -389,13 +377,11 @@ runModel <- function(cohort){
                                     interval = screening_interval, 
                                     max_repititions = max_repititions)  
 
-  # Isaac: why is this called uncorrected? Have you checked that all rows sum to 1000 or that does not need to happen?
   # Also, unclear why we need to sum all these when traces will be of different length for each cohort.
   # The same applies for the two objects below.
   # For a_trace_ai_utillity, please check that a_trace_ai_utillity < a_trace_ai_uncorrected, and that they are 
   # equal if all utilities = 1.
   
-  # create list with all traces #Isaac: what is the purpose of this object and why it contains only costs?
 
   ################## SOC STRATEGY
   a_trace_soc <- getMarkovTrace(scenario = "soc", ### (function returns list of (corrected) markov traces for the age category 50-55 years)
@@ -437,7 +423,6 @@ runModel <- function(cohort){
   #------------------------------------------------------------------------------#
   ####                       3 Utilities                           ####
   #------------------------------------------------------------------------------#
-  # Isaac: these two functions are based on the objects above where you combined traces of different lengths.
   # As discussed before, I'm not sure why that step is needed. To validate the results, it'd be easier to calculate
   # total QALYs for each cohort separately and then take the weighted average.
   # It could also be a good exercise to check whether these calculations are correct, since they should be equal I suppose.
@@ -449,7 +434,6 @@ runModel <- function(cohort){
   ####                   4a Costs decision tree screening costs                    ####
   #------------------------------------------------------------------------------#
 
-  # Isaac: I also don't understand this one since this should be different for each cohort. So the question is why the max is set to 4.
   # Again, why don't we get results per age cohort separately and then calculate the weighted average?
   # Is the cost of one screening sum(v_cost_dt)? This is equal to 188€. If ai_screening_costs = 557€, that means that on average there 
   # are 3 AI screenings per patient per lifetime. Do we consider that a valid result? My point is that we need to link that with the 
@@ -465,7 +449,6 @@ runModel <- function(cohort){
   ####                   4b Costs medicine                    ####
   #------------------------------------------------------------------------------
 
-  # Isaac: same comments apply here and I suppose below too. One of the advantages of having separating age cohorts is the 
   # ability to show them separately, which is lost when these are combined in this way.  
   ai_medicine_costs <- getMedicineCosts(a_trace = a_trace_ai$trace_cost, ### function returns the total medicine costs
                                         medicine_cost = v_cost_medicine,
@@ -478,7 +461,6 @@ runModel <- function(cohort){
   #------------------------------------------------------------------------------#
   ####                   4c Costs diagnostics                    ####
   #------------------------------------------------------------------------------
-  # Isaac: please briefly define what these costs are
   ai_diagnostic_costs <- getDiagnosticCosts(trace = a_trace_ai$trace_cost, # cohort trace of the patients non-compliant with AI screening
                                             diagnostics_cost = v_cost_utilisation_diagnostics) # obtain diagnostic costs
 
@@ -489,7 +471,6 @@ runModel <- function(cohort){
   ####                   4d Costs intervention                    ####
   #------------------------------------------------------------------------------
 
-  # Isaac: please briefly define what these costs are
   ai_intervention_costs <- getInterventionCosts(trace = a_trace_ai$trace_cost, # cohort trace of the patients non-compliant with AI screening
                                                 intervention_cost = v_cost_utilisation_intervention,
                                                 p_transition = p_transition,
@@ -517,7 +498,6 @@ runModel <- function(cohort){
   ####                 4e Costs burden of disease visually impaired & blind   ####
   #------------------------------------------------------------------------------
 
-  # Isaac: similar comments as above. In addition: societal_perspective = TRUE -> this is an option that we should have in another 
   # part of the code, so that we can easily change this once allowing to select societal or health care perspective.
   # I see for example that for burden you used a_trace_ai_cost but for productivity you used list_traces_ai_costs. 
   # I understand that list_traces_ai_costs is used for productivity because it's easier to assign 0 costs to some cohorts.
