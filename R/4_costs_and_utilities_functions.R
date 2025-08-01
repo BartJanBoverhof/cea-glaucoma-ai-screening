@@ -1,39 +1,28 @@
-## Isaac: as previously mentioned, this code lacks comments. I propose using a standardized approach. I've used ChatGPT for example to provide comments using the following format. Please feel free to adjust.
-
-# Name of the function: getTimeSpent
-# Purpose: Calculate the total time spent in each state
-# Inputs:  a_trace - a matrix or data frame with the proportion of time spent in each health state
-# Outputs: A vector with the sum of each column of the matrix or data frame
-# Do half cycle correction here!
+# Function Name: getTimeSpent
+# Description: Calculate the total time spent in each health state.
 getTimeSpent <- function(a_trace){
   time_spent <- colSums(a_trace)
   return(time_spent)
-  }
+}
 
-# Name of the function: getBlindnessPrevented
-# Purpose of the code: Calculate the number of blindness cases prevented by AI compared to SoC
-# Inputs: a_trace_ai - AI intervention trace, a_trace_soc - standard of care trace
-# Outputs: Number of blindness cases prevented
-# Do half cycle correction here!
+# Function Name: getBlindnessPrevented
+# Description: Calculate the number of blindness years prevented by the AI strategy.
 getBlindnessPrevented <- function(a_trace_ai, a_trace_soc){
-  blind_ai <- sum(a_trace_ai[,"Blind"]) # Isaac: we already got this from getTimeSpent. Maybe we dont need to input the trace and get the sum again. Seems faster, but not sure how much time it can save. Low priority.
+  blind_ai <- sum(a_trace_ai[,"Blind"])
   blind_soc <- sum(a_trace_soc[,"Blind"])
   blind_prevented <- blind_soc - blind_ai
   return(blind_prevented)
 }
 
 
-# Name of the function: getQALYs
-# Purpose of the code: Calculate the total QALYs (Quality-Adjusted Life Years) for a given Markov trace
-# Inputs: a_trace - cohort trace matrix, v_utilities - vector of utility values for different health states (we need to explaiun why these are vectors and not single values: age effect already included?)
-# Outputs: Total QALYs (consider returning QALYs per health state as well - I think htat would be v_qaly)
-getQALYs <- function(a_trace){ # vector of utilities
 
-  #return qaly's 
+# Function Name: getQALYs
+# Description: Sum utilities over a trace to obtain total QALYs.
+getQALYs <- function(a_trace){
   return(sum(a_trace))
 }
 
-# Isaac: I stopped here since these functions are more complex
+
 getScreenignDescriptives <- function(trace, 
                               screening_probabilities, # probabilities to end up in the different DT arms
                               interval, # screening interval (years)

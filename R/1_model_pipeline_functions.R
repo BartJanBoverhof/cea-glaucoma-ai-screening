@@ -1,4 +1,5 @@
-# function to load and prepare mortality data
+# Function Name: getCohort
+# Description: Returns age-weighted distribution for a specified sex.
 getCohort <- function(data, 
                        age_categories = c("50 to 55 years", "55 to 60 years", "60 to 65 years", "65 to 70 years", "70 to 75 years"), 
                        sex = "Total male and female"
@@ -26,32 +27,10 @@ getCohort <- function(data,
   return(vector)
 }
 
-getMaleFemaleRatio <- function(df_mortality){
-  
-  total <- df_mortality %>%
-    dplyr::filter(Age == "Total of all ages") 
-
-  return(unname(unlist(total[2, 4] / total[3, 4])))                      
-}
-
-
-# cohort per decision tree arm
-getCohortArm <- function(total_cohort, dt){
-  
-  return(list(
-    mild = dt$p_path_mild * total_cohort$total_population,
-    moderate = dt$p_path_mod * total_cohort$total_population,
-    severe = dt$p_path_severe * total_cohort$total_population,
-    blind = dt$p_path_blind * total_cohort$total_population,
-    observation = dt$p_path_obs * total_cohort$total_population,
-    false_pos = dt$p_path_fp * total_cohort$total_population,
-    soc = dt$p_path_soc * total_cohort$total_population,
-    soc_healthier = dt$p_path_soc_healthier * total_cohort$total_population,
-    soc_sicker = dt$p_path_soc_sicker * total_cohort$total_population
-  ))
-}
 
 # function to calculate mortality
+# Function Name: calculateMortality
+# Description: Prepares mortality rates per cycle for given age range.
 calculateMortality <- function(df_mortality, # mortality data
                                age_start, # start age of the cohort
                                age_max, # maximum age of the cohort
@@ -92,6 +71,8 @@ calculateMortality <- function(df_mortality, # mortality data
 }
 
 # function to calculate incidence
+# Function Name: calculateIncidence
+# Description: Interpolates incidence data for use in the model.
 calculateIncidence <- function(incidences,
                                age_start,
                                age_max,
@@ -125,34 +106,10 @@ calculateIncidence <- function(incidences,
 }
 
 
-# function to calculate average age of the cohort
-getMeanAge <- function(df_mortality, # mortality data
-                             age_start, # start age of the cohort
-                             age_max # maximum age of the cohort
-                             ){
-  start_age <- age_start
-  end_age <- age_max
-
-  df_mean_age <- df_mortality %>% #to calculate the midpoint age
-    filter(Attribute == "Total male and female") %>%
-    filter(!(Age %in% c("Total of all ages", "40 to 45 years", "45 to 50 years"))) %>% 
-    filter(start_age <= as.numeric(gsub("[^0-9]", "", Age))) %>%  # Filter by start_age
-    separate(Age, into = c("lower_bound", "upper_bound"), sep = " to ") %>%
-    mutate(
-      lower_bound = as.numeric(gsub("[^0-9]", "", lower_bound)),
-      upper_bound = as.numeric(gsub("[^0-9]", "", gsub(" years", "", upper_bound))),  # Remove ' years' then keep only numbers
-      midpoint_age = (lower_bound + upper_bound) / 2) %>%
-    filter(lower_bound >= start_age & upper_bound <= end_age)
-    
-   
-  weighted_sum <- sum(df_mean_age$midpoint_age * df_mean_age$`Average population`) # total years per in the cohort
-  total_population <- sum(df_mean_age$`Average population`) # total population in the cohort
-  mean_age <- weighted_sum / total_population # mean age of the cohort
-  
-  return(mean_age)
-}
 
 
+# Function Name: getScreeningProbabilities
+# Description: Generates screening-related probabilities based on test performance and compliance.
 getScreeningProbabilities <- function(probabilities, model_compliance, p_prevalence){
 
   if (model_compliance == FALSE){
@@ -186,6 +143,8 @@ detection_rate_flat <- p_screen_compliance * p_referral_compliance * probabiliti
 return(list(p_invited = p_invited, p_ai_screened = p_ai_screened, p_followed_up = p_followed_up, detection_rate_flat = detection_rate_flat))
 }
 
+# Function Name: padArray
+# Description: Pads a matrix with zero rows to match another matrix size.
 padArray <- function(pad, pad_to) {
   if(nrow(pad) < nrow(pad_to)) {
     rows_to_add <- nrow(pad_to) - nrow(pad)
@@ -195,7 +154,9 @@ padArray <- function(pad, pad_to) {
   return(pad)
 }
 
-traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities, discounting) { #makes age utility decrement and discounting correction
+# Function Name: traceCorrectionUtil
+# Description: Applies age-based utility adjustment and discounting to a Markov trace.
+traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities, discounting) {
   
   # Age correction
   # max age
@@ -236,6 +197,8 @@ traceCorrectionUtil <- function(a_trace, utility_gp, age_init, utilities, discou
   return(corrected_trace)
 }
 
+# Function Name: discountTraceCosts
+# Description: Applies cost discounting and half-cycle correction to a Markov trace.
 discountTraceCosts <- function(a_trace, discounting) {
   
   if (discounting == TRUE) {
@@ -261,6 +224,8 @@ discountTraceCosts <- function(a_trace, discounting) {
   return(corrected_trace)
 }
 
+# Function Name: sampleBeta
+# Description: Draws a random sample from a beta distribution using mean and standard error.
 sampleBeta <- function(mu, se) {
   
   # defining alpha & beta 
@@ -273,6 +238,8 @@ sampleBeta <- function(mu, se) {
   return(sample)
 }
 
+# Function Name: sampleGamma
+# Description: Draws a random sample from a gamma distribution using mean and standard error.
 sampleGamma <- function(mu, se) {
   
   # defining alpha & beta
@@ -284,16 +251,3 @@ sampleGamma <- function(mu, se) {
   return(sample)
 }
 
-sampleDirichlet <- function(alpha) {
-  
-
-  alpha
-  # defining alpha & beta 
-  alpha <- mu * ((mu * (1 - mu) / sd^2) - 1)
-  beta <- alpha * (1 - mu) / mu
-  
-  # sample from beta distribution
-  sample <- mapply(function(a, b) rbeta(1, a, b), alpha, beta)
-  
-  return(sample)
-}
