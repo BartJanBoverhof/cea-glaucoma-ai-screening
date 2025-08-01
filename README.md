@@ -1,6 +1,6 @@
 # Glaucoma AI Screening Cost-Effectiveness Model
 
-This repository contains the R code used in the publication ["Cost-effectiveness of a Deep Learning System for Glaucoma Screening"](https://www.valueinhealthjournal.com/article/S1098-3015(25)02410-6/fulltext). The model evaluates an artificial intelligence (AI) based screening strategy versus standard of care for detecting glaucoma.
+This repository contains the R code used in the publication ["The Cost-Effectiveness of an Artificial Intelligence-Based Population-Wide Screening Program for Primary Open-Angle Glaucoma in The Netherlands"](https://www.valueinhealthjournal.com/article/S1098-3015(25)02410-6/fulltext). The model evaluates an artificial intelligence (AI) based screening strategy versus standard of care for detecting glaucoma.
 
 ## Model overview
 
